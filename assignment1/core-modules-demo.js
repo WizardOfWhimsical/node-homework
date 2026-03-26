@@ -30,9 +30,12 @@ fs.promises
 // Streams for large files- log first 40 chars of each chunk
 const largeFilePath = path.join(__dirname, "sample-files/largefile.txt");
 function writeAlot() {
+  let hold = "";
   for (let i = 0; i < 125; i++) {
-    return "alot of stupid words to fit in here so that no one with really know what the hell i am thinking muhahahaha\n";
+    hold +=
+      "alot of stupid words to fit in here so that no one with really know what the hell i am thinking muhahahaha\n";
   }
+  return hold;
 }
 fs.promises.writeFile(largeFilePath, writeAlot());
 const readStream = fs.createReadStream(largeFilePath, {

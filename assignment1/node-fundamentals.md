@@ -8,7 +8,7 @@ It is a JS framework that allows for backend server side development. Including 
 
 Direct access to fs and os
 HTTP/HTTPS
-Low leveloperating system tasks
+Low level operating system tasks
 
 ## What is the V8 engine, and how does Node use it?
 
