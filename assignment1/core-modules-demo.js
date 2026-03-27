@@ -21,7 +21,6 @@ console.log("Joined path:", pathWay);
 
 // fs.promises API
 let statement = "Hello from fs.promis!";
-// statement = JSON.stringify(statement, null, 4);
 fs.promises.writeFile(pathWay, statement);
 fs.promises
   .readFile(pathWay, "utf-8")
@@ -45,7 +44,6 @@ const readStream = fs.createReadStream(largeFilePath, {
 
 readStream.on("data", (chunk) => {
   console.log("Read chunk:", chunk);
-  //processing with highWaterMark
 });
 
 readStream.on("end", () => {
