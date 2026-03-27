@@ -16,7 +16,8 @@ console.log("CPU:", cpu[0].model);
 console.log("Total Memory:", total_memory);
 
 // Path module
-const pathWay = path.join(__dirname, "sample-files/demo.txt");
+const basePath = __dirname + "/sample-files";
+const pathWay = path.join(basePath, "/demo.txt");
 console.log("Joined path:", pathWay);
 
 // fs.promises API
@@ -27,7 +28,7 @@ fs.promises
   .then((r) => console.log("fs.promises read:", r));
 
 // Streams for large files- log first 40 chars of each chunk
-const largeFilePath = path.join(__dirname, "sample-files/largefile.txt");
+const largeFilePath = path.join(basePath, "/largefile.txt");
 function writeAlot() {
   let hold = "";
   for (let i = 0; i < 125; i++) {
