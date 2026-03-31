@@ -1,6 +1,5 @@
 // import { EventEmitter } from "node:events";
 const EventEmitter = require("events");
-const { response } = require("express");
 const fs = require("fs");
 
 const emitter = new EventEmitter();
