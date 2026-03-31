@@ -27,6 +27,7 @@ emitter.on("error", (error) => {
   console.log("listener 2 got a tell message:\n", error);
 });
 
+//emitting the event to the listeners
 emitter.emit("tell", "Hi there!");
 emitter.emit("tell", "second message");
 // emitter.emit("secret", reading());
