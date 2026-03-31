@@ -1,5 +1,4 @@
 const EventEmitter = require("events");
-const { get } = require("http");
 const emitter = new EventEmitter();
 
 emitter.on("time", (time) => {
@@ -8,10 +7,10 @@ emitter.on("time", (time) => {
 
 function getTime() {
   const time = new Date().toLocaleTimeString();
-  return setInterval(() => {
-    emitter.emit("time", time);
-  }, 5000);
+  // return setInterval(() => {
+  return emitter.emit("time", time);
+  // }, 5000);
 }
 
 // getTime();
-module.exports = getTime;
+module.exports = { getTime, emitter };

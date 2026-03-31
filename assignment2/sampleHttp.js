@@ -1,6 +1,7 @@
 const http = require("http");
-// const getTime = require("./events");
 
+// const { getTime, emitter } = require("./events");
+// console.log(getTime(), emitter);
 // const server = http.createServer({ keepAliveTimeout: 60000 }, (req, res) => {
 //   res.writeHead(200, { "Content-Type": "application/json" });
 //   res.end(
@@ -69,10 +70,15 @@ const server = http.createServer({ keepAliveTimeout: 60000 }, (req, res) => {
       "Content-Type": "application/json",
       charset: "utf-8",
     });
+    // getTime();
     res.end(
       JSON.stringify({
         // htmlString,
         message: "payload recieved!",
+        // time: emitter.on("time", (time) => {
+        //   console.log("Time revieved\n", time);
+        //   return `Time recieved\n ${time}`;
+        // }),
         time: new Date().toLocaleString(),
       }),
     );
