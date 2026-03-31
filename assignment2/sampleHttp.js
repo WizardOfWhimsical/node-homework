@@ -1,4 +1,5 @@
 const http = require("http");
+// const getTime = require("./events");
 
 // const server = http.createServer({ keepAliveTimeout: 60000 }, (req, res) => {
 //   res.writeHead(200, { "Content-Type": "application/json" });
@@ -63,6 +64,21 @@ const server = http.createServer({ keepAliveTimeout: 60000 }, (req, res) => {
         message: "The secret word is 'Swordfish'.",
       }),
     );
+  } else if (req.url === "/time") {
+    res.writeHead(200, {
+      "Content-Type": "application/json",
+      charset: "utf-8",
+    });
+    res.end(
+      JSON.stringify({
+        // htmlString,
+        message: "payload recieved!",
+        time: new Date().toLocaleString(),
+      }),
+    );
+  } else if (req.url === "/timePage") {
+    res.writeHead(200, { "Content-Type": "text/html" });
+    res.end(htmlString);
   } else {
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(
