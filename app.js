@@ -1,6 +1,7 @@
 const express = require("express");
 const morgan = require("morgan");
 const errorHandler = require("./middleware/error-handler");
+const notFound = require("./middleware/not-found");
 
 const app = express();
 
@@ -11,6 +12,8 @@ const port = process.env.PORT || 3000;
 app.get("/", (req, res) => {
   res.send("Hello, World!");
 });
+
+app.use(notFound);
 //basic error handling
 app.use(errorHandler);
 
