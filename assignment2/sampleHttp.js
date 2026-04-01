@@ -1,16 +1,5 @@
 const http = require("http");
 
-// const { getTime, emitter } = require("./events");
-// console.log(getTime(), emitter);
-// const server = http.createServer({ keepAliveTimeout: 60000 }, (req, res) => {
-//   res.writeHead(200, { "Content-Type": "application/json" });
-//   res.end(
-//     JSON.stringify({
-//       data: "Hello World!",
-//     }),
-//   );
-// });
-
 const htmlString = `
 <!DOCTYPE html>
 <html>
@@ -32,66 +21,63 @@ document.getElementById('getTimeBtn').addEventListener('click', async () => {
 `;
 
 const server = http.createServer({ keepAliveTimeout: 60000 }, (req, res) => {
-  if (
-    req.method === "POST" &&
-    req.url === "/" &&
-    req.headers["content-type"] === "application/json"
-  ) {
-    let body = "";
+  let body = "";
+  switch (true) {
+    case req.method === "POST" &&
+      req.url === "/" &&
+      req.headers["content-type"] === "application/json":
+      req.on("data", (chunk) => (body += chunk)); // this is how you assemble the body.
 
-    req.on("data", (chunk) => (body += chunk)); // this is how you assemble the body.
-
-    req.on("end", () => {
-      // this event is emitted when the body is completely assembled.  If there isn't a body, it is emitted when the request arrives.
-      const parsedBody = JSON.parse(body);
+      req.on("end", () => {
+        const parsedBody = JSON.parse(body);
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({
+            weReceived: parsedBody,
+          }),
+        );
+      });
+      break;
+    case req.method != "GET":
+      res.writeHead(404, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          message: "That route is not available.",
+        }),
+      );
+      break;
+    case req.url === "/secret":
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(
         JSON.stringify({
-          weReceived: parsedBody,
+          message: "The secret word is 'Swordfish'.",
         }),
       );
-    });
-  } else if (req.method != "GET") {
-    res.writeHead(404, { "Content-Type": "application/json" });
-    res.end(
-      JSON.stringify({
-        message: "That route is not available.",
-      }),
-    );
-  } else if (req.url === "/secret") {
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(
-      JSON.stringify({
-        message: "The secret word is 'Swordfish'.",
-      }),
-    );
-  } else if (req.url === "/time") {
-    res.writeHead(200, {
-      "Content-Type": "application/json",
-      charset: "utf-8",
-    });
-    // getTime();
-    res.end(
-      JSON.stringify({
-        // htmlString,
-        message: "payload recieved!",
-        // time: emitter.on("time", (time) => {
-        //   console.log("Time revieved\n", time);
-        //   return `Time recieved\n ${time}`;
-        // }),
-        time: new Date().toLocaleString(),
-      }),
-    );
-  } else if (req.url === "/timePage") {
-    res.writeHead(200, { "Content-Type": "text/html" });
-    res.end(htmlString);
-  } else {
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(
-      JSON.stringify({
-        pathEntered: req.url,
-      }),
-    );
+      break;
+    case req.url === "/time":
+      res.writeHead(200, {
+        "Content-Type": "application/json",
+        charset: "utf-8",
+      });
+      // getTime();
+      res.end(
+        JSON.stringify({
+          message: "payload recieved!",
+          time: new Date().toLocaleString(),
+        }),
+      );
+      break;
+    case req.url === "/timePage":
+      res.writeHead(200, { "Content-Type": "text/html" });
+      res.end(htmlString);
+      break;
+    default:
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          pathEntered: req.url,
+        }),
+      );
   }
 });
 
