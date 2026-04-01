@@ -5,12 +5,33 @@ const notFound = require("./middleware/not-found");
 
 const app = express();
 
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(morgan("dev"));
+app.use((req, res, next) => {
+  console.log("-----------");
+  console.log(
+    "Middleware to log request:\n",
+    "\tMethod:",
+    req.method,
+    "\n",
+    "\tPath:",
+    req.path,
+    "\n",
+    "\tQuery:",
+    { ...req.query },
+  );
+  console.log("-----------");
+  next();
+});
 const port = process.env.PORT || 3000;
 
 app.get("/", (req, res) => {
   res.send("Hello, World!");
+});
+app.post("/testpost", (req, res) => {
+  console.log("post request body:\n", req.body);
+  res.status(200).json({ message: "you made it" });
 });
 
 app.use(notFound);
