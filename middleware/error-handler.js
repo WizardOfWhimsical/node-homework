@@ -1,7 +1,7 @@
 const { StatusCodes } = require("http-status-codes");
 
 function errorandlerMiddleware(err, req, res, next) {
-  SVGComponentTransferFunctionElement.error(
+  console.error(
     "Internal server error:\n",
     err.constructor.name,
     "\n\t",
