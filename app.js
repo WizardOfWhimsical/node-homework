@@ -1,5 +1,6 @@
 const express = require("express");
 const morgan = require("morgan");
+const errorHandler = require("./middleware/error-handler");
 
 const app = express();
 
@@ -11,13 +12,7 @@ app.get("/", (req, res) => {
   res.send("Hello, World!");
 });
 //basic error handling
-app.use((err, req, res, next) => {
-  console.log("Express Server Error Response\n", err.stack);
-  res.status(err.status || 500).json({
-    success: false,
-    message: err.message,
-  });
-});
+app.use(errorHandler);
 
 const server = app.listen(port, () => console.log(`Listening @ port ${3000}`));
 
