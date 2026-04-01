@@ -19,7 +19,7 @@ app.use((req, res, next) => {
     req.path,
     "\n",
     "\tQuery:",
-    { ...req.query },
+    req.query,
   );
   console.log("-----------");
   next();
@@ -35,7 +35,6 @@ app.post("/testpost", (req, res) => {
 });
 
 app.use(notFound);
-//basic error handling
 app.use(errorHandler);
 
 const server = app.listen(port, () => console.log(`Listening @ port ${3000}`));

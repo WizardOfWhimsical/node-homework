@@ -4,7 +4,7 @@ function errorandlerMiddleware(err, req, res, next) {
   console.error(
     "Internal server error:\n",
     err.constructor.name,
-    "\n\t",
+    "\n",
     JSON.stringify(err, ["name", "message", "stack"]),
   );
   if (!res.headerSent) {
