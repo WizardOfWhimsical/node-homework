@@ -1,4 +1,4 @@
-const http = require("http");
+const http = require("node:http");
 
 const htmlString = `
 <!DOCTYPE html>
@@ -26,7 +26,7 @@ const server = http.createServer({ keepAliveTimeout: 60000 }, (req, res) => {
     case req.method === "POST" &&
       req.url === "/" &&
       req.headers["content-type"] === "application/json":
-      req.on("data", (chunk) => (body += chunk)); // this is how you assemble the body.
+      req.on("data", (chunk) => (body += chunk));
 
       req.on("end", () => {
         const parsedBody = JSON.parse(body);
@@ -59,7 +59,6 @@ const server = http.createServer({ keepAliveTimeout: 60000 }, (req, res) => {
         "Content-Type": "application/json",
         charset: "utf-8",
       });
-      // getTime();
       res.end(
         JSON.stringify({
           message: "payload recieved!",
