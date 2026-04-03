@@ -10,6 +10,7 @@ const path = require("path");
 const dogsRouter = require("./routes/dogs");
 
 const app = express();
+const port = process.env.PORT || 3000;
 
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse form data
@@ -30,8 +31,7 @@ app.post("/api/user/register", (req, res) => {
   const payload = req.body.json();
   res.status(StatusCodes.CREATED).json({ message: ReasonPhrases.OK, payload });
 });
-// const process.
-const server = app.listen(3000, () =>
+const server = app.listen(port, () =>
   console.log("Server listening on port 3000"),
 );
 // 5. 404 handler (after all routes)
