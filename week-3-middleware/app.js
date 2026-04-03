@@ -23,11 +23,6 @@ app.use("/", dogsRouter); // Do not remove this line
 const server = app.listen(3000, () =>
   console.log("Server listening on port 3000"),
 );
-
-module.exports = server;
-
-// 2. Body parsing (before routes that need req.body)
-
 // 5. 404 handler (after all routes)
 app.use((req, res) => {
   res.status(404).json({ message: "Route not found" });
@@ -38,3 +33,5 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ message: "Internal server error" });
 });
+
+module.exports = server;
