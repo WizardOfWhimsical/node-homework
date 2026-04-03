@@ -1,5 +1,9 @@
 const express = require("express");
-const { StatusCodes, getReasonPhrase } = require("http-status-codes");
+const {
+  StatusCodes,
+  getReasonPhrase,
+  ReasonPhrases,
+} = require("http-status-codes");
 const { v4: uuidv4 } = require("uuid");
 const path = require("path");
 const dogsRouter = require("./routes/dogs");
@@ -22,7 +26,7 @@ app.use((req, res, next) => {
 app.use("/", dogsRouter); // Do not remove this line
 app.post("/api/user/register", (req, res) => {
   const payload = req.body.json();
-  res.status().json({ message: "Data Recieved", payload });
+  res.status(StatusCodes.CREATED).json({ message: ReasonPhrases.OK, payload });
 });
 
 const server = app.listen(3000, () =>
@@ -30,13 +34,15 @@ const server = app.listen(3000, () =>
 );
 // 5. 404 handler (after all routes)
 app.use((req, res) => {
-  res.status(404).json({ message: "Route not found" });
+  res.status(StatusCodes.NOT_FOUND).json({ message: ReasonPhrases.NOT_FOUND });
 });
 
 // 6. Error handler (last - catches all errors)
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ message: "Internal server error" });
+  res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
+    error: getReasonPhrase(StatusCodes.INTERNAL_SERVER_ERROR),
+  });
 });
 
 module.exports = server;
