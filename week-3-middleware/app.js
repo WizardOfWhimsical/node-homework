@@ -4,6 +4,7 @@ const {
   getReasonPhrase,
   ReasonPhrases,
 } = require("http-status-codes");
+const morgan = require("morgan");
 const { v4: uuidv4 } = require("uuid");
 const path = require("path");
 const dogsRouter = require("./routes/dogs");
@@ -12,6 +13,7 @@ const app = express();
 
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse form data
+app.use(morgan("dev")); // logger for colored output on http success/fail
 
 // Your middleware here
 
@@ -28,7 +30,7 @@ app.post("/api/user/register", (req, res) => {
   const payload = req.body.json();
   res.status(StatusCodes.CREATED).json({ message: ReasonPhrases.OK, payload });
 });
-
+// const process.
 const server = app.listen(3000, () =>
   console.log("Server listening on port 3000"),
 );
