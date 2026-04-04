@@ -28,7 +28,7 @@ app.use((req, res, next) => {
 
 app.use("/", dogsRouter); // Do not remove this line
 app.post("/api/user/register", (req, res) => {
-  const payload = req.body.json();
+  const payload = req.body;
   res.status(StatusCodes.CREATED).json({ message: ReasonPhrases.OK, payload });
 });
 const server = app.listen(port, () =>
