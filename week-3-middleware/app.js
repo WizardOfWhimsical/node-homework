@@ -32,7 +32,7 @@ app.post("/api/user/register", (req, res) => {
   res.status(StatusCodes.CREATED).json({ message: ReasonPhrases.OK, payload });
 });
 const server = app.listen(port, () =>
-  console.log("Server listening on port 3000"),
+  console.log("Server listening on port ${port}..."),
 );
 // 5. 404 handler (after all routes)
 app.use((req, res) => {
