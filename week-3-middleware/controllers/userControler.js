@@ -4,8 +4,12 @@ const {
   ReasonPhrases,
 } = require("http-status-codes");
 
+//should i be running a check here to see if the user already exists? or just add them to the users array?
+//check to sanitize?
+// const id = uuidv4();
+
 function register(req, res) {
-  const newUser = { ...req.body };
+  const newUser = { ...req.body, isloggedIn: !req.body.isloggedIn };
   global.users.push(newUser);
   global.user_id = newUser.name;
   delete req.body.password;
