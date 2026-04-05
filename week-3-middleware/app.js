@@ -12,6 +12,7 @@ const dogsRouter = require("./routes/dogs");
 global.user_id = null;
 global.users = [];
 global.tasks = [];
+// const {user_id, users, tasks} = global;
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -33,9 +34,16 @@ app.use((req, res, next) => {
 app.use("/", dogsRouter); // Do not remove this line
 
 app.post("/api/user/register", (req, res) => {
-  const payload = req.body;
-  res.status(StatusCodes.CREATED).json({ message: ReasonPhrases.OK, payload });
+  //should i be running a check here to see if the user already exists? or just add them to the users array?
+  //check to sanitize?
+  // const id = uuidv4();
+  const newUser = { ...req.body };
+  global.users.push(newUser);
+  global.user_id = newUser.name;
+  delete req.body.password;
+  res.status(StatusCodes.CREATED).json({ message: ReasonPhrases.OK, newUser });
 });
+
 const server = app.listen(port, () =>
   console.log(`Server listening on port ${port}...`),
 );
