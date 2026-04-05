@@ -9,6 +9,10 @@ const { v4: uuidv4 } = require("uuid");
 const path = require("path");
 const dogsRouter = require("./routes/dogs");
 
+global.user_id = null;
+global.users = [];
+global.tasks = [];
+
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -27,6 +31,7 @@ app.use((req, res, next) => {
 });
 
 app.use("/", dogsRouter); // Do not remove this line
+
 app.post("/api/user/register", (req, res) => {
   const payload = req.body;
   res.status(StatusCodes.CREATED).json({ message: ReasonPhrases.OK, payload });
