@@ -7,6 +7,8 @@ const {
 const morgan = require("morgan");
 const { v4: uuidv4 } = require("uuid");
 const path = require("path");
+
+const register = require("./controllers/userControler");
 const dogsRouter = require("./routes/dogs");
 
 global.user_id = null;
@@ -33,16 +35,7 @@ app.use((req, res, next) => {
 
 app.use("/", dogsRouter); // Do not remove this line
 
-app.post("/api/user/register", (req, res) => {
-  //should i be running a check here to see if the user already exists? or just add them to the users array?
-  //check to sanitize?
-  // const id = uuidv4();
-  const newUser = { ...req.body };
-  global.users.push(newUser);
-  global.user_id = newUser.name;
-  delete req.body.password;
-  res.status(StatusCodes.CREATED).json({ message: ReasonPhrases.OK, newUser });
-});
+app.post("/api/user/register", register);
 
 const server = app.listen(port, () =>
   console.log(`Server listening on port ${port}...`),
