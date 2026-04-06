@@ -1,4 +1,5 @@
 global.user_id = null;
+// global.current.user = {};
 global.users = [
   {
     name: "stephen Lewis",

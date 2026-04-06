@@ -5,35 +5,35 @@ const {
 } = require("http-status-codes");
 
 function logon(req, res) {
-  console.log("----------");
-  console.log(global.users);
-  console.log("----------");
   const { email, password } = req.body;
   const user = global.users.find((user) => user.email === email);
-  console.log(user);
-  console.log("---------");
   if (!user) {
     console.log("user not found in DB");
-    return res.send(StatusCodes.NOT_FOUND).json({
+    return res.status(StatusCodes.NOT_FOUND).json({
       message: ReasonPhrases.NOT_FOUND,
       reason: "Please Register an account",
     });
   }
-  // if (user.email === email) {
+  // global.current.user = user;
+  global.user_id = user;
   if (password !== user.password) {
     console.log("seems to be the wrong password");
-    return res.status(StatusCodes.NOT_ACCEPTABLE).json({
-      message: ReasonPhrases.NOT_ACCEPTABLE,
-      reason: "Invalid Password",
+    return res.status(StatusCodes.UNAUTHORIZED).json({
+      message: ReasonPhrases.UNAUTHORIZED,
+      reason: "Authentication Failed",
     });
   } else if (password === user.password) {
     console.log("login successful");
-    const userNoPW = { ...user, password: "No lookie Lou's" };
+
+    const userNoPW = {
+      ...user,
+      isLoggedIn: !user.isLoggedIn,
+    };
+    delete userNoPW.password;
     return res
       .status(StatusCodes.OK)
       .json({ message: ReasonPhrases.OK, user: userNoPW });
   }
-  // }
 }
 
 module.exports = logon;
