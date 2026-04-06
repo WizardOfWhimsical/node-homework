@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const { register, logon, logoff } = require("../controllers/userControler");
+const { register, logon, logoff } = require("../controllers/userController");
 
 const router = Router();
 
