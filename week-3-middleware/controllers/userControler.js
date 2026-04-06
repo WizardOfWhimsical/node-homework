@@ -9,7 +9,7 @@ const {
 // const id = uuidv4();
 
 function register(req, res) {
-  const newUser = { ...req.body, isloggedIn: !req.body.isloggedIn };
+  const newUser = { ...req.body, isLoggedIn: !req.body.isLoggedIn };
   global.users.push(newUser);
   global.user_id = newUser.name;
   delete req.body.password;

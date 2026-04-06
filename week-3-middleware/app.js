@@ -56,3 +56,15 @@ app.use((err, req, res, next) => {
 });
 
 module.exports = server;
+
+/**
+ * user of users
+ * const shape_of_obj = {
+ *    name: string,
+ *    email: string,
+ *    password: string,
+ *    isLoggedIn: boolean,
+ *    _id: string,
+ *    todos: [],
+ * }
+ */
