@@ -8,7 +8,8 @@ const morgan = require("morgan");
 const { v4: uuidv4 } = require("uuid");
 const path = require("path");
 
-const register = require("./controllers/userControler");
+// const register = require("./controllers/userControler");
+const useRoute = require("./routes/useRoutes");
 const dogsRouter = require("./routes/dogs");
 
 global.user_id = null;
@@ -35,7 +36,8 @@ app.use((req, res, next) => {
 
 app.use("/", dogsRouter); // Do not remove this line
 
-app.post("/api/user/register", register);
+// app.post("/api/user/register", register);
+app.use("/api/user", useRoute);
 
 const server = app.listen(port, () =>
   console.log(`Server listening on port ${port}...`),
