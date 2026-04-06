@@ -20,17 +20,17 @@ function logon(req, res) {
     });
   }
   // if (user.email === email) {
-  if (user.password !== password) {
+  if (password !== user.password) {
     console.log("seems to be the wrong password");
-    return res.send(StatusCodes.NOT_ACCEPTABLE).json({
+    return res.status(StatusCodes.NOT_ACCEPTABLE).json({
       message: ReasonPhrases.NOT_ACCEPTABLE,
       reason: "Invalid Password",
     });
-  } else if (user.password === password) {
+  } else if (password === user.password) {
     console.log("login successful");
     const userNoPW = { ...user, password: "No lookie Lou's" };
     return res
-      .send(StatusCodes.OK)
+      .status(StatusCodes.OK)
       .json({ message: ReasonPhrases.OK, user: userNoPW });
   }
   // }

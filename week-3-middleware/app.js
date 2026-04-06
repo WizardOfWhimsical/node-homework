@@ -46,14 +46,17 @@ app.use((req, res, next) => {
 app.use("/", dogsRouter); // Do not remove this line
 
 // app.post("/api/user/register", register);
-app.use("/api/user", useRoute);
+app.use("/api/users", useRoute);
 
 const server = app.listen(port, () =>
   console.log(`Server listening on port ${port}...`),
 );
 // 5. 404 handler (after all routes)
 app.use((req, res) => {
-  res.status(StatusCodes.NOT_FOUND).json({ message: ReasonPhrases.NOT_FOUND });
+  res.status(StatusCodes.NOT_FOUND).json({
+    message: ReasonPhrases.NOT_FOUND,
+    reason: `Route ${req.method} ${req.path} not found`,
+  });
 });
 
 // 6. Error handler (last - catches all errors)
