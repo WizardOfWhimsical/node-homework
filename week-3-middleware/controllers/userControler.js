@@ -14,7 +14,7 @@ function register(req, res) {
   const newUser = { ...req.body, isLoggedIn: !req.body.isLoggedIn };
   global.users.push(newUser);
   global.user_id = newUser.name;
-  delete req.body.password;
+  delete newUser.password;
   return res
     .status(StatusCodes.CREATED)
     .json({ message: ReasonPhrases.OK, newUser });
