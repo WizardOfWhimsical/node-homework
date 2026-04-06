@@ -1,7 +1,5 @@
 const { Router } = require("express");
-const register = require("../controllers/userControler");
-const logon = require("../controllers/logon");
-const logout = require("../controllers/logout");
+const { register, logon, logoff } = require("../controllers/userControler");
 
 const router = Router();
 
@@ -9,6 +7,6 @@ router.route("/register").post(register);
 
 router.route("/logon").post(logon);
 
-router.route("/logout").post(logout);
+router.route("/logout").post(logoff);
 
 module.exports = router;
