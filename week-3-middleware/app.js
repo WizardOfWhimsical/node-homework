@@ -1,3 +1,17 @@
+global.user_id = null;
+global.users = [
+  {
+    name: "stephen Lewis",
+    email: "st.butHole.gole.com",
+    password: "stupidPeople",
+    isLoggedIn: false,
+    _id: "73241",
+    todos: ["one thing", "2 things", 3],
+  },
+];
+global.tasks = [];
+// const {user_id, users, tasks} = global;
+
 const express = require("express");
 const {
   StatusCodes,
@@ -11,11 +25,6 @@ const path = require("path");
 // const register = require("./controllers/userControler");
 const useRoute = require("./routes/useRoutes");
 const dogsRouter = require("./routes/dogs");
-
-global.user_id = null;
-global.users = [];
-global.tasks = [];
-// const {user_id, users, tasks} = global;
 
 const app = express();
 const port = process.env.PORT || 3000;
