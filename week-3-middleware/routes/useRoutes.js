@@ -5,4 +5,8 @@ const router = Router();
 
 router.route("/register").post(register);
 
+router.route("/logon").post((req, res) => {
+  res.status(201).json({ message: "logon post hit" });
+});
+
 module.exports = router;
