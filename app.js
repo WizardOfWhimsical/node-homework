@@ -7,6 +7,7 @@ const {
 } = require("http-status-codes");
 const errorHandler = require("./middleware/error-handler");
 const notFound = require("./middleware/not-found");
+const useRouter = require("./routes/useRoutes");
 
 global.user_id = null;
 global.users = [];
@@ -46,15 +47,7 @@ app.post("/testpost", (req, res) => {
     .json({ message: "Test Post Hit", reason: ReasonPhrase.OK });
 });
 
-app.post("/api/users/register", (req, res) => {
-  const newUser = { ...req.body, isLoggedIn: true };
-  global.users.push(newUser);
-  global.user_id = newUser;
-  delete newUser.password;
-  res
-    .status(StatusCodes.CREATED)
-    .json({ message: newUser, reason: ReasonPhrase.CREATED });
-});
+app.use("/api/users", useRouter);
 
 app.use(notFound);
 app.use(errorHandler);
