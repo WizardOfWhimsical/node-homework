@@ -41,15 +41,19 @@ app.get("/", (req, res) => {
 });
 app.post("/testpost", (req, res) => {
   console.log("post request body:\n", req.body);
-  res.status(200).json({ message: "you made it" });
+  res
+    .status(StatusCodes.OK)
+    .json({ message: "Test Post Hit", reason: ReasonPhrase.OK });
 });
 
 app.post("/api/users/register", (req, res) => {
   const newUser = { ...req.body, isLoggedIn: true };
   global.users.push(newUser);
   global.user_id = newUser;
-  delete req.body.password;
-  res.status(201).json(req.body);
+  delete newUser.password;
+  res
+    .status(StatusCodes.CREATED)
+    .json({ message: newUser, reason: ReasonPhrase.CREATED });
 });
 
 app.use(notFound);
