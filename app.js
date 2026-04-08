@@ -39,7 +39,13 @@ app.post("/testpost", (req, res) => {
   res.status(200).json({ message: "you made it" });
 });
 
-app.post("/api/users");
+app.post("/api/users/register", (req, res) => {
+  const newUser = { ...req.body, isLoggedIn: true };
+  global.users.push(newUser);
+  global.user_id = newUser;
+  delete req.body.password;
+  res.status(201).json(req.body);
+});
 
 app.use(notFound);
 app.use(errorHandler);
