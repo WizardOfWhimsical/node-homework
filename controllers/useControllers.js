@@ -5,9 +5,11 @@ const {
 } = require("http-status-codes");
 
 function register(req, res) {
+  console.log("Register Request Body\n", req.body);
   const newUser = { ...req.body, isLoggedIn: true };
   global.users.push(newUser);
   global.user_id = newUser;
+  console.log("Register New User\n", newUser);
   delete newUser.password;
   res
     .status(StatusCodes.CREATED)
@@ -15,6 +17,8 @@ function register(req, res) {
 }
 
 function logon(req, res) {
+  console.log("Logon Request Body:\n", req.body);
+
   const { email, password } = req.body;
   const user = global.users.find((user) => user.email === email);
   if (!user) {
@@ -35,6 +39,7 @@ function logon(req, res) {
     console.log("login successful");
     user.isLoggedIn = true;
     global.user_id = user;
+    console.log("official user\n", user);
     delete user.password;
     res.status(StatusCodes.ACCEPTED).json({
       reason: ReasonPhrase.ACCEPTED,
