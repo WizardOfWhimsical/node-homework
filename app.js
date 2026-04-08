@@ -3,6 +3,10 @@ const morgan = require("morgan");
 const errorHandler = require("./middleware/error-handler");
 const notFound = require("./middleware/not-found");
 
+global.user_id = null;
+global.users = [];
+global.taskes = [];
+
 const app = express();
 
 app.use(express.urlencoded({ extended: true }));
