@@ -8,6 +8,7 @@ const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(morgan("dev"));
+
 app.use((req, res, next) => {
   console.log("-----------");
   console.log(
@@ -33,6 +34,8 @@ app.post("/testpost", (req, res) => {
   console.log("post request body:\n", req.body);
   res.status(200).json({ message: "you made it" });
 });
+
+app.post("/api/users");
 
 app.use(notFound);
 app.use(errorHandler);
