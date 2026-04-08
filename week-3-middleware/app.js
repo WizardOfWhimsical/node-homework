@@ -1,15 +1,6 @@
 global.user_id = null;
 // global.current.user = {};
-global.users = [
-  {
-    name: "stephen Lewis",
-    email: "st.butHole.gole.com",
-    password: "stupidPeople",
-    isLoggedIn: false,
-    _id: "73241",
-    todos: ["one thing", "2 things", 3],
-  },
-];
+global.users = [];
 global.tasks = [];
 // const {user_id, users, tasks} = global;
 
@@ -52,21 +43,6 @@ app.use("/api/users", useRoute);
 const server = app.listen(port, () =>
   console.log(`Server listening on port ${port}...`),
 );
-// 5. 404 handler (after all routes)
-app.use((req, res) => {
-  res.status(StatusCodes.NOT_FOUND).json({
-    message: ReasonPhrases.NOT_FOUND,
-    reason: `Route ${req.method} ${req.path} not found`,
-  });
-});
-
-// 6. Error handler (last - catches all errors)
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
-    error: getReasonPhrase(StatusCodes.INTERNAL_SERVER_ERROR),
-  });
-});
 
 module.exports = server;
 

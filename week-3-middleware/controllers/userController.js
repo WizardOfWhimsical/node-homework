@@ -11,6 +11,7 @@ const logoff = require("./logout");
 // const id = uuidv4();
 
 function register(req, res) {
+  console.log("registering user...\n", req.body);
   const newUser = { ...req.body, isLoggedIn: !req.body.isLoggedIn };
   global.users.push(newUser);
   global.user_id = newUser.name;
