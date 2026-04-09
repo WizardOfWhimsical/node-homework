@@ -1,7 +1,7 @@
 const {
   StatusCodes,
   // getReasonPhrase,
-  ReasonPhrase,
+  // ReasonPhrase,
 } = require("http-status-codes");
 
 function register(req, res) {
@@ -11,9 +11,10 @@ function register(req, res) {
   global.user_id = newUser;
   console.log("Register New User\n", newUser);
   delete req.body.password;
-  res
-    .status(StatusCodes.CREATED)
-    .json({ ...req.body, message: "Account Created" });
+  res.status(StatusCodes.CREATED).json({
+    ...req.body,
+    message: "Account Created",
+  });
 }
 
 function logon(req, res) {
@@ -35,9 +36,11 @@ function logon(req, res) {
     console.log("login successful");
     user.isLoggedIn = true;
     global.user_id = user;
-    res
-      .status(StatusCodes.OK)
-      .json({ name: user.name, email: user.email, message: "logged in" });
+    res.status(StatusCodes.OK).json({
+      name: user.name,
+      email: user.email,
+      message: "logged in",
+    });
   }
 }
 
