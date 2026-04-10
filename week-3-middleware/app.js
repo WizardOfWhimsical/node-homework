@@ -1,5 +1,7 @@
 const express = require("express");
-const { v4: uuidv4 } = require("uuid");
+// const { v4: uuidv4 } = require("uuid");
+const uniqueId = require("./middleware/uniqueId");
+const loggingOperations = require("./middleware/logOperations");
 const path = require("path");
 const dogsRouter = require("./routes/dogs");
 
@@ -7,6 +9,7 @@ const app = express();
 
 app.use(express.json());
 app.use(express.static("./public"));
+app.use(uniqueId(), loggingOperations());
 // Your middleware here
 
 app.use("/", dogsRouter); // Do not remove this line

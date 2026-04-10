@@ -3,7 +3,7 @@ const router = express.Router();
 const dogs = require("../dogData.js");
 
 router.get("/dogs", (req, res) => {
-  res.json(dogs);
+  res.status(200).json(dogs);
 });
 
 router.post("/adopt", (req, res) => {
