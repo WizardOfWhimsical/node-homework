@@ -6,6 +6,7 @@ const dogsRouter = require("./routes/dogs");
 const app = express();
 
 app.use(express.json());
+app.use(express.static("./public"));
 // Your middleware here
 
 app.use("/", dogsRouter); // Do not remove this line
