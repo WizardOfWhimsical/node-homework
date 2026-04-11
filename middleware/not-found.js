@@ -1,6 +1,6 @@
 const { StatusCodes } = require("http-status-codes");
 
-function notFound(req, res) {
+function notFound(err, req, res, next) {
   console.log("Erroring, Not found page:\n", req.url);
   return res
     .status(StatusCodes.NOT_FOUND)
