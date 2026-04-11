@@ -16,7 +16,7 @@ router.post("/adopt", (req, res) => {
     message: `Adoption request received. We will contact you at ${email} for further details.`,
   });
 });
-//ask Ej about this route, it is for testing error handling in the app, it will throw an error when accessed.
+//ask Ej about this route, it is for testing error handling in the app, it will throw an error when accessed?
 router.get("/error", (req, res) => {
   throw new Error("Test error");
 });
