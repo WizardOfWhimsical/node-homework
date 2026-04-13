@@ -21,7 +21,7 @@ app.use((req, res, next) => {
   const contentType = req.get("Content-Type");
 
   if (!contentType || !contentType.includes("application/json")) {
-    return res.status(400).json({
+    return res.status(StatusCodes.BAD_REQUEST).json({
       error: "Content-Type must be application/json",
       requestId: req.requestId,
     });
