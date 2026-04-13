@@ -43,12 +43,10 @@ app.use((err, req, res, next) => {
   } else {
     console.error(`ERROR: Error`, err.message);
   }
-  res
-    .status(statusCode)
-    .json({
-      error: err.messasge || "Internal Server Error",
-      requestID: req.requestID,
-    });
+  res.status(statusCode).json({
+    error: err.messasge || "Internal Server Error",
+    requestID: req.requestID,
+  });
 });
 app.use(serverError);
 app.use(notFound);
