@@ -39,13 +39,13 @@ const server = app.listen(3000, () =>
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
   if (statusCode >= 400 && statusCode < 500) {
-    console.warn.apply(`WARN: ${err.name}`, err.message);
+    console.warn(`WARN: ${err.name}`, err.message);
   } else {
     console.error(`ERROR: Error`, err.message);
   }
   res.status(statusCode).json({
-    error: err.messasge || "Internal Server Error",
-    requestID: req.requestID,
+    error: err.message || "Internal Server Error",
+    requestID: req.requestId,
   });
 });
 app.use(serverError);
