@@ -8,12 +8,14 @@ router.get("/dogs", (req, res) => {
 });
 
 router.post("/adopt", (req, res) => {
-  const { name, email, dogName, dog } = req.body;
+  const { name, email, dogName } = req.body;
   //validation
   if (!name || !email || !dogName) {
     throw new ValidationError("Missing required fields");
   }
   //not found
+  const dog = dogs.filter((dog) => dog.name === dogName);
+
   if (!dog || dog.status !== "available") {
     throw new NotFoundError("Dog not found or not available");
   }
