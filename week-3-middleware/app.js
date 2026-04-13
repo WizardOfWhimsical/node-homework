@@ -5,16 +5,16 @@ const loggingOperations = require("./middleware/logOperations");
 const notFound = require("../middleware/not-found");
 const serverError = require("../middleware/error-handler");
 const securityHeaders = require("./middleware/additionalHeaders");
-const path = require("path");
+// const path = require("path");
 const dogsRouter = require("./routes/dogs");
 const { StatusCodes } = require("http-status-codes");
 
 const app = express();
 
-app.use(express.static("./public"));
 app.use(uniqueId, loggingOperations);
 app.use(securityHeaders);
 app.use(express.json({ limit: "1mb" }));
+app.use(express.static("./public"));
 
 app.use((req, res, next) => {
   if (req.method !== "POST") next();
@@ -29,7 +29,6 @@ app.use((req, res, next) => {
   }
   next();
 });
-// Your middleware here
 
 app.use("/", dogsRouter); // Do not remove this line
 
