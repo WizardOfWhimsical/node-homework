@@ -37,8 +37,7 @@ const server = app.listen(3000, () =>
   console.log("Server listening on port 3000"),
 );
 app.use((req, res, next) => {
-  throw new NotFoundError("Route not found");
-  // next()
+  next(new NotFoundError("Route not found"));
 });
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
