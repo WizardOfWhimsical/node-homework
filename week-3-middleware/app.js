@@ -37,19 +37,19 @@ const server = app.listen(3000, () =>
   console.log("Server listening on port 3000"),
 );
 app.use((req, res, next) => {
-  throw new NotFoundError("Route not found", req.requestId);
+  throw new NotFoundError("Route not found");
   // next()
 });
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
   if (statusCode >= 400 && statusCode < 500) {
-    console.warn(`WARN: ${err.name}`, err.message);
+    console.warn(`WARN: ${err.name} ${err.message}`);
   } else {
-    console.error(`ERROR: Error`, err.message);
+    console.error(`ERROR: Error ${err.message}`);
   }
   res.status(statusCode).json({
     error: err.message || "Internal Server Error",
-    requestID: err.id,
+    requestId: req.requestId,
   });
 });
 // app.use(serverError);
