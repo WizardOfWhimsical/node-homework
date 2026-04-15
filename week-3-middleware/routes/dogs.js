@@ -12,13 +12,13 @@ router.post("/adopt", (req, res) => {
   const { name, email, dogName } = req.body;
 
   if (!name || !email || !dogName) {
-    throw new ValidationError("Missing required fields", req.requestId);
+    throw new ValidationError("Missing required fields");
   }
 
   const dog = dogs.filter((dog) => dog.name === dogName);
 
   if (!dog[0] || dog[0].status !== "available") {
-    throw new NotFoundError("Dog not found or not available", req.requestId);
+    throw new NotFoundError("Dog not found or not available");
   }
 
   return res.status(201).json({
