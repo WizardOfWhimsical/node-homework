@@ -1,14 +1,10 @@
 const express = require("express");
-// const { v4: uuidv4 } = require("uuid");
 const uniqueId = require("./middleware/uniqueId");
 const loggingOperations = require("./middleware/logOperations");
-// const notFound = require("../middleware/not-found");
-// const serverError = require("../middleware/error-handler");
-const { NotFoundError } = require("./error");
 const securityHeaders = require("./middleware/additionalHeaders");
-// const path = require("path");
-const dogsRouter = require("./routes/dogs");
+const { NotFoundError } = require("./error");
 const { StatusCodes } = require("http-status-codes");
+const dogsRouter = require("./routes/dogs");
 
 const app = express();
 
@@ -36,6 +32,7 @@ app.use("/", dogsRouter); // Do not remove this line
 const server = app.listen(3000, () =>
   console.log("Server listening on port 3000"),
 );
+
 app.use((req, res, next) => {
   next(new NotFoundError("Route not found"));
 });
@@ -51,14 +48,5 @@ app.use((err, req, res, next) => {
     requestId: req.requestId,
   });
 });
-// app.use(serverError);
-// app.use((err, req, res, next) => {
-//   console.log("Need to see this");
-//   if (err) throw new NotFoundError("Route not found");
-//   res.status(404).json({
-//     error: "Route not Found",
-//     requestId: `${req.requestId}`,
-//   });
-// });
 
 module.exports = server;
