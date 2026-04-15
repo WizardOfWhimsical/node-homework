@@ -1,6 +1,6 @@
 const { StatusCodes } = require("http-status-codes");
 
-function errorandlerMiddleware(err, req, res, next) {
+function errorhandlerMiddleware(err, req, res, next) {
   console.error(
     "Internal server error:\n",
     err.constructor.name,
@@ -13,4 +13,4 @@ function errorandlerMiddleware(err, req, res, next) {
       .send("An internal server error occured");
   }
 }
-module.exports = errorandlerMiddleware;
+module.exports = errorhandlerMiddleware;
