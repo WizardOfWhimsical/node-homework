@@ -1,8 +1,8 @@
 const { v4: uuidv4 } = require("uuid");
 
-function uniqueId(req, res, next) {
+function setUniqueId(req, res, next) {
   req.requestId = uuidv4();
   res.setHeader("X-Request-Id", req.requestId);
   next();
 }
-module.exports = uniqueId;
+module.exports = setUniqueId;

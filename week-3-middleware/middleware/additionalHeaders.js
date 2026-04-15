@@ -1,4 +1,4 @@
-function securityHeaders(req, res, next) {
+function setSecurityHeaders(req, res, next) {
   res.set({
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
@@ -7,4 +7,4 @@ function securityHeaders(req, res, next) {
   next();
 }
 
-module.exports = securityHeaders;
+module.exports = setSecurityHeaders;
