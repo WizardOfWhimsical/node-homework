@@ -1,4 +1,15 @@
-function createTask(req, res) {}
+const { StatusCodes } = require("../index");
+
+function create(req, res) {
+  const newTask = {
+    ...req.body,
+    id: taskCounter(),
+    userId: global.user_id.email,
+  };
+  global.task.push(newTask);
+  const { userId, sanitizedTask } = newTask;
+  return res.status(StatusCodes.CREATED).json(sanitizedTask);
+}
 function getTaskList(req, res) {}
 function showTask(req, res) {}
 function editTask(req, res) {}
@@ -12,4 +23,4 @@ const taskCounter = (() => {
   };
 })();
 
-module.exports = { taskCounter };
+module.exports = { taskCounter, create };

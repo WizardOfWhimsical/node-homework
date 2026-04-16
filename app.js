@@ -1,6 +1,4 @@
-const express = require("express");
-const morgan = require("morgan");
-const { StatusCodes, ReasonPhrase } = require("http-status-codes");
+const { StatusCodes, ReasonPhrases, morgan, express } = require("./index");
 const errorHandler = require("./middleware/error-handler");
 const authMiddleware = require("./middleware/auth");
 const notFound = require("./middleware/not-found");
@@ -42,7 +40,7 @@ app.post("/testpost", (req, res) => {
   console.log("post request body:\n", req.body);
   res
     .status(StatusCodes.OK)
-    .json({ message: "Test Post Hit", reason: ReasonPhrase.OK });
+    .json({ message: "Test Post Hit", reason: ReasonPhrases.OK });
 });
 
 app.use("/api/users", useRouter);

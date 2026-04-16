@@ -1,4 +1,4 @@
-const { StatusCodes } = require("http-status-codes");
+const { StatusCodes } = require("../index");
 
 function errorhandlerMiddleware(err, req, res, next) {
   console.error(
