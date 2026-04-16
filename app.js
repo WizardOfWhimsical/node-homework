@@ -1,13 +1,20 @@
 const express = require("express");
 const morgan = require("morgan");
+const { StatusCodes, ReasonPhrase } = require("http-status-codes");
 const errorHandler = require("./middleware/error-handler");
 const notFound = require("./middleware/not-found");
+const useRouter = require("./routes/useRoutes");
+
+global.user_id = null;
+global.users = [];
+global.taskes = [];
 
 const app = express();
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(morgan("dev"));
+
 app.use((req, res, next) => {
   console.log("-----------");
   console.log(
@@ -31,8 +38,12 @@ app.get("/", (req, res) => {
 });
 app.post("/testpost", (req, res) => {
   console.log("post request body:\n", req.body);
-  res.status(200).json({ message: "you made it" });
+  res
+    .status(StatusCodes.OK)
+    .json({ message: "Test Post Hit", reason: ReasonPhrase.OK });
 });
+
+app.use("/api/users", useRouter);
 
 app.use(notFound);
 app.use(errorHandler);

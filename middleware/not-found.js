@@ -1,9 +1,12 @@
 const { StatusCodes } = require("http-status-codes");
 
-function notFound(req, res) {
+function notFound(err, req, res, next) {
   console.log("Erroring, Not found page:\n", req.url);
   return res
     .status(StatusCodes.NOT_FOUND)
-    .send(`You can't do a ${req.method} for ${req.url}`);
+    .json({
+      error: `You can't do a ${req.method} for ${req.url}`,
+      requestId: `${req.requestId}`,
+    });
 }
 module.exports = notFound;
