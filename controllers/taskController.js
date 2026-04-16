@@ -16,7 +16,7 @@ function editTask(req, res) {}
 
 function deleteTask(req, res) {
   const taskToFind = parseInt(req.params?.id);
-  if (!taskToFind || typeof taskToFind === "number") {
+  if (!taskToFind) {
     res.status(StatusCodes.BAD_REQUEST).json({
       message: "The asked for ID is not valid",
       error: "Invalid Request",
@@ -32,9 +32,9 @@ function deleteTask(req, res) {
     });
   }
   //ask about this in the morning. i think this is supposed to be destructured
-  const task = { userId, ...global.tasks[taskIndex] };
+  const { userId, ...task } = global.tasks[taskIndex];
   global.tasks.splice(taskIndex, 1);
-  res.status(StatusCodes.OK).json(task);
+  return res.status(StatusCodes.OK).json(task);
 }
 
 const taskCounter = (() => {
