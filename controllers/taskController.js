@@ -27,7 +27,17 @@ isCompleted: boolean
 }
  */
 
-function getTaskList(req, res) {}
+function getTaskList(req, res) {
+  const taskList = global.tasks.filter(
+    (task) => task.userId === global.user_id.userId,
+  );
+  let filteredTaskList = [];
+  for (let task of taskList) {
+    let { userId, ...sanitized } = task;
+    filteredTaskList.push(sanitized);
+  }
+  res.status(StatusCodes.OK).json({ tasks: filteredTaskList });
+}
 function showTask(req, res) {}
 function editTask(req, res) {}
 
