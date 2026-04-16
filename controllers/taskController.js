@@ -10,6 +10,23 @@ function create(req, res) {
   const { userId, sanitizedTask } = newTask;
   return res.status(StatusCodes.CREATED).json(sanitizedTask);
 }
+//going to make global an array of objs that connect via an id. having a key/value tasks=[] in user
+/*
+.users = []{
+userId: number
+email: string
+name: string
+password: string
+}
+.user_id = global.users[0]
+.tasks[]{
+taskId: number
+userId: number (links taks to user)
+title: string
+isCompleted: boolean
+}
+ */
+
 function getTaskList(req, res) {}
 function showTask(req, res) {}
 function editTask(req, res) {}
