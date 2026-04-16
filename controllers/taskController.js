@@ -28,15 +28,22 @@ isCompleted: boolean
  */
 
 function getTaskList(req, res) {
+  if (!global.user_Id) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({
+      message: "No user logged in",
+      error: ReasonPhrases.UNAUTHORIZED,
+    });
+  }
   const taskList = global.tasks.filter(
     (task) => task.userId === global.user_id.userId,
   );
+  //could chain methods, but its not as declairitive
   let filteredTaskList = [];
   for (let task of taskList) {
     let { userId, ...sanitized } = task;
     filteredTaskList.push(sanitized);
   }
-  res.status(StatusCodes.OK).json({ tasks: filteredTaskList });
+  return res.status(StatusCodes.OK).json({ tasks: filteredTaskList });
 }
 function showTask(req, res) {}
 function editTask(req, res) {}
@@ -72,4 +79,4 @@ const taskCounter = (() => {
   };
 })();
 
-module.exports = { taskCounter, create };
+module.exports = { taskCounter, create, getTaskList };
