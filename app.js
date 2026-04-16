@@ -2,8 +2,10 @@ const express = require("express");
 const morgan = require("morgan");
 const { StatusCodes, ReasonPhrase } = require("http-status-codes");
 const errorHandler = require("./middleware/error-handler");
+const authMiddleware = require("./middleware/auth");
 const notFound = require("./middleware/not-found");
 const useRouter = require("./routes/useRoutes");
+const taskRouter = require("./routes/taskRoutes");
 
 global.user_id = null;
 global.users = [];
@@ -44,6 +46,7 @@ app.post("/testpost", (req, res) => {
 });
 
 app.use("/api/users", useRouter);
+app.use("/api/taskes", authMiddleware, taskRouter);
 
 app.use(notFound);
 app.use(errorHandler);
