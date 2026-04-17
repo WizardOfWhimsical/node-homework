@@ -26,7 +26,7 @@ title: string
 isCompleted: boolean
 }
  */
-
+//if i do the global check here at entry i shouldnt have to do it every time
 function getTaskList(req, res) {
   if (!global.user_Id) {
     return res.status(StatusCodes.UNAUTHORIZED).json({
@@ -40,12 +40,17 @@ function getTaskList(req, res) {
   //could chain methods, but its not as declairitive
   let filteredTaskList = [];
   for (let task of taskList) {
-    let { userId, ...sanitized } = task;
+    const { userId, ...sanitized } = task;
     filteredTaskList.push(sanitized);
   }
   return res.status(StatusCodes.OK).json({ tasks: filteredTaskList });
 }
-function showTask(req, res) {}
+
+function showTask(req, res) {
+  /**
+  this one will be more difficult because we want to match partials will use .startsWith() or regEx */
+}
+
 function editTask(req, res) {
   const taskIndex = getValidTaskIndex(req, res);
   if (typeof taskIndex !== "number") return taskIndex;
