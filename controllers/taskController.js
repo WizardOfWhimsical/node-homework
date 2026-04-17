@@ -51,7 +51,7 @@ function editTask(req, res) {}
 function deleteTask(req, res) {
   const taskToFind = parseInt(req.params?.id);
   if (!taskToFind) {
-    res.status(StatusCodes.BAD_REQUEST).json({
+    return res.status(StatusCodes.BAD_REQUEST).json({
       message: "The asked for ID is not valid",
       error: "Invalid Request",
     });
