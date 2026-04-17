@@ -34,16 +34,18 @@ function getTaskList(req, res) {
       error: ReasonPhrases.UNAUTHORIZED,
     });
   }
-  const taskList = global.tasks.filter(
-    (task) => task.userId === global.user_id.userId,
-  );
-  //could chain methods, but its not as declairitive
-  let filteredTaskList = [];
-  for (let task of taskList) {
-    const { userId, ...sanitized } = task;
-    filteredTaskList.push(sanitized);
-  }
-  return res.status(StatusCodes.OK).json({ tasks: filteredTaskList });
+  const sanitizedList = global.tasks
+    .filter(
+      (task) =>
+        task.userId.trim().toLowerCase() ===
+        global.user_id.userId.trim().toLowerCase(),
+    )
+    .map((task) => {
+      const { userId, ...sanitized } = task;
+      return sanitized;
+    });
+
+  return res.status(StatusCodes.OK).json({ tasks: sanitizedList });
 }
 
 function showTask(req, res) {
