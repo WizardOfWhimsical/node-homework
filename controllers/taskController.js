@@ -10,23 +10,7 @@ function create(req, res) {
   const { userId, sanitizedTask } = newTask;
   return res.status(StatusCodes.CREATED).json(sanitizedTask);
 }
-//going to make global an array of objs that connect via an id. having a key/value tasks=[] in user
-/*
-.users = []{
-userId: number
-email: string
-name: string
-password: string
-}
-.user_id = global.users[0]
-.tasks[]{
-taskId: number
-userId: number (links taks to user)
-title: string
-isCompleted: boolean
-}
- */
-//if i do the global check here at entry i shouldnt have to do it every time
+
 function getTaskList(req, res) {
   if (!global.user_Id) {
     return res.status(StatusCodes.UNAUTHORIZED).json({
@@ -35,11 +19,12 @@ function getTaskList(req, res) {
     });
   }
   const sanitizedList = global.tasks
-    .filter(
-      (task) =>
+    .filter((task) => {
+      return (
         task.userId.trim().toLowerCase() ===
-        global.user_id.userId.trim().toLowerCase(),
-    )
+        global.user_id.userId.trim().toLowerCase()
+      );
+    })
     .map((task) => {
       const { userId, ...sanitized } = task;
       return sanitized;
@@ -49,8 +34,29 @@ function getTaskList(req, res) {
 }
 
 function showTask(req, res) {
-  /**
-  this one will be more difficult because we want to match partials will use .startsWith() or regEx */
+  const searchParam = req.query.search.trim().toLowerCase();
+  if (!searchParam) {
+    res.status(StatusCodes.BAD_REQUEST).json({
+      message: "Search request was empty",
+      errror: ReasonPhrases.BAD_REQUEST,
+    });
+  }
+  const sanitizedSearchedTaskList = global.tasks.filter((task) => {
+    return (
+      task.userId.trim().toLowerCase() ===
+      global.user_id.userId.trim().toLowerCase()
+    )
+      .filter((task) => {
+        return task.title.toLowerCase().startsWith(searchParam);
+      })
+      .map((task) => {
+        const { userId, ...sanitized } = task;
+        return sanitized;
+      });
+  });
+  res
+    .status(StatusCodes.OK)
+    .json({ message: "Search successful", task: sanitizedSearchedTaskList });
 }
 
 function editTask(req, res) {
@@ -80,6 +86,7 @@ const taskCounter = (() => {
     return lastTaskNumber;
   };
 })();
+
 function getValidTaskIndex(req, res) {
   const taskToFind = parseInt(req.params?.id);
   if (!taskToFind) {
@@ -99,4 +106,27 @@ function getValidTaskIndex(req, res) {
   }
   return taskIndex;
 }
-module.exports = { taskCounter, create, getTaskList, editTask, deleteTask };
+module.exports = {
+  taskCounter,
+  create,
+  getTaskList,
+  editTask,
+  deleteTask,
+  showTask,
+};
+
+/*
+.users = []{
+userId: number
+email: string
+name: string
+password: string
+}
+.user_id = global.users[0]
+.tasks[]{
+taskId: number
+userId: number (links taks to user)
+title: string
+isCompleted: boolean
+}
+ */
