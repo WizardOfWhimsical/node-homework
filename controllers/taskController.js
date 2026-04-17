@@ -46,9 +46,34 @@ function getTaskList(req, res) {
   return res.status(StatusCodes.OK).json({ tasks: filteredTaskList });
 }
 function showTask(req, res) {}
-function editTask(req, res) {}
+function editTask(req, res) {
+  const taskIndex = getValidTaskIndex(req, res);
+  if (typeof taskIndex !== "number") return taskIndex;
+  //think about running a check on body key here
+  const { editedTask } = req.body;
+  global.tasks[taskIndex] = editedTask;
+  const { userId, ...updatedTask } = global.tasks[taskIndex];
+  return res
+    .status(StatusCodes.OK)
+    .json({ message: "Edit Successful", task: updatedTask });
+}
 
 function deleteTask(req, res) {
+  const taskIndex = getValidTaskIndex(req, res);
+  if (typeof taskIndex !== "number") return taskIndex;
+  const { userId, ...task } = global.tasks[taskIndex];
+  global.tasks.splice(taskIndex, 1);
+  return res.status(StatusCodes.OK).json(task);
+}
+
+const taskCounter = (() => {
+  let lastTaskNumber = 0;
+  return () => {
+    lastTaskNumber += 1;
+    return lastTaskNumber;
+  };
+})();
+function getValidTaskIndex(req, res) {
   const taskToFind = parseInt(req.params?.id);
   if (!taskToFind) {
     return res.status(StatusCodes.BAD_REQUEST).json({
@@ -65,18 +90,6 @@ function deleteTask(req, res) {
       error: ReasonPhrases.NOT_FOUND,
     });
   }
-  //ask about this in the morning. i think this is supposed to be destructured
-  const { userId, ...task } = global.tasks[taskIndex];
-  global.tasks.splice(taskIndex, 1);
-  return res.status(StatusCodes.OK).json(task);
+  return taskIndex;
 }
-
-const taskCounter = (() => {
-  let lastTaskNumber = 0;
-  return () => {
-    lastTaskNumber += 1;
-    return lastTaskNumber;
-  };
-})();
-
-module.exports = { taskCounter, create, getTaskList };
+module.exports = { taskCounter, create, getTaskList, editTask, deleteTask };
