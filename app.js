@@ -1,4 +1,5 @@
 const { StatusCodes, ReasonPhrases, morgan, express } = require("./index");
+const { debuggerLogger } = require("./middleware/logger");
 const errorHandler = require("./middleware/error-handler");
 const authMiddleware = require("./middleware/auth");
 const notFound = require("./middleware/not-found");
@@ -15,8 +16,7 @@ const port = process.env.PORT || 3000;
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(morgan("dev"));
-
-app.use();
+app.use(debuggerLogger);
 
 app.get("/", (req, res) => {
   res.send("Hello, World!");
