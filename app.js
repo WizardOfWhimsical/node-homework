@@ -16,22 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(morgan("dev"));
 
-app.use((req, res, next) => {
-  console.log("-----------");
-  console.log(
-    "Middleware to log request:\n",
-    "\tMethod:",
-    req.method,
-    "\n",
-    "\tPath:",
-    req.path,
-    "\n",
-    "\tQuery:",
-    req.query,
-  );
-  console.log("-----------");
-  next();
-});
+app.use();
 
 app.get("/", (req, res) => {
   res.send("Hello, World!");
