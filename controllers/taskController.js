@@ -5,6 +5,7 @@ function createTask(req, res) {
     ...req.body,
     id: taskCounter(),
     userId: global.user_id.email,
+    isCompleted: req.body.isCompleted ?? false,
   };
   global.tasks.push(newTask);
   const { userId, ...sanitizedTask } = newTask;
