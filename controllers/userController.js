@@ -1,12 +1,19 @@
-const {
-  StatusCodes,
-  // getReasonPhrase,
-  // ReasonPhrase,
-} = require("http-status-codes");
+const { StatusCodes } = require("http-status-codes");
 
 function register(req, res) {
-  console.log("Register Request Body\n", req.body);
   const newUser = { ...req.body, isLoggedIn: true };
+
+  for (let user of global.users) {
+    if (newUser.email === user.email) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({
+          message: "Email already used to create an account",
+          error: "Bad Request",
+        });
+    }
+  }
+
   global.users.push(newUser);
   global.user_id = newUser;
   console.log("Register New User\n", newUser);
