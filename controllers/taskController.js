@@ -1,18 +1,18 @@
 const { StatusCodes, ReasonPhrases } = require("../index");
 
-function create(req, res) {
+function createTask(req, res) {
   const newTask = {
     ...req.body,
     id: taskCounter(),
     userId: global.user_id.email,
   };
-  global.task.push(newTask);
-  const { userId, sanitizedTask } = newTask;
+  global.tasks.push(newTask);
+  const { userId, ...sanitizedTask } = newTask;
   return res.status(StatusCodes.CREATED).json(sanitizedTask);
 }
 
 function getTaskList(req, res) {
-  if (!global.user_Id) {
+  if (!global.user_id) {
     return res.status(StatusCodes.UNAUTHORIZED).json({
       message: "No user logged in",
       error: ReasonPhrases.UNAUTHORIZED,
@@ -22,7 +22,7 @@ function getTaskList(req, res) {
     .filter((task) => {
       return (
         task.userId.trim().toLowerCase() ===
-        global.user_id.userId.trim().toLowerCase()
+        global.user_id.email.trim().toLowerCase()
       );
     })
     .map((task) => {
@@ -46,7 +46,7 @@ function showTask(req, res) {
     .filter((task) => {
       return (
         task.userId.trim().toLowerCase() ===
-        global.user_id.userId.trim().toLowerCase()
+        global.user_id.email.trim().toLowerCase()
       );
     })
     .filter((task) => {
@@ -112,7 +112,7 @@ function getValidTaskIndex(req, res) {
 }
 module.exports = {
   taskCounter,
-  create,
+  createTask,
   getTaskList,
   editTask,
   deleteTask,
