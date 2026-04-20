@@ -41,19 +41,22 @@ function showTask(req, res) {
       errror: ReasonPhrases.BAD_REQUEST,
     });
   }
-  const sanitizedSearchedTaskList = global.tasks.filter((task) => {
-    return (
-      task.userId.trim().toLowerCase() ===
-      global.user_id.userId.trim().toLowerCase()
-    )
-      .filter((task) => {
-        return task.title.toLowerCase().startsWith(searchParam);
-      })
-      .map((task) => {
-        const { userId, ...sanitized } = task;
-        return sanitized;
-      });
-  });
+
+  const sanitizedSearchedTaskList = global.tasks
+    .filter((task) => {
+      return (
+        task.userId.trim().toLowerCase() ===
+        global.user_id.userId.trim().toLowerCase()
+      );
+    })
+    .filter((task) => {
+      return task.title.toLowerCase().startsWith(searchParam);
+    })
+    .map((task) => {
+      const { userId, ...sanitized } = task;
+      return sanitized;
+    });
+  console.log(sanitizedSearchedTaskList);
   res
     .status(StatusCodes.OK)
     .json({ message: "Search successful", task: sanitizedSearchedTaskList });
@@ -61,6 +64,7 @@ function showTask(req, res) {
 
 function editTask(req, res) {
   const taskIndex = getValidTaskIndex(req, res);
+  //we return taskInded because it hadles our errors
   if (typeof taskIndex !== "number") return taskIndex;
   //think about running a check on body key here
   const { editedTask } = req.body;
