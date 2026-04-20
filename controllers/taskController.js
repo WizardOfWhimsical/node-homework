@@ -1,6 +1,13 @@
 const { StatusCodes, ReasonPhrases } = require("../index");
 
 function createTask(req, res) {
+  if (!req.body) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message: "Your Request has no information",
+      error: "Bad request",
+    });
+  }
+
   const newTask = {
     ...req.body,
     id: taskCounter(),
@@ -67,7 +74,14 @@ function editTask(req, res) {
   const taskIndex = getValidTaskIndex(req, res);
   //we return taskInded because it hadles our errors
   if (typeof taskIndex !== "number") return taskIndex;
-  //think about running a check on body key here
+
+  if (!req.body) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message: "Your Request has no information",
+      error: "Bad request",
+    });
+  }
+
   const { editedTask } = req.body;
   global.tasks[taskIndex] = editedTask;
   const { userId, ...updatedTask } = global.tasks[taskIndex];

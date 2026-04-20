@@ -1,16 +1,21 @@
 const { StatusCodes } = require("http-status-codes");
 
 function register(req, res) {
+  if (!req.body) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message: "Your Request has no information",
+      error: "Bad request",
+    });
+  }
+
   const newUser = { ...req.body, isLoggedIn: true };
 
   for (let user of global.users) {
     if (newUser.email === user.email) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({
-          message: "Email already used to create an account",
-          error: "Bad Request",
-        });
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: "Email already used to create an account",
+        error: "Bad Request",
+      });
     }
   }
 
@@ -25,6 +30,12 @@ function register(req, res) {
 }
 
 function logon(req, res) {
+  if (!req.body) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message: "Your Request has no information",
+      error: "Bad request",
+    });
+  }
   const { email, password } = req.body;
   const user = global.users.find((user) => user.email === email);
 
