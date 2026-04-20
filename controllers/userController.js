@@ -1,14 +1,17 @@
 const { StatusCodes } = require("http-status-codes");
+const { userSchema } = require("../validation/userSchema");
 
 function register(req, res) {
-  if (!req.body) {
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      message: "Your Request has no information",
-      error: "Bad request",
-    });
+  if (!req.body) req.body = {};
+  const { error, value } = userSchema.validate(req.body, { abortEarly: false });
+
+  if (error) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "Validation Error", error: error.message });
   }
 
-  const newUser = { ...req.body, isLoggedIn: true };
+  const newUser = { ...value, isLoggedIn: true };
 
   for (let user of global.users) {
     if (newUser.email === user.email) {
@@ -21,7 +24,7 @@ function register(req, res) {
 
   global.users.push(newUser);
   global.user_id = newUser;
-  console.log("Register New User\n", newUser);
+  // console.log("Register New User\n", newUser);
   delete req.body.password;
   res.status(StatusCodes.CREATED).json({
     ...req.body,

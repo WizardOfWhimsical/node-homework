@@ -1,15 +1,18 @@
 const { StatusCodes, ReasonPhrases } = require("../index");
+const { taskSchema, patchTaskSchema } = require("../validation/taskSchema");
 
 function createTask(req, res) {
-  if (!req.body) {
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      message: "Your Request has no information",
-      error: "Bad request",
-    });
+  if (!req.body) req.body = {};
+  const { error, value } = taskSchema.validate(req.body, { abortEarly: false });
+
+  if (error) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "Validation Error", error: error.message });
   }
 
   const newTask = {
-    ...req.body,
+    ...value,
     id: taskCounter(),
     userId: global.user_id.email,
     isCompleted: req.body.isCompleted ?? false,
@@ -74,15 +77,18 @@ function editTask(req, res) {
   const taskIndex = getValidTaskIndex(req, res);
   //we return taskInded because it hadles our errors
   if (typeof taskIndex !== "number") return taskIndex;
+  if (!req.body) req.body = {};
+  const { error, value } = patchTaskSchema.validate(req.body, {
+    abortEarly: false,
+  });
 
-  if (!req.body) {
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      message: "Your Request has no information",
-      error: "Bad request",
-    });
+  if (error) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "Validation Error", error: error.message });
   }
 
-  const { editedTask } = req.body;
+  const { editedTask } = value;
   global.tasks[taskIndex] = editedTask;
   const { userId, ...updatedTask } = global.tasks[taskIndex];
   return res
