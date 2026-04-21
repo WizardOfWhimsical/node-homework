@@ -59,7 +59,7 @@ async function register(req, res) {
   }
 }
 
-function logon(req, res) {
+async function logon(req, res) {
   if (!req.body) {
     return res.status(StatusCodes.BAD_REQUEST).json({
       message: "Your Request has no information",
@@ -75,22 +75,20 @@ function logon(req, res) {
       message: "Please Register an Account",
     });
   }
-
-  if (password !== user.password) {
+  const compairison = await comparePassword(password, user.password);
+  if (!compairison) {
     return res.status(StatusCodes.UNAUTHORIZED).json({
       message: "Authentication Failed",
     });
-    // } else if (password === user.password) {
-  } else if (comparePassword(password, user.password)) {
-    console.log("login successful");
-    user.isLoggedIn = true;
-    global.user_id = user;
-    res.status(StatusCodes.OK).json({
-      name: user.name,
-      email: user.email,
-      message: "logged in",
-    });
   }
+
+  user.isLoggedIn = true;
+  global.user_id = user;
+  res.status(StatusCodes.OK).json({
+    name: user.name,
+    email: user.email,
+    message: "logged in",
+  });
 }
 
 function logoff(req, res) {

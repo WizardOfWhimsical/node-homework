@@ -1,7 +1,7 @@
 const { StatusCodes, ReasonPhrases } = require("../index");
 const { taskSchema, patchTaskSchema } = require("../validation/taskSchema");
 
-function createTask(req, res) {
+function create(req, res) {
   if (!req.body) req.body = {};
   const { error, value } = taskSchema.validate(req.body, { abortEarly: false });
 
@@ -15,7 +15,7 @@ function createTask(req, res) {
     ...value,
     id: taskCounter(),
     userId: global.user_id.email,
-    isCompleted: !req.body.isCompleted,
+    isCompleted: value.isCompleted ?? false,
   };
   global.tasks.push(newTask);
   const { userId, ...sanitizedTask } = newTask;
@@ -132,8 +132,7 @@ function getValidTaskIndex(req, res) {
   return taskIndex;
 }
 module.exports = {
-  taskCounter,
-  createTask,
+  create,
   getTaskList,
   editTask,
   deleteTask,
