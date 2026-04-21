@@ -42,7 +42,7 @@ function index(req, res) {
       return sanitized;
     });
 
-  if (sanitizedList.legnth === 0) {
+  if (sanitizedList.length === 0) {
     return res.status(StatusCodes.NOT_FOUND);
   }
 
@@ -50,32 +50,13 @@ function index(req, res) {
 }
 
 function show(req, res) {
-  const searchParam = req.query.search.trim().toLowerCase();
-  if (!searchParam) {
-    res.status(StatusCodes.BAD_REQUEST).json({
-      message: "Search request was empty",
-      errror: ReasonPhrases.BAD_REQUEST,
-    });
-  }
+  const taskIndex = getValidTaskIndex(req, res);
+  //we return taskInded because it hadles our errors
+  if (typeof taskIndex !== "number") return taskIndex;
 
-  const sanitizedSearchedTaskList = global.tasks
-    .filter((task) => {
-      return (
-        task.userId.trim().toLowerCase() ===
-        global.user_id.email.trim().toLowerCase()
-      );
-    })
-    .filter((task) => {
-      return task.title.toLowerCase().startsWith(searchParam);
-    })
-    .map((task) => {
-      const { userId, ...sanitized } = task;
-      return sanitized;
-    });
-  console.log(sanitizedSearchedTaskList);
-  res
-    .status(StatusCodes.OK)
-    .json({ message: "Search successful", task: sanitizedSearchedTaskList });
+  const { userId, ...sanitizedTask } = global.tasks[taskIndex];
+
+  res.status(StatusCodes.OK).json(sanitizedTask);
 }
 
 function update(req, res) {
