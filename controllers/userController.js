@@ -28,16 +28,19 @@ function register(req, res) {
       .json({ message: "Validation Error", error: error.message });
   }
 
-  const newUser = { ...value, isLoggedIn: true };
-
   for (let user of global.users) {
-    if (newUser.email === user.email) {
+    if (value.email === user.email) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         message: "Email already used to create an account",
         error: "Bad Request",
       });
     }
   }
+  const newUser = {
+    ...value,
+    password: hashPassword(value.password),
+    isLoggedIn: true,
+  };
 
   global.users.push(newUser);
   global.user_id = newUser;
@@ -70,7 +73,8 @@ function logon(req, res) {
     return res.status(StatusCodes.UNAUTHORIZED).json({
       message: "Authentication Failed",
     });
-  } else if (password === user.password) {
+    // } else if (password === user.password) {
+  } else if (comparePassword(password, user.password)) {
     console.log("login successful");
     user.isLoggedIn = true;
     global.user_id = user;
