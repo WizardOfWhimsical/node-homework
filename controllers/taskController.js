@@ -61,7 +61,7 @@ function show(req, res) {
 
 function update(req, res) {
   const taskIndex = getValidTaskIndex(req, res);
-  //we return taskInded because it hadles our errors
+
   if (taskIndex < 0) return;
   if (!req.body) req.body = {};
   const { error, value } = patchTaskSchema.validate(req.body, {
@@ -74,8 +74,7 @@ function update(req, res) {
       .json({ message: "Validation Error", error: error.message });
   }
 
-  const { editedTask } = value;
-  global.tasks[taskIndex].title = editedTask;
+  Object.assign(global.tasks[taskIndex], value);
   const { userId, ...updatedTask } = global.tasks[taskIndex];
   return res
     .status(StatusCodes.OK)
@@ -101,19 +100,21 @@ const taskCounter = (() => {
 function getValidTaskIndex(req, res) {
   const taskToFind = parseInt(req.params?.id);
   if (!taskToFind) {
-    return res.status(StatusCodes.BAD_REQUEST).json({
+    res.status(StatusCodes.BAD_REQUEST).json({
       message: "The asked for ID is not valid",
       error: "Invalid Request",
     });
+    return -1;
   }
   const taskIndex = global.tasks.findIndex(
     (task) => task.id === taskToFind && task.userId === global.user_id.email,
   );
   if (taskIndex === -1) {
-    return res.status(StatusCodes.NOT_FOUND).json({
+    res.status(StatusCodes.NOT_FOUND).json({
       message: "That task was not found",
       error: ReasonPhrases.NOT_FOUND,
     });
+    return -1;
   }
   return taskIndex;
 }
