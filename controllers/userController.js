@@ -18,7 +18,7 @@ async function comparePassword(inputPassword, storedHash) {
   return crypto.timingSafeEqual(keyBuffer, derivedKey);
 }
 
-function register(req, res) {
+async function register(req, res) {
   if (!req.body) req.body = {};
   const { error, value } = userSchema.validate(req.body, { abortEarly: false });
 
@@ -36,20 +36,27 @@ function register(req, res) {
       });
     }
   }
-  const newUser = {
-    ...value,
-    password: hashPassword(value.password),
-    isLoggedIn: true,
-  };
 
-  global.users.push(newUser);
-  global.user_id = newUser;
-  // console.log("Register New User\n", newUser);
-  delete req.body.password;
-  res.status(StatusCodes.CREATED).json({
-    ...req.body,
-    message: "Account Created",
-  });
+  try {
+    const hashedPassword = await hashPassword(value.password);
+    const newUser = {
+      ...value,
+      password: hashedPassword,
+      isLoggedIn: true,
+    };
+    global.users.push(newUser);
+    global.user_id = newUser;
+  } catch (error) {
+    return res
+      .status(StatusCodes.INSUFFICIENT_STORAGE)
+      .json({ message: "Problem hashing password", error: error.message });
+  } finally {
+    delete req.body.password;
+    res.status(StatusCodes.CREATED).json({
+      ...req.body,
+      message: "Account Created",
+    });
+  }
 }
 
 function logon(req, res) {
