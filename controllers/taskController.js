@@ -22,13 +22,14 @@ function create(req, res) {
   return res.status(StatusCodes.CREATED).json(sanitizedTask);
 }
 
-function getTaskList(req, res) {
+function index(req, res) {
   if (!global.user_id) {
     return res.status(StatusCodes.UNAUTHORIZED).json({
       message: "No user logged in",
       error: ReasonPhrases.UNAUTHORIZED,
     });
   }
+
   const sanitizedList = global.tasks
     .filter((task) => {
       return (
@@ -41,10 +42,14 @@ function getTaskList(req, res) {
       return sanitized;
     });
 
-  return res.status(StatusCodes.OK).json({ tasks: sanitizedList });
+  if (sanitizedList.legnth === 0) {
+    return res.status(StatusCodes.NOT_FOUND);
+  }
+
+  return res.status(StatusCodes.OK).json(sanitizedList);
 }
 
-function showTask(req, res) {
+function show(req, res) {
   const searchParam = req.query.search.trim().toLowerCase();
   if (!searchParam) {
     res.status(StatusCodes.BAD_REQUEST).json({
@@ -73,7 +78,7 @@ function showTask(req, res) {
     .json({ message: "Search successful", task: sanitizedSearchedTaskList });
 }
 
-function editTask(req, res) {
+function update(req, res) {
   const taskIndex = getValidTaskIndex(req, res);
   //we return taskInded because it hadles our errors
   if (typeof taskIndex !== "number") return taskIndex;
@@ -133,10 +138,10 @@ function getValidTaskIndex(req, res) {
 }
 module.exports = {
   create,
-  getTaskList,
-  editTask,
+  index,
+  update,
   deleteTask,
-  showTask,
+  show,
 };
 
 /*
