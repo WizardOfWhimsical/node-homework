@@ -52,7 +52,7 @@ function index(req, res) {
 function show(req, res) {
   const taskIndex = getValidTaskIndex(req, res);
   //we return taskInded because it hadles our errors
-  if (taskIndex > 0) return;
+  if (taskIndex < 0) return;
 
   const { userId, ...sanitizedTask } = global.tasks[taskIndex];
 
@@ -62,7 +62,7 @@ function show(req, res) {
 function update(req, res) {
   const taskIndex = getValidTaskIndex(req, res);
   //we return taskInded because it hadles our errors
-  if (taskIndex > 0) return;
+  if (taskIndex < 0) return;
   if (!req.body) req.body = {};
   const { error, value } = patchTaskSchema.validate(req.body, {
     abortEarly: false,
@@ -75,7 +75,7 @@ function update(req, res) {
   }
 
   const { editedTask } = value;
-  global.tasks[taskIndex] = editedTask;
+  global.tasks[taskIndex].title = editedTask;
   const { userId, ...updatedTask } = global.tasks[taskIndex];
   return res
     .status(StatusCodes.OK)
@@ -84,7 +84,7 @@ function update(req, res) {
 
 function deleteTask(req, res) {
   const taskIndex = getValidTaskIndex(req, res);
-  if (taskIndex > 0) return;
+  if (taskIndex < 0) return;
   const { userId, ...task } = global.tasks[taskIndex];
   global.tasks.splice(taskIndex, 1);
   return res.status(StatusCodes.OK).json(task);
