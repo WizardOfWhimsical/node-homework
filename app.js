@@ -29,7 +29,7 @@ app.post("/testpost", (req, res) => {
 });
 
 app.use("/api/users", useRouter);
-app.use("/api/taskes", authMiddleware, taskRouter);
+app.use("/api/tasks", authMiddleware, taskRouter);
 
 app.use(notFound);
 app.use(errorHandler);
