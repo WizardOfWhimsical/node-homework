@@ -1,4 +1,9 @@
-const { StatusCodes, ReasonPhrases, morgan, express } = require("./index");
+const {
+  // StatusCodes,
+  //  ReasonPhrases,
+  morgan,
+  express,
+} = require("./index");
 const { requestLogger, responseLogger } = require("./middleware/logger");
 const errorHandler = require("./middleware/error-handler");
 const authMiddleware = require("./middleware/auth");
@@ -18,15 +23,15 @@ app.use(express.json());
 app.use(morgan("dev"));
 app.use(requestLogger, responseLogger);
 
-app.get("/", (req, res) => {
-  res.send("Hello, World!");
-});
-app.post("/testpost", (req, res) => {
-  console.log("post request body:\n", req.body);
-  res
-    .status(StatusCodes.OK)
-    .json({ message: "Test Post Hit", reason: ReasonPhrases.OK });
-});
+// app.get("/", (req, res) => {
+//   res.send("Hello, World!");
+// });
+// app.post("/testpost", (req, res) => {
+//   console.log("post request body:\n", req.body);
+//   res
+//     .status(StatusCodes.OK)
+//     .json({ message: "Test Post Hit", reason: ReasonPhrases.OK });
+// });
 
 app.use("/api/users", useRouter);
 app.use("/api/tasks", authMiddleware, taskRouter);
