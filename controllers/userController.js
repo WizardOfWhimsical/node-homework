@@ -1,5 +1,6 @@
-const { StatusCodes } = require("http-status-codes");
+const { StatusCodes } = require("../index");
 const { userSchema } = require("../validation/userSchema");
+const pool = require("../db/db-pool");
 
 const crypto = require("crypto");
 const util = require("util");
@@ -67,7 +68,10 @@ async function logon(req, res) {
     });
   }
   const { email, password } = req.body;
-  const user = global.users.find((user) => user.email === email);
+  // const user = global.users.find((user) => user.email === email);
+  const user = await pool.query("SELECT * FROM users WHERE email = $1", [
+    email,
+  ]);
 
   if (!user) {
     console.log("user not found");
