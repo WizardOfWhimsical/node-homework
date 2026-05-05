@@ -29,36 +29,15 @@ async function register(req, res, next) {
       .json({ message: "Validation Error", error: error.message });
   }
 
-  // for (let user of global.users) {
-  //   if (value.email === user.email) {
-  //     return res.status(StatusCodes.BAD_REQUEST).json({
-  //       message: "Email already used to create an account",
-  //       error: "Bad Request",
-  //     });
-  //   }
-  // }
   let user = null;
   try {
     const hashedPassword = await hashPassword(value.password);
-    try {
-      user = await pool.query(
-        "INSERT INTO users(email,name,hashed_password VALUES($1,$2,$3) RETURNING id, email, name",
-        [value.email, value.name, hashedPassword],
-      );
-    } catch (error) {
-      if (error.code === "23505") {
-        res.status(StatusCodes.BAD_REQUEST).json({ error });
-        return;
-      }
-      return next(error);
-    }
-    const newUser = {
-      ...value,
-      password: hashedPassword,
-      isLoggedIn: true,
-    };
-    global.users.push(newUser);
-    global.user_id = newUser;
+    user = await pool.query(
+      "INSERT INTO users(email,name,hashed_password VALUES($1,$2,$3) RETURNING id, email, name",
+      [value.email, value.name, hashedPassword],
+    );
+    console.log("Registered", user);
+    global.user_id = user.id;
   } catch (error) {
     return res
       .status(StatusCodes.INSUFFICIENT_STORAGE)
@@ -66,10 +45,12 @@ async function register(req, res, next) {
   } finally {
     delete req.body.password;
     res.status(StatusCodes.CREATED).json({
-      ...req.body,
+      ...user,
+      isLoggedIn: true,
       message: "Account Created",
     });
   }
+  next(error);
 }
 
 async function logon(req, res) {
