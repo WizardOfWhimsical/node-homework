@@ -1,4 +1,4 @@
-const { morgan, express } = require("./index");
+const { morgan, express, StatusCodes } = require("./index");
 const { requestLogger, responseLogger } = require("./middleware/logger");
 const errorHandler = require("./middleware/error-handler");
 const authMiddleware = require("./middleware/auth");
@@ -34,7 +34,7 @@ app.use("/api/tasks", authMiddleware, taskRouter);
 app.get("/health", async (req, res) => {
   try {
     await pool.query("SELECT 1");
-    res.status(200).json({ status: "OK", db: "connected" });
+    res.status(StatusCodes.OK).json({ status: "OK", db: "connected" });
   } catch (error) {
     console.error("Error in health check:", error);
     res.status(500).json({ status: "Error" });
