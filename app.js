@@ -3,7 +3,7 @@ const { requestLogger, responseLogger } = require("./middleware/logger");
 const errorHandler = require("./middleware/error-handler");
 const authMiddleware = require("./middleware/auth");
 const notFound = require("./middleware/not-found");
-const pool = require("./db/db-pool");
+const pool = require("./db/pg-pool");
 const useRouter = require("./routes/useRoutes");
 const taskRouter = require("./routes/taskRoutes");
 
