@@ -77,6 +77,7 @@ async function logon(req, res) {
     });
   }
   const compairison = await comparePassword(password, user.hashed_password);
+
   console.log(
     "Password comparison result:\n",
     compairison,
@@ -85,6 +86,7 @@ async function logon(req, res) {
     ` --vs-- `,
     user.hashed_password,
   );
+
   if (!compairison) {
     return res.status(StatusCodes.UNAUTHORIZED).json({
       message: "Authentication Failed",
