@@ -49,7 +49,6 @@ async function register(req, res, next) {
       email: newUser.email,
     });
   } catch (e) {
-    // console.log("Database error:", e.code, e.message);
     if (e.code === "23505") {
       return res.status(400).json({ message: "Email already registered" });
     }
@@ -65,7 +64,7 @@ async function logon(req, res) {
     });
   }
   const { email, password } = req.body;
-  // const user = global.users.find((user) => user.email === email);
+
   let result = null;
 
   result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
@@ -77,6 +76,7 @@ async function logon(req, res) {
       message: "Please Register an Account",
     });
   }
+
   const compairison = await comparePassword(password, user.hashed_password);
   if (!compairison) {
     return res.status(StatusCodes.UNAUTHORIZED).json({
