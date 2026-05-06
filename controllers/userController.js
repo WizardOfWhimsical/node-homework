@@ -107,11 +107,9 @@ async function logon(req, res) {
   const { email, password } = req.body;
   // const user = global.users.find((user) => user.email === email);
   let result = null;
-  try {
-    result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
-  } catch (err) {
-    console.log("error in login", err);
-  }
+
+  result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+
   const user = result?.rows[0];
 
   if (!user) {
