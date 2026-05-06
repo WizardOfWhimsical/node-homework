@@ -110,11 +110,6 @@ async function update(req, res) {
       RETURNING id, is_completed`,
     [value.isCompleted, taskIndex, global.user_id],
   );
-  // console.log("TASK \t", task.rows);
-  // Object.assign(global.tasks[taskIndex], value);
-  // const { userId, ...updatedTask } = global.tasks[taskIndex];
-  console.log("TASKS \n", task);
-
   if (task.rows.length === 0) {
     return res
       .status(StatusCodes.NOT_FOUND)
@@ -125,12 +120,24 @@ async function update(req, res) {
     .json({ message: "Edit Successful", task: task.rows[0] });
 }
 
-function deleteTask(req, res) {
-  const taskIndex = getValidTaskIndex(req, res);
+async function deleteTask(req, res) {
+  const taskIndex = req.params?.id;
   if (taskIndex < 0) return;
-  const { userId, ...task } = global.tasks[taskIndex];
-  global.tasks.splice(taskIndex, 1);
-  return res.status(StatusCodes.OK).json(task);
+
+  // const { userId, ...task } = global.tasks[taskIndex];
+  // global.tasks.splice(taskIndex, 1);
+  const task = await pool.query(
+    `DELETE FROM tasks 
+   WHERE id = $1 AND user_id = $2 
+   RETURNING id, title`,
+    [taskIndex, global.user_id],
+  );
+  if (task.rows.length === 0) {
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ message: "Task not found or not owned by user" });
+  }
+  return res.status(StatusCodes.OK).json(task.rows[0]);
 }
 
 // const taskCounter = (() => {
