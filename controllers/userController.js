@@ -127,7 +127,7 @@ async function logon(req, res) {
   }
 
   user.isLoggedIn = true;
-  global.user_id = user;
+  global.user_id = user.id;
   res.status(StatusCodes.OK).json({
     name: user.name,
     email: user.email,
