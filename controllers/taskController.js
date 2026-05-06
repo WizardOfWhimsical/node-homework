@@ -20,11 +20,7 @@ async function create(req, res) {
     [value.title, value.is_completed, global.user_id],
   );
   const newTaskCreated = task.rows[0];
-  //this broke it, but i had to remove the id?
-  // const { id, ...newTaskCreated } = task.rows[0];
-  /**
-   * {title, is_complete, id}
-   */
+
   return res.status(StatusCodes.CREATED).json(newTaskCreated);
 }
 
@@ -36,17 +32,6 @@ async function index(req, res) {
     });
   }
 
-  // const sanitizedList = global.tasks
-  //   .filter((task) => {
-  //     return (
-  //       task.userId.trim().toLowerCase() ===
-  //       global.user_id.email.trim().toLowerCase()
-  //     );
-  //   })
-  //   .map((task) => {
-  //     const { userId, ...sanitized } = task;
-  //     return sanitized;
-  //   });
   const result = await pool.query(
     `SELECT * 
       FROM tasks 
@@ -54,24 +39,18 @@ async function index(req, res) {
     [global.user_id],
   );
   const list = result.rows;
-  // console.log("results of index", result);
-  // console.log("results of index", list);
 
   if (list.length === 0) {
     return res.status(StatusCodes.NOT_FOUND);
   }
-
   return res.status(StatusCodes.OK).json(list);
 }
 
 async function show(req, res) {
-  // const taskIndex = getValidTaskIndex(req, res);
-  //we return taskInded because it hadles our errors
   const taskIndex = parseInt(req.params?.id);
 
   if (taskIndex < 0) return;
 
-  // const { userId, ...sanitizedTask } = global.tasks[taskIndex];
   const result = await pool.query(
     `SELECT title, id,is_completed FROM tasks WHERE id = $1`,
     [taskIndex],
@@ -81,7 +60,6 @@ async function show(req, res) {
 }
 
 async function update(req, res) {
-  // const taskIndex = getValidTaskIndex(req, res);
   const taskIndex = parseInt(req.params?.id);
   if (!global.user_id) {
     return res.status(StatusCodes.UNAUTHORIZED).json({
@@ -100,8 +78,7 @@ async function update(req, res) {
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Validation Error", error: error.message });
   }
-  console.log("VALUES \t", value);
-  console.log("TASKINDEX \t", taskIndex);
+
   const task = await pool.query(
     `UPDATE tasks 
       SET is_completed = $1
@@ -124,12 +101,11 @@ async function deleteTask(req, res) {
   const taskIndex = req.params?.id;
   if (taskIndex < 0) return;
 
-  // const { userId, ...task } = global.tasks[taskIndex];
-  // global.tasks.splice(taskIndex, 1);
   const task = await pool.query(
     `DELETE FROM tasks 
-   WHERE id = $1 AND user_id = $2 
-   RETURNING id, title`,
+      WHERE id = $1 
+      AND user_id = $2 
+      RETURNING id, title`,
     [taskIndex, global.user_id],
   );
   if (task.rows.length === 0) {
@@ -140,14 +116,6 @@ async function deleteTask(req, res) {
   return res.status(StatusCodes.OK).json(task.rows[0]);
 }
 
-// const taskCounter = (() => {
-//   let lastTaskNumber = 0;
-//   return () => {
-//     lastTaskNumber += 1;
-//     return lastTaskNumber;
-//   };
-// })();
-
 module.exports = {
   create,
   index,
@@ -155,19 +123,3 @@ module.exports = {
   deleteTask,
   show,
 };
-
-/*
-.users = []{
-userId: number
-email: string
-name: string
-password: string
-}
-.user_id = global.users[0]
-.tasks[]{
-taskId: number
-userId: number (links taks to user)
-title: string
-isCompleted: boolean
-}
- */
