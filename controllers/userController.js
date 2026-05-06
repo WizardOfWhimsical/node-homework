@@ -43,7 +43,7 @@ async function register(req, res, next) {
     const newUser = result.rows[0];
 
     global.user_id = newUser.id;
-
+    console.log("User Registered\n", newUser);
     return res.status(201).json({
       name: newUser.name,
       email: newUser.email,
@@ -76,8 +76,15 @@ async function logon(req, res) {
       message: "Please Register an Account",
     });
   }
-
   const compairison = await comparePassword(password, user.hashed_password);
+  console.log(
+    "Password comparison result:\n",
+    compairison,
+    "\n",
+    password,
+    ` --vs-- `,
+    user.hashed_password,
+  );
   if (!compairison) {
     return res.status(StatusCodes.UNAUTHORIZED).json({
       message: "Authentication Failed",

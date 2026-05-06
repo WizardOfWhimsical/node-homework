@@ -20,7 +20,7 @@ async function create(req, res) {
     [value.title, value.is_completed, global.user_id],
   );
   const newTaskCreated = task.rows[0];
-
+  console.log("New Task Created:\n", newTaskCreated);
   return res.status(StatusCodes.CREATED).json(newTaskCreated);
 }
 
@@ -43,6 +43,7 @@ async function index(req, res) {
   if (list.length === 0) {
     return res.status(StatusCodes.NOT_FOUND);
   }
+  console.log("Task list:\n", list);
   return res.status(StatusCodes.OK).json(list);
 }
 
@@ -55,7 +56,7 @@ async function show(req, res) {
     `SELECT title, id,is_completed FROM tasks WHERE id = $1`,
     [taskIndex],
   );
-  console.log("RESULTS: \n", result.rows);
+  console.log("Show Task: \n", result.rows);
   res.status(StatusCodes.OK).json(result.rows);
 }
 
@@ -92,6 +93,7 @@ async function update(req, res) {
       .status(StatusCodes.NOT_FOUND)
       .json({ message: "Task not found or not owned by user" });
   }
+  console.log("Updated Task: \n", task.rows[0]);
   return res
     .status(StatusCodes.OK)
     .json({ message: "Edit Successful", task: task.rows[0] });
@@ -113,6 +115,7 @@ async function deleteTask(req, res) {
       .status(StatusCodes.NOT_FOUND)
       .json({ message: "Task not found or not owned by user" });
   }
+  console.log("Deleted Task: \n", task.rows[0]);
   return res.status(StatusCodes.OK).json(task.rows[0]);
 }
 
