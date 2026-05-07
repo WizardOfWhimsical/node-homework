@@ -1,6 +1,9 @@
 const { StatusCodes } = require("../index");
 
 function errorhandlerMiddleware(err, req, res, next) {
+  if (err.code === "ECONNREFUSED" && err.PORT === 5432) {
+    console.log("The darabase connection was refused, is it running?");
+  }
   console.error(
     "Internal server error:\n",
     err.constructor.name,

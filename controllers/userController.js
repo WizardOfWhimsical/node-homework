@@ -1,5 +1,6 @@
-const { StatusCodes } = require("http-status-codes");
+const { StatusCodes } = require("../index");
 const { userSchema } = require("../validation/userSchema");
+const pool = require("../db/pg-pool");
 
 const crypto = require("crypto");
 const util = require("util");
@@ -18,44 +19,40 @@ async function comparePassword(inputPassword, storedHash) {
   return crypto.timingSafeEqual(keyBuffer, derivedKey);
 }
 
-async function register(req, res) {
+async function register(req, res, next) {
   if (!req.body) req.body = {};
   const { error, value } = userSchema.validate(req.body, { abortEarly: false });
-
   if (error) {
-    return res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ message: "Validation Error", error: error.message });
+    console.log("Validation failed");
+    return res.status(400).json({
+      message: "Validation failed",
+      details: error.details,
+    });
   }
 
-  for (let user of global.users) {
-    if (value.email === user.email) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        message: "Email already used to create an account",
-        error: "Bad Request",
-      });
-    }
-  }
+  value.hashed_password = await hashPassword(value.password);
 
   try {
-    const hashedPassword = await hashPassword(value.password);
-    const newUser = {
-      ...value,
-      password: hashedPassword,
-      isLoggedIn: true,
-    };
-    global.users.push(newUser);
-    global.user_id = newUser;
-  } catch (error) {
-    return res
-      .status(StatusCodes.INSUFFICIENT_STORAGE)
-      .json({ message: "Problem hashing password", error: error.message });
-  } finally {
-    delete req.body.password;
-    res.status(StatusCodes.CREATED).json({
-      ...req.body,
-      message: "Account Created",
+    const result = await pool.query(
+      `INSERT INTO users (email, name, hashed_password) 
+       VALUES ($1, $2, $3) 
+       RETURNING id, email, name`,
+      [value.email, value.name, value.hashed_password],
+    );
+
+    const newUser = result.rows[0];
+
+    global.user_id = newUser.id;
+    console.log("User Registered\n", newUser);
+    return res.status(201).json({
+      name: newUser.name,
+      email: newUser.email,
     });
+  } catch (e) {
+    if (e.code === "23505") {
+      return res.status(400).json({ message: "Email already registered" });
+    }
+    return next(e);
   }
 }
 
@@ -67,15 +64,29 @@ async function logon(req, res) {
     });
   }
   const { email, password } = req.body;
-  const user = global.users.find((user) => user.email === email);
+
+  let result = null;
+
+  result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+
+  const user = result?.rows[0];
 
   if (!user) {
-    console.log("user not found");
     return res.status(StatusCodes.NOT_FOUND).json({
       message: "Please Register an Account",
     });
   }
-  const compairison = await comparePassword(password, user.password);
+  const compairison = await comparePassword(password, user.hashed_password);
+
+  console.log(
+    "Password comparison result:\n",
+    compairison,
+    "\n",
+    password,
+    ` --vs-- `,
+    user.hashed_password,
+  );
+
   if (!compairison) {
     return res.status(StatusCodes.UNAUTHORIZED).json({
       message: "Authentication Failed",
@@ -83,7 +94,7 @@ async function logon(req, res) {
   }
 
   user.isLoggedIn = true;
-  global.user_id = user;
+  global.user_id = user.id;
   res.status(StatusCodes.OK).json({
     name: user.name,
     email: user.email,

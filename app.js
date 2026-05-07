@@ -1,8 +1,9 @@
-const { StatusCodes, ReasonPhrases, morgan, express } = require("./index");
+const { morgan, express, StatusCodes } = require("./index");
 const { requestLogger, responseLogger } = require("./middleware/logger");
 const errorHandler = require("./middleware/error-handler");
 const authMiddleware = require("./middleware/auth");
 const notFound = require("./middleware/not-found");
+const pool = require("./db/pg-pool");
 const useRouter = require("./routes/useRoutes");
 const taskRouter = require("./routes/taskRoutes");
 
@@ -18,19 +19,18 @@ app.use(express.json());
 app.use(morgan("dev"));
 app.use(requestLogger, responseLogger);
 
-app.get("/", (req, res) => {
-  res.send("Hello, World!");
-});
-app.post("/testpost", (req, res) => {
-  console.log("post request body:\n", req.body);
-  res
-    .status(StatusCodes.OK)
-    .json({ message: "Test Post Hit", reason: ReasonPhrases.OK });
-});
-
 app.use("/api/users", useRouter);
 app.use("/api/tasks", authMiddleware, taskRouter);
 
+app.get("/health", async (req, res) => {
+  try {
+    await pool.query("SELECT 1");
+    res.status(StatusCodes.OK).json({ status: "OK", db: "connected" });
+  } catch (error) {
+    console.error("Error in health check:", error);
+    res.status(500).json({ status: "Error" });
+  }
+});
 app.use(notFound);
 app.use(errorHandler);
 
@@ -52,7 +52,7 @@ async function shutdown(code = 0) {
   try {
     await new Promise((resolve) => server.close(resolve));
     console.log("HTTP server closed.");
-    //close db connections here
+    await pool.end();
   } catch (err) {
     console.error("Error during shutdown:\n", err);
     code = 1;
