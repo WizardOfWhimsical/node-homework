@@ -1,23 +1,71 @@
-const {
-  StatusCodes,
-  // getReasonPhrase,
-  // ReasonPhrase,
-} = require("http-status-codes");
+const { StatusCodes } = require("http-status-codes");
+const { userSchema } = require("../validation/userSchema");
 
-function register(req, res) {
-  console.log("Register Request Body\n", req.body);
-  const newUser = { ...req.body, isLoggedIn: true };
-  global.users.push(newUser);
-  global.user_id = newUser;
-  console.log("Register New User\n", newUser);
-  delete req.body.password;
-  res.status(StatusCodes.CREATED).json({
-    ...req.body,
-    message: "Account Created",
-  });
+const crypto = require("crypto");
+const util = require("util");
+const scrypt = util.promisify(crypto.scrypt);
+
+async function hashPassword(password) {
+  const salt = crypto.randomBytes(16).toString("hex");
+  const derivedKey = await scrypt(password, salt, 64);
+  return `${salt}:${derivedKey.toString("hex")}`;
 }
 
-function logon(req, res) {
+async function comparePassword(inputPassword, storedHash) {
+  const [salt, key] = storedHash.split(":");
+  const keyBuffer = Buffer.from(key, "hex");
+  const derivedKey = await scrypt(inputPassword, salt, 64);
+  return crypto.timingSafeEqual(keyBuffer, derivedKey);
+}
+
+async function register(req, res) {
+  if (!req.body) req.body = {};
+  const { error, value } = userSchema.validate(req.body, { abortEarly: false });
+
+  if (error) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "Validation Error", error: error.message });
+  }
+
+  for (let user of global.users) {
+    if (value.email === user.email) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: "Email already used to create an account",
+        error: "Bad Request",
+      });
+    }
+  }
+
+  try {
+    const hashedPassword = await hashPassword(value.password);
+    const newUser = {
+      ...value,
+      password: hashedPassword,
+      isLoggedIn: true,
+    };
+    global.users.push(newUser);
+    global.user_id = newUser;
+  } catch (error) {
+    return res
+      .status(StatusCodes.INSUFFICIENT_STORAGE)
+      .json({ message: "Problem hashing password", error: error.message });
+  } finally {
+    delete req.body.password;
+    res.status(StatusCodes.CREATED).json({
+      ...req.body,
+      message: "Account Created",
+    });
+  }
+}
+
+async function logon(req, res) {
+  if (!req.body) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message: "Your Request has no information",
+      error: "Bad request",
+    });
+  }
   const { email, password } = req.body;
   const user = global.users.find((user) => user.email === email);
 
@@ -27,21 +75,20 @@ function logon(req, res) {
       message: "Please Register an Account",
     });
   }
-
-  if (password !== user.password) {
+  const compairison = await comparePassword(password, user.password);
+  if (!compairison) {
     return res.status(StatusCodes.UNAUTHORIZED).json({
       message: "Authentication Failed",
     });
-  } else if (password === user.password) {
-    console.log("login successful");
-    user.isLoggedIn = true;
-    global.user_id = user;
-    res.status(StatusCodes.OK).json({
-      name: user.name,
-      email: user.email,
-      message: "logged in",
-    });
   }
+
+  user.isLoggedIn = true;
+  global.user_id = user;
+  res.status(StatusCodes.OK).json({
+    name: user.name,
+    email: user.email,
+    message: "logged in",
+  });
 }
 
 function logoff(req, res) {

@@ -1,37 +1,22 @@
-const express = require("express");
-const morgan = require("morgan");
-const { StatusCodes, ReasonPhrase } = require("http-status-codes");
+const { StatusCodes, ReasonPhrases, morgan, express } = require("./index");
+const { requestLogger, responseLogger } = require("./middleware/logger");
 const errorHandler = require("./middleware/error-handler");
+const authMiddleware = require("./middleware/auth");
 const notFound = require("./middleware/not-found");
 const useRouter = require("./routes/useRoutes");
+const taskRouter = require("./routes/taskRoutes");
 
 global.user_id = null;
 global.users = [];
 global.taskes = [];
 
 const app = express();
+const port = process.env.PORT || 3000;
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(morgan("dev"));
-
-app.use((req, res, next) => {
-  console.log("-----------");
-  console.log(
-    "Middleware to log request:\n",
-    "\tMethod:",
-    req.method,
-    "\n",
-    "\tPath:",
-    req.path,
-    "\n",
-    "\tQuery:",
-    req.query,
-  );
-  console.log("-----------");
-  next();
-});
-const port = process.env.PORT || 3000;
+app.use(requestLogger, responseLogger);
 
 app.get("/", (req, res) => {
   res.send("Hello, World!");
@@ -40,10 +25,11 @@ app.post("/testpost", (req, res) => {
   console.log("post request body:\n", req.body);
   res
     .status(StatusCodes.OK)
-    .json({ message: "Test Post Hit", reason: ReasonPhrase.OK });
+    .json({ message: "Test Post Hit", reason: ReasonPhrases.OK });
 });
 
 app.use("/api/users", useRouter);
+app.use("/api/tasks", authMiddleware, taskRouter);
 
 app.use(notFound);
 app.use(errorHandler);
