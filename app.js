@@ -31,6 +31,7 @@ app.get("/health", async (req, res) => {
     res.status(500).json({ status: "Error" });
   }
 });
+
 app.use(notFound);
 app.use(errorHandler);
 
