@@ -13,14 +13,20 @@ async function create(req, res) {
       .json({ message: "Validation Error", error: error.message });
   }
 
-  value.is_completed = value.is_completed ?? false;
+  value.isCompleted = value.isCompleted ?? false;
 
-  const task = await pool.query(
-    `INSERT INTO tasks (title, is_completed, user_id) 
-  VALUES ( $1, $2, $3 ) RETURNING id, title, is_completed`,
-    [value.title, value.is_completed, global.user_id],
-  );
-  const newTaskCreated = task.rows[0];
+  // const task = await pool.query(
+  //   `INSERT INTO tasks (title, is_completed, user_id)
+  // VALUES ( $1, $2, $3 ) RETURNING id, title, is_completed`,
+  //   [value.title, value.is_completed, global.user_id],
+  // );
+  // const newTaskCreated = task.rows[0];
+  const { title, isCompleted } = value;
+  const newTaskCreated = await prisma.task.create({
+    data: { title, isCompleted, userId: global.user_id },
+    select: { title: true, isCompleted: true, id: true },
+  });
+
   console.log("New Task Created:\n", newTaskCreated);
   return res.status(StatusCodes.CREATED).json(newTaskCreated);
 }
@@ -43,7 +49,7 @@ async function index(req, res) {
 
   const list = await prisma.task.findMany({
     where: { userId: global.user_id },
-    select: { title: true, isComplete: true, id: true },
+    select: { title: true, isCompleted: true, id: true },
   });
   if (list.length === 0) {
     return res.status(StatusCodes.NOT_FOUND);
@@ -65,7 +71,7 @@ async function show(req, res) {
   res.status(StatusCodes.OK).json(result.rows);
 }
 
-async function update(req, res) {
+async function update(req, res, next) {
   const taskIndex = parseInt(req.params?.id);
   if (!global.user_id) {
     return res.status(StatusCodes.UNAUTHORIZED).json({
@@ -85,23 +91,39 @@ async function update(req, res) {
       .json({ message: "Validation Error", error: error.message });
   }
 
-  const task = await pool.query(
-    `UPDATE tasks 
-      SET is_completed = $1
-      WHERE id = $2
-      AND user_id = $3
-      RETURNING id, is_completed`,
-    [value.isCompleted, taskIndex, global.user_id],
-  );
-  if (task.rows.length === 0) {
+  // const task = await pool.query(
+  //   `UPDATE tasks
+  //     SET is_completed = $1
+  //     WHERE id = $2
+  //     AND user_id = $3
+  //     RETURNING id, is_completed`,
+  //   [value.isCompleted, taskIndex, global.user_id],
+  // );
+  let tasks = null;
+  try {
+    tasks = await prisma.task.update({
+      data: value,
+      where: {
+        id: taskIndex,
+        userId: global.user_id,
+      },
+      select: { title: true, isCompleted: true, id: true },
+    });
+  } catch (err) {
+    if (err.code === "P2025") {
+      return res.status(404).json({ message: "The task was not found." });
+    } else {
+      return next(err);
+    }
+  }
+
+  if (tasks.length === 0) {
     return res
       .status(StatusCodes.NOT_FOUND)
       .json({ message: "Task not found or not owned by user" });
   }
-  console.log("Updated Task: \n", task.rows[0]);
-  return res
-    .status(StatusCodes.OK)
-    .json({ message: "Edit Successful", task: task.rows[0] });
+  console.log("Updated Task: \n", tasks);
+  return res.status(StatusCodes.OK).json({ message: "Edit Successful", tasks });
 }
 
 async function deleteTask(req, res) {
