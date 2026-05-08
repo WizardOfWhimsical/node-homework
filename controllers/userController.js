@@ -1,6 +1,7 @@
 const { StatusCodes } = require("../index");
 const { userSchema } = require("../validation/userSchema");
 const pool = require("../db/pg-pool");
+const prisma = require("../db/prisma");
 
 const crypto = require("crypto");
 const util = require("util");
@@ -33,6 +34,8 @@ async function register(req, res, next) {
   value.hashed_password = await hashPassword(value.password);
 
   try {
+    // const email = value.email.toLowerCase();
+
     const result = await pool.query(
       `INSERT INTO users (email, name, hashed_password) 
        VALUES ($1, $2, $3) 
@@ -63,13 +66,13 @@ async function logon(req, res) {
       error: "Bad request",
     });
   }
-  const { email, password } = req.body;
+  let { email, password } = req.body;
 
-  let result = null;
+  email = email.toLowerCase();
+  const user = await prisma.user.findUnique({ where: { email } });
+  // result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
 
-  result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
-
-  const user = result?.rows[0];
+  // const user = result?.rows[0];
 
   if (!user) {
     return res.status(StatusCodes.NOT_FOUND).json({
@@ -77,15 +80,6 @@ async function logon(req, res) {
     });
   }
   const compairison = await comparePassword(password, user.hashed_password);
-
-  console.log(
-    "Password comparison result:\n",
-    compairison,
-    "\n",
-    password,
-    ` --vs-- `,
-    user.hashed_password,
-  );
 
   if (!compairison) {
     return res.status(StatusCodes.UNAUTHORIZED).json({
