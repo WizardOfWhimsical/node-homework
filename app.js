@@ -3,14 +3,11 @@ const { requestLogger, responseLogger } = require("./middleware/logger");
 const errorHandler = require("./middleware/error-handler");
 const authMiddleware = require("./middleware/auth");
 const notFound = require("./middleware/not-found");
-// const pool = require("./db/pg-pool");
 const prisma = require("./db/prisma");
 const useRouter = require("./routes/useRoutes");
 const taskRouter = require("./routes/taskRoutes");
 
 global.user_id = null;
-global.users = [];
-global.taskes = [];
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -26,7 +23,7 @@ app.use("/api/tasks", authMiddleware, taskRouter);
 app.get("/health", async (req, res) => {
   try {
     await prisma.$queryRaw`SELECT 1`;
-    // await pool.query("SELECT 1");
+
     res.status(StatusCodes.OK).json({ status: "OK", db: "connected" });
   } catch (error) {
     console.error("Error in health check:", error);
