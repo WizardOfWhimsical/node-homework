@@ -1,6 +1,7 @@
 const { StatusCodes, ReasonPhrases } = require("../index");
 const { taskSchema, patchTaskSchema } = require("../validation/taskSchema");
 const pool = require("../db/pg-pool");
+const prisma = require("../db/prisma");
 
 async function create(req, res) {
   if (!req.body) req.body = {};
@@ -32,14 +33,18 @@ async function index(req, res) {
     });
   }
 
-  const result = await pool.query(
-    `SELECT * 
-      FROM tasks 
-      WHERE tasks.user_id = $1`,
-    [global.user_id],
-  );
-  const list = result.rows;
+  // const result = await pool.query(
+  //   `SELECT *
+  //     FROM tasks
+  //     WHERE tasks.user_id = $1`,
+  //   [global.user_id],
+  // );
+  // const list = result.rows;
 
+  const list = await prisma.task.findMany({
+    where: { userId: global.user_id },
+    select: { title: true, isComplete: true, id: true },
+  });
   if (list.length === 0) {
     return res.status(StatusCodes.NOT_FOUND);
   }
