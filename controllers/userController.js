@@ -31,32 +31,37 @@ async function register(req, res, next) {
     });
   }
 
-  value.hashed_password = await hashPassword(value.password);
+  value.hashedPassword = await hashPassword(value.password);
+  delete value.password;
+  let user = null;
 
   try {
-    // const email = value.email.toLowerCase();
-
-    const result = await pool.query(
-      `INSERT INTO users (email, name, hashed_password) 
-       VALUES ($1, $2, $3) 
-       RETURNING id, email, name`,
-      [value.email, value.name, value.hashed_password],
-    );
-
-    const newUser = result.rows[0];
-
-    global.user_id = newUser.id;
-    console.log("User Registered\n", newUser);
-    return res.status(201).json({
-      name: newUser.name,
-      email: newUser.email,
+    // const result = await pool.query(
+    //   `INSERT INTO users (email, name, hashed_password)
+    //    VALUES ($1, $2, $3)
+    //    RETURNING id, email, name`,
+    //   [value.email, value.name, value.hashed_password],
+    // );
+    // const newUser = result.rows[0];
+    const { name, email, hashedPassword } = value;
+    user = await prisma.user.create({
+      data: { name, email, hashedPassword },
+      select: { name: true, email: true, id: true },
     });
   } catch (e) {
-    if (e.code === "23505") {
+    // if (e.code === "23505") {
+    if (e.name === "PrismaClientKnownRequestError" && e.code === "P2002") {
       return res.status(400).json({ message: "Email already registered" });
+    } else {
+      return next(e);
     }
-    return next(e);
   }
+  global.user_id = user.id;
+  console.log("User Registered\n", user);
+  return res.status(201).json({
+    name: user.name,
+    email: user.email,
+  });
 }
 
 async function logon(req, res) {
