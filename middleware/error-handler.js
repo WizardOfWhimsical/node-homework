@@ -4,6 +4,9 @@ function errorhandlerMiddleware(err, req, res, next) {
   if (err.code === "ECONNREFUSED" && err.PORT === 5432) {
     console.log("The darabase connection was refused, is it running?");
   }
+  if (err.name === "PrismaClientInitializationError") {
+    console.error("Couldn't connect to the database. Is it running?");
+  }
   console.error(
     "Internal server error:\n",
     err.constructor.name,
