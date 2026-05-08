@@ -1,6 +1,6 @@
 const { StatusCodes } = require("../index");
 const { userSchema } = require("../validation/userSchema");
-const pool = require("../db/pg-pool");
+// const pool = require("../db/pg-pool");
 const prisma = require("../db/prisma");
 
 const crypto = require("crypto");
@@ -32,7 +32,7 @@ async function register(req, res, next) {
   }
 
   value.hashedPassword = await hashPassword(value.password);
-  delete value.password;
+  // delete value.password;
   let user = null;
 
   try {
@@ -84,7 +84,7 @@ async function logon(req, res) {
       message: "Please Register an Account",
     });
   }
-  const compairison = await comparePassword(password, user.hashed_password);
+  const compairison = await comparePassword(password, user.hashedPassword);
 
   if (!compairison) {
     return res.status(StatusCodes.UNAUTHORIZED).json({
