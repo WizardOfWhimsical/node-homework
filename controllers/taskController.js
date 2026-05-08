@@ -58,17 +58,34 @@ async function index(req, res) {
   return res.status(StatusCodes.OK).json(list);
 }
 
-async function show(req, res) {
+async function show(req, res, next) {
   const taskIndex = parseInt(req.params?.id);
 
   if (taskIndex < 0) return;
 
-  const result = await pool.query(
-    `SELECT title, id,is_completed FROM tasks WHERE id = $1`,
-    [taskIndex],
-  );
-  console.log("Show Task: \n", result.rows);
-  res.status(StatusCodes.OK).json(result.rows);
+  // const result = await pool.query(
+  //   `SELECT title, id,is_completed FROM tasks WHERE id = $1`,
+  //   [taskIndex],
+  // );
+  let task = null;
+  try {
+    task = await prisma.task.findUnique({
+      where: {
+        id: taskIndex,
+        userId: global.user_id,
+      },
+      select: { title: true, isCompleted: true, id: true },
+    });
+  } catch (err) {
+    if (err.code === "P2025") {
+      return res.status(404).json({ message: "The task was not found." });
+    } else {
+      return next(err);
+    }
+  }
+
+  console.log("Show Task: \n", task);
+  res.status(StatusCodes.OK).json(task);
 }
 
 async function update(req, res, next) {
@@ -117,33 +134,45 @@ async function update(req, res, next) {
     }
   }
 
-  if (tasks.length === 0) {
-    return res
-      .status(StatusCodes.NOT_FOUND)
-      .json({ message: "Task not found or not owned by user" });
-  }
   console.log("Updated Task: \n", tasks);
   return res.status(StatusCodes.OK).json({ message: "Edit Successful", tasks });
 }
 
-async function deleteTask(req, res) {
-  const taskIndex = req.params?.id;
+async function deleteTask(req, res, next) {
+  const taskIndex = parseInt(req.params?.id);
   if (taskIndex < 0) return;
 
-  const task = await pool.query(
-    `DELETE FROM tasks 
-      WHERE id = $1 
-      AND user_id = $2 
-      RETURNING id, title`,
-    [taskIndex, global.user_id],
-  );
-  if (task.rows.length === 0) {
-    return res
-      .status(StatusCodes.NOT_FOUND)
-      .json({ message: "Task not found or not owned by user" });
+  // const task = await pool.query(
+  //   `DELETE FROM tasks
+  //     WHERE id = $1
+  //     AND user_id = $2
+  //     RETURNING id, title`,
+  //   [taskIndex, global.user_id],
+  // );
+  // if (task.rows.length === 0) {
+  //   return res
+  //     .status(StatusCodes.NOT_FOUND)
+  //     .json({ message: "Task not found or not owned by user" });
+  // }
+  let task = null;
+  try {
+    task = await prisma.task.delete({
+      where: {
+        id: taskIndex,
+        userId: global.user_id,
+      },
+      select: { title: true, isCompleted: true, id: true },
+    });
+  } catch (err) {
+    if (err.code === "P2025") {
+      return res.status(404).json({ message: "The task was not found." });
+    } else {
+      return next(err);
+    }
   }
-  console.log("Deleted Task: \n", task.rows[0]);
-  return res.status(StatusCodes.OK).json(task.rows[0]);
+
+  console.log("Deleted Task: \n", task);
+  return res.status(StatusCodes.OK).json(task);
 }
 
 module.exports = {
