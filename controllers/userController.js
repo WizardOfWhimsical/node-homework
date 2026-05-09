@@ -63,7 +63,12 @@ async function logon(req, res) {
     });
   }
   let { email, password } = req.body;
-
+  // if (!email || !password) {
+  //   return res.status(StatusCodes.BAD_REQUEST).json({
+  //     message: "Email and Password are required",
+  //     error: "Bad request",
+  //   });
+  // }
   email = email.toLowerCase();
   const user = await prisma.user.findUnique({ where: { email } });
 
