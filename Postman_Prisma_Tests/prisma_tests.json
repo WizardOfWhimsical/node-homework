@@ -734,9 +734,9 @@
 									"script": {
 										"id": "55df245d-c826-4189-8ff5-b18ad16226ea",
 										"exec": [
-											"// pm.collectionVariables.set(\"taskIds\", JSON.stringify([]));",
-											"// pm.variables.set(\"tasksToCreate\", 3);",
-											"// pm.variables.set(\"baseTitle\", `Lewis Task ${Date.now()}`);",
+											"pm.collectionVariables.set(\"taskIds\", JSON.stringify([]));",
+											"pm.variables.set(\"tasksToCreate\", 3);",
+											"pm.variables.set(\"baseTitle\", `Lewis Task ${Date.now()}`);",
 											"",
 											"const registeredEmail = pm.collectionVariables.get(\"registeredEmail\");",
 											"pm.variables.set(\"loginEmail\", registeredEmail || \"test@example.com\");",
