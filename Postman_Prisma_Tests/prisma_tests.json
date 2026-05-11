@@ -752,7 +752,7 @@
 									"script": {
 										"id": "375584d0-4725-49f8-8cfb-69a5fa21c2e0",
 										"exec": [
-											"const taskIds = JSON.parse(pm.collectionVariables.get(\"taskIds\") || \"[]\");",
+											"const taskIds = JSON.parse(pm.collectionVariables.get(\"taskIds\")) || [];",
 											"",
 											"pm.test(\"✅ Created multiple tasks successfully\", () => {",
 											"    pm.expect(pm.response.code).to.equal(201);",
@@ -760,7 +760,7 @@
 											"",
 											"// This is a bit advanced — it chains creates using pm.sendRequest",
 											"function createTask(index) {",
-											"    if (index >= pm.variables.get(\"tasksToCreate\")) {",
+											"    if (index === 0) {",
 											"        pm.collectionVariables.set(\"taskIds\", JSON.stringify(taskIds));",
 											"        console.log(\"✅ All tasks created. Saved IDs:\", taskIds);",
 											"        return;",
@@ -795,12 +795,12 @@
 											"            pm.expect(data.title).to.include(\"Lewis Task\");",
 											"        });",
 											"",
-											"        createTask(index + 1); ",
+											"        createTask(index - 1); ",
 											"    });",
 											"}",
 											"",
 											"// Start creating tasks",
-											"createTask(0);"
+											"createTask(3);"
 										],
 										"type": "text/javascript",
 										"packages": {},
