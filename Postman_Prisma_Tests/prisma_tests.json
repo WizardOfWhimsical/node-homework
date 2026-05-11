@@ -438,6 +438,18 @@
 						"url": "{{HOST_URL}}/api/tasks/"
 					},
 					"response": []
+				},
+				{
+					"name": "New Request",
+					"id": "d4c78aef-dc4a-4413-9e9e-a142232db872",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
 				}
 			],
 			"id": "a24cc26d-52c7-4e63-a6d6-e44afd307ad4"
