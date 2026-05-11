@@ -815,7 +815,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "",
+									"raw": "{\n  \"title\": \"Test Task timestamp\",\n  \"isCompleted\": false\n}",
 									"options": {
 										"raw": {
 											"language": "json"
