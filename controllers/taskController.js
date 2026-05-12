@@ -2,23 +2,36 @@ const { StatusCodes, ReasonPhrases } = require("../index");
 const { taskSchema, patchTaskSchema } = require("../validation/taskSchema");
 const prisma = require("../db/prisma");
 
-async function create(req, res) {
+async function create(req, res, next) {
+  console.log("Creating somehting i hope\n", typeof req.body, req.body);
   if (!req.body) req.body = {};
   const { error, value } = taskSchema.validate(req.body, { abortEarly: false });
 
   if (error) {
-    return res
+    res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Validation Error", error: error.message });
+    return;
   }
 
   value.isCompleted = value.isCompleted ?? false;
 
   const { title, isCompleted } = value;
-  const newTaskCreated = await prisma.task.create({
-    data: { title, isCompleted, userId: global.user_id },
-    select: { title: true, isCompleted: true, id: true },
-  });
+  let newTaskCreated = null;
+  try {
+    newTaskCreated = await prisma.task.create({
+      data: { title, isCompleted, userId: global.user_id },
+      select: { title: true, isCompleted: true, id: true },
+    });
+  } catch (err) {
+    if (err.code === "2003" || err.code === "2014") {
+      return res
+        .status(404)
+        .json({ message: "Invalid user, email not registered" });
+    } else {
+      return next(err);
+    }
+  }
 
   console.log("New Task Created:\n", newTaskCreated);
   return res.status(StatusCodes.CREATED).json(newTaskCreated);
