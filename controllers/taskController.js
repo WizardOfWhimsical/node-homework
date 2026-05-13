@@ -59,6 +59,7 @@ async function index(req, res, next) {
   let task = null;
   let total = null;
   function getOrderBy(query) {
+    //Ej, if i sort by priority and it is a string, does it not do it alphabetically?
     const validSortFields = ["title", "priority", "id", "isComplete"];
     const sortBy = query.sortBy || "createAt";
     const sortDirection = query.sortDirection === "asc" ? "asc" : "desc";
