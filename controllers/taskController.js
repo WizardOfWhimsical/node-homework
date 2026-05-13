@@ -38,6 +38,10 @@ async function create(req, res, next) {
 }
 
 async function index(req, res, next) {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.page) || 10;
+  const skip = (page - 1) * limit;
+
   if (!global.user_id) {
     return res.status(StatusCodes.UNAUTHORIZED).json({
       message: "No user logged in",
@@ -56,6 +60,9 @@ async function index(req, res, next) {
         createAt: true,
         User: { select: { name: true, email: true } },
       },
+      skip: skip,
+      take: limit,
+      ordrBy: { createAt: "desc" },
     });
   } catch (err) {
     if (err.code === "P1001") {

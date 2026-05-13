@@ -130,9 +130,9 @@ async function show(req, res, next) {
     }
   }
 
-  if (!user) {
-    return res.status(404).json({ message: "User not found" });
-  }
+  // if (!user) {
+  //   return res.status(404).json({ message: "User not found" });
+  // }
 
   return res.status(StatusCodes.OK).json(user);
 }
@@ -142,4 +142,4 @@ async function logoff(req, res) {
   res.status(StatusCodes.OK).json({ message: "logged out" });
 }
 
-module.exports = { register, logon, logoff };
+module.exports = { register, logon, logoff, show };
