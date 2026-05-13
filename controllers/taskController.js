@@ -3,7 +3,7 @@ const { taskSchema, patchTaskSchema } = require("../validation/taskSchema");
 const prisma = require("../db/prisma");
 
 async function create(req, res, next) {
-  console.log("Creating somehting i hope\n", typeof req.body, req.body);
+  // console.log("Creating somehting i hope\n", typeof req.body, req.body);
   if (!req.body) req.body = {};
   const { error, value } = taskSchema.validate(req.body, { abortEarly: false });
 
@@ -16,12 +16,12 @@ async function create(req, res, next) {
 
   value.isCompleted = value.isCompleted ?? false;
 
-  const { title, isCompleted } = value;
+  const { title, isCompleted, priority } = value;
   let newTaskCreated = null;
   try {
     newTaskCreated = await prisma.task.create({
-      data: { title, isCompleted, userId: global.user_id },
-      select: { title: true, isCompleted: true, id: true },
+      data: { title, isCompleted, priority, userId: global.user_id },
+      select: { title: true, priority: true, isCompleted: true, id: true },
     });
   } catch (err) {
     if (err.code === "2003" || err.code === "2014") {
