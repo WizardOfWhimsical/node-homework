@@ -87,8 +87,16 @@ async function index(req, res, next) {
   if (task.length === 0) {
     return res.status(StatusCodes.NOT_FOUND);
   }
+  const pagination = {
+    page,
+    limit,
+    total,
+    pages: Math.ceil(total / limit),
+    hasNext: page * limit < total,
+    hasPrev: page > 1,
+  };
   console.log("Task task:\n", task);
-  return res.status(StatusCodes.OK).json({ task, total });
+  return res.status(StatusCodes.OK).json({ task, pagination });
 }
 
 async function show(req, res, next) {
