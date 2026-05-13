@@ -56,9 +56,10 @@ async function index(req, res, next) {
       error: ReasonPhrases.UNAUTHORIZED,
     });
   }
-  let list = null;
+  let task = null;
+  let total = null;
   try {
-    list = await prisma.task.findMany({
+    task = await prisma.task.findMany({
       where: { userId: global.user_id },
       select: {
         id: true,
@@ -72,6 +73,7 @@ async function index(req, res, next) {
       take: limit,
       ordrBy: { createAt: "desc" },
     });
+    total = await prisma.task.count({ where: whereClause });
   } catch (err) {
     if (err.code === "P1001") {
       return res.status(404).json({ message: "Database couldn't be reached" });
@@ -82,11 +84,11 @@ async function index(req, res, next) {
     }
   }
 
-  if (list.length === 0) {
+  if (task.length === 0) {
     return res.status(StatusCodes.NOT_FOUND);
   }
-  console.log("Task list:\n", list);
-  return res.status(StatusCodes.OK).json(list);
+  console.log("Task task:\n", task);
+  return res.status(StatusCodes.OK).json({ task, total });
 }
 
 async function show(req, res, next) {

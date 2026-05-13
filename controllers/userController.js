@@ -4,7 +4,7 @@ const prisma = require("../db/prisma");
 
 const crypto = require("crypto");
 const util = require("util");
-const { parse } = require("path");
+// const { parse } = require("path");
 const scrypt = util.promisify(crypto.scrypt);
 
 async function hashPassword(password) {
