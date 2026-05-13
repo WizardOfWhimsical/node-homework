@@ -58,6 +58,15 @@ async function index(req, res, next) {
   }
   let task = null;
   let total = null;
+  function getOrderBy(query) {
+    const validSortFields = ["title", "priority", "id", "isComplete"];
+    const sortBy = query.sortBy || "createAt";
+    const sortDirection = query.sortDirection === "asc" ? "asc" : "desc";
+    if (validSortFields.includes(sortBy)) {
+      return { [sortBy]: sortDirection };
+    }
+    return { createAt: "desc" };
+  }
   try {
     task = await prisma.task.findMany({
       where: { userId: global.user_id },
@@ -71,7 +80,7 @@ async function index(req, res, next) {
       },
       skip: skip,
       take: limit,
-      ordrBy: { createAt: "desc" },
+      ordrBy: getOrderBy(req.query),
     });
     total = await prisma.task.count({ where: whereClause });
   } catch (err) {
