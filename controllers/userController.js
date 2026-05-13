@@ -4,6 +4,7 @@ const prisma = require("../db/prisma");
 
 const crypto = require("crypto");
 const util = require("util");
+const { parse } = require("path");
 const scrypt = util.promisify(crypto.scrypt);
 
 async function hashPassword(password) {
@@ -94,7 +95,49 @@ async function logon(req, res) {
   });
 }
 
-function logoff(req, res) {
+async function show(req, res, next) {
+  const userId = parseInt(req.params?.id);
+  if (isNaN(userId)) {
+    return res.status(400).json({ error: "Invalid user id" });
+  }
+  let user = null;
+  try {
+    user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        createdAt: true,
+        Task: {
+          where: { isCompleted: false },
+          selecrt: {
+            id: true,
+            title: true,
+            priority: true,
+            createAt: true,
+          },
+          orderBy: { createAt: "desc" },
+          take: 5,
+        },
+      },
+    });
+  } catch (err) {
+    if (err.name === "P2003") {
+      return res.status(400).json({ message: "User does not exist" });
+    } else {
+      return next(err);
+    }
+  }
+
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  return res.status(StatusCodes.OK).json(user);
+}
+
+async function logoff(req, res) {
   global.user_id = null;
   res.status(StatusCodes.OK).json({ message: "logged out" });
 }
