@@ -24,7 +24,7 @@ async function create(req, res, next) {
       select: { title: true, priority: true, isCompleted: true, id: true },
     });
   } catch (err) {
-    if (err.code === "2003" || err.code === "2014") {
+    if (err.code === "P2003" || err.code === "P2014") {
       return res
         .status(404)
         .json({ message: "Invalid user, email not registered" });
@@ -37,18 +37,36 @@ async function create(req, res, next) {
   return res.status(StatusCodes.CREATED).json(newTaskCreated);
 }
 
-async function index(req, res) {
+async function index(req, res, next) {
   if (!global.user_id) {
     return res.status(StatusCodes.UNAUTHORIZED).json({
       message: "No user logged in",
       error: ReasonPhrases.UNAUTHORIZED,
     });
   }
+  let list = null;
+  try {
+    list = await prisma.task.findMany({
+      where: { userId: global.user_id },
+      select: {
+        id: true,
+        title: true,
+        isComplete: true,
+        priority: true,
+        createAt: true,
+        User: { select: { name: true, email: true } },
+      },
+    });
+  } catch (err) {
+    if (err.code === "P1001") {
+      return res.status(404).json({ message: "Database couldn't be reached" });
+    } else if (err.code === "P2009") {
+      return res.status(404).json({ message: "Field(s) does not exist" });
+    } else {
+      return next(err);
+    }
+  }
 
-  const list = await prisma.task.findMany({
-    where: { userId: global.user_id },
-    select: { title: true, isCompleted: true, id: true },
-  });
   if (list.length === 0) {
     return res.status(StatusCodes.NOT_FOUND);
   }
