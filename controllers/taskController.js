@@ -42,6 +42,14 @@ async function index(req, res, next) {
   const limit = parseInt(req.query.page) || 10;
   const skip = (page - 1) * limit;
 
+  const whereClause = { userId: global.user_id };
+  if (req.query.find) {
+    whereClause.title = {
+      contains: req.query.find,
+      mode: "insensitive",
+    };
+  }
+
   if (!global.user_id) {
     return res.status(StatusCodes.UNAUTHORIZED).json({
       message: "No user logged in",
