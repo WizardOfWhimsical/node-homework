@@ -14,4 +14,19 @@ async function tasksAnalytics(req, res, next) {
     where: { userId },
     _count: { id: true },
   });
+
+  const recentTassks = await prisma.task.findMany({
+    where: { userId },
+    select: {
+      id: true,
+      title: true,
+      isCompleted: true,
+      priority: true,
+      createdAt: true,
+      userId: true,
+      User: { select: { name: true } },
+    },
+    orderBy: { createAt: "desc" },
+    take: 10,
+  });
 }
