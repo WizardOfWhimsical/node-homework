@@ -39,7 +39,7 @@ async function create(req, res, next) {
 
 async function index(req, res, next) {
   const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.page) || 10;
+  const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
 
   const whereClause = { userId: global.user_id };
