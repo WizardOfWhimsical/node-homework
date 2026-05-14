@@ -61,12 +61,12 @@ async function index(req, res, next) {
   function getOrderBy(query) {
     //Ej, if i sort by priority and it is a string, does it not do it alphabetically?
     const validSortFields = ["title", "priority", "id", "isComplete"];
-    const sortBy = query.sortBy || "createAt";
+    const sortBy = query.sortBy || "createdAt";
     const sortDirection = query.sortDirection === "asc" ? "asc" : "desc";
     if (validSortFields.includes(sortBy)) {
       return { [sortBy]: sortDirection };
     }
-    return { createAt: "desc" };
+    return { createdAt: "desc" };
   }
   try {
     task = await prisma.task.findMany({
@@ -76,7 +76,7 @@ async function index(req, res, next) {
         title: true,
         isComplete: true,
         priority: true,
-        createAt: true,
+        createdAt: true,
         User: { select: { name: true, email: true } },
       },
       skip: skip,
