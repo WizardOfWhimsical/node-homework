@@ -9,13 +9,15 @@ async function tasksAnalytics(req, res, next) {
       .json({ message: "Bad user request", error: "No user" });
   }
 
+  //will need to wrap these in a try catch for prisma error handling
+
   const taskStats = await prisma.task.groupBy({
     by: ["isCompleted"],
     where: { userId },
     _count: { id: true },
   });
 
-  const recentTassks = await prisma.task.findMany({
+  const recentTasks = await prisma.task.findMany({
     where: { userId },
     select: {
       id: true,
@@ -40,4 +42,10 @@ async function tasksAnalytics(req, res, next) {
     by: ["createAt"],
     where: { userId, createAt: { gte: oneWeekAgo() }, _count: { id: true } },
   });
+
+  return res
+    .status(StatusCodes.OK)
+    .json({ taskStats, recentTasks, weeklyProgress });
 }
+
+module.exports = { tasksAnalytics };
