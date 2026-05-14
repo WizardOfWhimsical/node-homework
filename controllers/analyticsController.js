@@ -29,4 +29,10 @@ async function tasksAnalytics(req, res, next) {
     orderBy: { createAt: "desc" },
     take: 10,
   });
+
+  function oneWeekAgo() {
+    const oneWeek = 60 ^ (2 * 24 * 7 * 1000);
+    const oneWeekAgoDate = new Date(Date.now() - oneWeek);
+    return oneWeekAgoDate;
+  }
 }
