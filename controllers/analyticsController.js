@@ -35,4 +35,9 @@ async function tasksAnalytics(req, res, next) {
     const oneWeekAgoDate = new Date(Date.now() - oneWeek);
     return oneWeekAgoDate;
   }
+
+  const weeklyProgress = await prisma.task.groupBy({
+    by: ["createAt"],
+    where: { userId, createAt: { gte: oneWeekAgo() }, _count: { id: true } },
+  });
 }
