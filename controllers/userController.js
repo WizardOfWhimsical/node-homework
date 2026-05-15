@@ -83,6 +83,7 @@ async function register(req, res, next) {
   return res.status(StatusCodes.CREATED).json({
     name: result.user.name,
     email: result.user.email,
+    transaction: "success",
   });
 }
 
