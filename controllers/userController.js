@@ -33,26 +33,56 @@ async function register(req, res, next) {
 
   value.hashedPassword = await hashPassword(value.password);
   delete value.password;
-  let user = null;
-
+  // let user = null;
+  let result = null;
   try {
     const { name, email, hashedPassword } = value;
-    user = await prisma.user.create({
-      data: { name, email, hashedPassword },
-      select: { name: true, email: true, id: true },
+
+    result = await prisma.$transaction(async (txt) => {
+      const user = await txt.user.create({
+        data: { email, name, hashedPassword },
+        select: { id: true, email: true, name: true },
+      });
+
+      const welcomeTaskData = [
+        { title: "Complete your profile", userId: user.id, priority: "medium" },
+        { title: "Add your first task", userId: user.id, priority: "high" },
+        { title: "Explore the app", userId: user.id, priority: "low" },
+      ];
+
+      await txt.task.createMany({ data: welcomeTaskData });
+
+      const welcomeTasks = await txt.task.findMany({
+        where: {
+          userId: user.id,
+          title: { in: welcomeTaskData.map((t) => t.title) },
+        },
+        select: {
+          id: true,
+          title: true,
+          isCompleted: true,
+          userId: true,
+          priority: true,
+        },
+      });
+      return { user, welcomeTasks };
+      // user = await prisma.user.create({
+      //   data: { name, email, hashedPassword },
+      //   select: { name: true, email: true, id: true },
+      // });
     });
-  } catch (e) {
-    if (e.name === "PrismaClientKnownRequestError" && e.code === "P2002") {
+  } catch (err) {
+    if (err.name === "PrismaClientKnownRequestError" && err.code === "P2002") {
       return res.status(400).json({ message: "Email already registered" });
     } else {
-      return next(e);
+      return next(err);
     }
   }
-  global.user_id = user.id;
-  console.log("User Registered\n", user);
-  return res.status(201).json({
-    name: user.name,
-    email: user.email,
+  global.user_id = result.user.id;
+  console.log("User Registered\n", result.user);
+  return res.status(StatusCodes.CREATED).json({
+    name: result.user.name,
+    email: result.user.email,
   });
 }
 
