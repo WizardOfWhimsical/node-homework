@@ -80,8 +80,11 @@ async function index(req, res, next) {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
-
   const whereClause = { userId: global.user_id };
+
+  let tasks = null;
+  let total = null;
+
   if (req.query.find) {
     whereClause.title = {
       contains: req.query.find,
@@ -95,9 +98,11 @@ async function index(req, res, next) {
       error: ReasonPhrases.UNAUTHORIZED,
     });
   }
-  let tasks = null;
-  let total = null;
+
   function getOrderBy(query) {
+    console.log("_*_*_*_*_*_*_*_*_*_");
+    console.log("Query\n", query);
+    console.log("*********");
     //Ej, if i sort by priority and it is a string, does it not do it alphabetically?
     const validSortFields = ["title", "priority", "id", "isComplete"];
     const sortBy = query.sortBy || "createdAt";
@@ -107,13 +112,14 @@ async function index(req, res, next) {
     }
     return { createdAt: "desc" };
   }
+
   try {
     tasks = await prisma.task.findMany({
-      where: { whereClause },
+      where: whereClause,
       select: {
         id: true,
         title: true,
-        isComplete: true,
+        isCompleted: true,
         priority: true,
         createdAt: true,
         User: { select: { name: true, email: true } },
@@ -122,6 +128,7 @@ async function index(req, res, next) {
       take: limit,
       orderBy: getOrderBy(req.query),
     });
+
     total = await prisma.task.count({ where: whereClause });
   } catch (err) {
     if (err.code === "P1001") {
@@ -134,7 +141,7 @@ async function index(req, res, next) {
   }
 
   if (tasks.length === 0) {
-    return res.status(StatusCodes.NOT_FOUND);
+    return res.status(StatusCodes.OK).json({ task: [], pagination });
   }
   const pagination = {
     page,
