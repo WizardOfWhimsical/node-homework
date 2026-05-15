@@ -1,3 +1,4 @@
+const { getStatusText } = require("http-status-codes");
 const prisma = require("../db/prisma");
 const { StatusCodes } = require("../index");
 
@@ -104,14 +105,47 @@ async function usersAnalytics(req, res) {
   return res.status(StatusCodes.OK).json({ users, pagination });
 }
 
-async function searchQuery(req, res) {
+async function searchTasks(req, res) {
   const limit = parseInt(req.query.limit) || 20;
-  const searchQuery = req.query.q;
-  if (!searchQuery || searchQuery.length < 2) {
+  const query = req.query.q?.trim();
+  if (!query || query.length < 2) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Needs to be 2 characters long" });
   }
+
+  const searchPattern = `%${query}`;
+  const exactMatch = query;
+  const startsWith = `${query}%`;
+  // try{
+  const results = await prisma.$queryRaw`
+  SELECT 
+    t.id,
+    t.title,
+    t.is_completed as "isCompleted",
+    t.priority,
+    t.created_at as "createdAt",
+    t.user_id as "userId",
+    u.name as "user_name"
+  FROM tasks t
+  JOIN users u ON t.user_id = u.id
+  WHERE t.title ILIKE ${searchPattern} 
+     OR u.name ILIKE ${searchPattern}
+  ORDER BY 
+    CASE 
+      WHEN t.title ILIKE ${exactMatch} THEN 1
+      WHEN t.title ILIKE ${startsWith} THEN 2
+      WHEN t.title ILIKE ${searchPattern} THEN 3
+      ELSE 4
+    END,
+    t.created_at DESC
+  LIMIT ${parseInt(limit)}
+`;
+  // }catch(err){console.log(err)}
+
+  return res
+    .status(StatusCodes.OK)
+    .json({ results, query, count: results.length });
 } //end of function
 
-module.exports = { tasksAnalytics, usersAnalytics, searchQuery };
+module.exports = { tasksAnalytics, usersAnalytics, searchTasks };
