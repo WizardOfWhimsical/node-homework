@@ -65,6 +65,10 @@ async function register(req, res, next) {
           priority: true,
         },
       });
+      // console.log("-----------");
+      // console.log("User\n", user);
+      // console.log("Welcome Tasks\n", welcomeTasks);
+      // console.log("------------");
       return { user, welcomeTasks };
       // user = await prisma.user.create({
       //   data: { name, email, hashedPassword },
@@ -79,12 +83,15 @@ async function register(req, res, next) {
     }
   }
   global.user_id = result.user.id;
-  console.log("User Registered\n", result.user);
-  return res.status(StatusCodes.CREATED).json({
-    name: result.user.name,
-    email: result.user.email,
-    transaction: "success",
+  // console.log("**********************");
+  // console.log("User Registered\n", result);
+  // console.log("**********************");
+  res.status(StatusCodes.CREATED).json({
+    user: result.user,
+    welcomeTasks: result.welcomeTasks,
+    transactionStatus: "success",
   });
+  return;
 }
 
 async function logon(req, res) {
