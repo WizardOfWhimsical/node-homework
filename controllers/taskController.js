@@ -59,6 +59,21 @@ async function createMany(req, res, next) {
       userId: global.user_id,
     });
   }
+
+  let result = null;
+  try {
+    result = await prisma.task.createMany({
+      data: validTasks,
+      skipDuplicates: false,
+    });
+  } catch (err) {
+    return next(err);
+  }
+  return res.status(StatusCodes.CREATED).json({
+    message: "success!",
+    tasksCreated: result.count,
+    totalRequested: validTasks.length,
+  });
 }
 
 async function index(req, res, next) {
