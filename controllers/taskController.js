@@ -37,6 +37,15 @@ async function create(req, res, next) {
   return res.status(StatusCodes.CREATED).json(newTaskCreated);
 }
 
+async function createMany(req, res, next) {
+  const { tasks } = req.body;
+  if (!tasks || !Array.isArray(tasks) || tasks.length === 0) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ error: "Invalid request data. Expected an array of tasks" });
+  }
+}
+
 async function index(req, res, next) {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
