@@ -44,6 +44,21 @@ async function createMany(req, res, next) {
       .status(StatusCodes.BAD_REQUEST)
       .json({ error: "Invalid request data. Expected an array of tasks" });
   }
+  const validTasks = [];
+  for (let task of tasks) {
+    const { error, value } = taskSchema.validate(task);
+    if (error) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ error: "Validation failed", details: error.details });
+    }
+    validTasks.push({
+      title: value.title,
+      isCompleted: value.isCompleted || false,
+      priority: value.priority || "medium",
+      userId: global.user_id,
+    });
+  }
 }
 
 async function index(req, res, next) {
