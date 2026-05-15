@@ -7,7 +7,7 @@ const { StatusCodes } = require("../index");
  * @param {Function} next - The next middleware Function
  * @returns {Promise<void>}
  */
-async function tasksAnalytics(req, res, next) {
+async function tasksAnalytics(req, res) {
   const userId = parseInt(req.params.id);
   if (!userId || isNaN(userId)) {
     res
@@ -62,7 +62,7 @@ async function tasksAnalytics(req, res, next) {
  * pagination repeats:
  * write helper function that creates custom pagination
  */
-async function usersAnalytics(req, res, next) {
+async function usersAnalytics(req, res) {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
