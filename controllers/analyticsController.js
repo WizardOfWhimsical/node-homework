@@ -104,4 +104,14 @@ async function usersAnalytics(req, res) {
   return res.status(StatusCodes.OK).json({ users, pagination });
 }
 
-module.exports = { tasksAnalytics, usersAnalytics };
+async function searchQuery(req, res) {
+  const limit = parseInt(req.query.limit) || 20;
+  const searchQuery = req.query.q;
+  if (!searchQuery || searchQuery.length < 2) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "Needs to be 2 characters long" });
+  }
+} //end of function
+
+module.exports = { tasksAnalytics, usersAnalytics, searchQuery };
