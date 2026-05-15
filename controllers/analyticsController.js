@@ -1,11 +1,9 @@
-const { getStatusText } = require("http-status-codes");
 const prisma = require("../db/prisma");
 const { StatusCodes } = require("../index");
 
 /**
  * @param {Object} req - The Express request object.
  * @param {Object} res - The Express request object
- * @param {Function} next - The next middleware Function
  * @returns {Promise<void>}
  */
 async function tasksAnalytics(req, res) {
@@ -63,6 +61,12 @@ async function tasksAnalytics(req, res) {
  * pagination repeats:
  * write helper function that creates custom pagination
  */
+
+/**
+ * @param {Object} req - The Express request object.
+ * @param {Object} res - The Express request object
+ * @returns {Promise<void>}
+ */
 async function usersAnalytics(req, res) {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
@@ -105,6 +109,11 @@ async function usersAnalytics(req, res) {
   return res.status(StatusCodes.OK).json({ users, pagination });
 }
 
+/**
+ * @param {Object} req - The Express request object.
+ * @param {Object} res - The Express request object
+ * @returns {Promise<void>}
+ */
 async function searchTasks(req, res) {
   const limit = parseInt(req.query.limit) || 20;
   const query = req.query.q?.trim();
