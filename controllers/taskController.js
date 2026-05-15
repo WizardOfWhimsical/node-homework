@@ -95,7 +95,7 @@ async function index(req, res, next) {
       error: ReasonPhrases.UNAUTHORIZED,
     });
   }
-  let task = null;
+  let tasks = null;
   let total = null;
   function getOrderBy(query) {
     //Ej, if i sort by priority and it is a string, does it not do it alphabetically?
@@ -108,8 +108,8 @@ async function index(req, res, next) {
     return { createdAt: "desc" };
   }
   try {
-    task = await prisma.task.findMany({
-      where: { userId: global.user_id },
+    tasks = await prisma.task.findMany({
+      where: { whereClause },
       select: {
         id: true,
         title: true,
@@ -120,7 +120,7 @@ async function index(req, res, next) {
       },
       skip: skip,
       take: limit,
-      ordrBy: getOrderBy(req.query),
+      orderBy: getOrderBy(req.query),
     });
     total = await prisma.task.count({ where: whereClause });
   } catch (err) {
@@ -133,7 +133,7 @@ async function index(req, res, next) {
     }
   }
 
-  if (task.length === 0) {
+  if (tasks.length === 0) {
     return res.status(StatusCodes.NOT_FOUND);
   }
   const pagination = {
@@ -144,8 +144,12 @@ async function index(req, res, next) {
     hasNext: page * limit < total,
     hasPrev: page > 1,
   };
-  console.log("Task task:\n", task);
-  return res.status(StatusCodes.OK).json({ task, pagination });
+  console.log("*************************************");
+  console.log("Task task:\n", tasks);
+  console.log("pagination:\n", pagination);
+  console.log("*************************************");
+  res.status(StatusCodes.OK).json({ tasks, pagination });
+  return;
 }
 
 async function show(req, res, next) {
