@@ -243,6 +243,7 @@ async function deleteTask(req, res, next) {
 
 module.exports = {
   create,
+  createMany,
   index,
   update,
   deleteTask,
