@@ -6,7 +6,7 @@ const { StatusCodes } = require("../index");
  * @param {Object} res - The Express request object
  * @returns {Promise<void>}
  */
-async function tasksAnalytics(req, res, next) {
+async function getUserAnanlytics(req, res, next) {
   const userId = parseInt(req.params.id);
   if (!userId || isNaN(userId)) {
     res
@@ -69,7 +69,7 @@ async function tasksAnalytics(req, res, next) {
  * @param {Object} res - The Express request object
  * @returns {Promise<void>}
  */
-async function usersAnalytics(req, res, next) {
+async function getUserWithStats(req, res, next) {
   let page = parseInt(req.query.page) || 1;
   let limit = parseInt(req.query.limit) || 10;
   let skip = (page - 1) * limit;
@@ -178,4 +178,4 @@ async function searchTasks(req, res, next) {
     .json({ results, query, count: results.length });
 }
 
-module.exports = { tasksAnalytics, usersAnalytics, searchTasks };
+module.exports = { getUserAnanlytics, getUserWithStats, searchTasks };
