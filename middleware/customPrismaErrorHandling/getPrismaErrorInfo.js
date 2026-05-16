@@ -1,5 +1,5 @@
 const { Prisma } = require("@prisma/client");
-
+// prisma.io but id be lying if i didnt say i was inpired by the other one
 function getPrismaErrorInfo(error) {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     console.log("DataBase Error", error);

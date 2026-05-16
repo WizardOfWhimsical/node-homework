@@ -32,7 +32,7 @@ async function create(req, res, next) {
     }
   }
 
-  console.log("New Task Created:\n", newTaskCreated);
+  // console.log("New Task Created:\n", newTaskCreated);
   return res.status(StatusCodes.CREATED).json(newTaskCreated);
 }
 
@@ -53,6 +53,8 @@ async function bulkCreate(req, res, next) {
         .json({ error: "Validation failed", details: error.details });
     }
 
+    // if(!global.user_id){}
+
     validTasks.push({
       title: value.title,
       isCompleted: value.isCompleted || false,
@@ -68,16 +70,15 @@ async function bulkCreate(req, res, next) {
       skipDuplicates: false,
     });
   } catch (err) {
-    console.log(
-      "is this throwing the error or is it happening after, if you see this you knwo what",
-    );
+    //this is where the error is happening
+    // console.log("ERROR for BULKCREATE\n", err);
     return next(err);
   }
 
-  console.log("bulkCreate/taskController: \n", {
-    tasksCreated: result.count,
-    totalRequested: validTasks.length,
-  });
+  // console.log("bulkCreate/taskController: \n", {
+  //   tasksCreated: result.count,
+  //   totalRequested: validTasks.length,
+  // });
 
   return res.status(StatusCodes.CREATED).json({
     message: "success!",
@@ -163,7 +164,7 @@ async function index(req, res, next) {
     hasPrev: page > 1,
   };
 
-  console.log("Index/taskController: \n", { tasks, pagination });
+  // console.log("Index/taskController: \n", { tasks, pagination });
   res.status(StatusCodes.OK).json({ tasks, pagination });
   return;
 }
@@ -176,22 +177,20 @@ async function show(req, res, next) {
   let taskWithUserInfo = null;
   try {
     taskWithUserInfo = await prisma.task.findUnique({
-      where: {
-        id: taskIndex,
-        userId: global.user_id,
-      },
+      where: { id_userId: { id: taskIndex, userId: global.user_id } },
       include: { User: { select: { id: true, name: true, email: true } } },
     });
   } catch (err) {
-    if (err.code === "P2025") {
-      return res.status(404).json({ message: "The task was not found." });
-    } else {
-      return next(err);
-    }
+    // console.log("ERROR in SHOW\n", err);
+    return next(err);
   }
 
-  console.log("Show Task: \n", taskWithUserInfo);
-  res.status(StatusCodes.OK).json(taskWithUserInfo);
+  if (!taskWithUserInfo) {
+    return res.status(404).json({ message: "The task/user was not found." });
+  }
+
+  // console.log("Show Task: \n", taskWithUserInfo);
+  return res.status(StatusCodes.OK).json(taskWithUserInfo);
 }
 
 async function update(req, res, next) {
@@ -232,7 +231,7 @@ async function update(req, res, next) {
     }
   }
 
-  console.log("Updated Task: \n", tasks);
+  // console.log("Updated Task: \n", tasks);
   return res.status(StatusCodes.OK).json({ message: "Edit Successful", tasks });
 }
 
@@ -257,7 +256,7 @@ async function deleteTask(req, res, next) {
     }
   }
 
-  console.log("Deleted Task: \n", task);
+  // console.log("Deleted Task: \n", task);
   return res.status(StatusCodes.OK).json(task);
 }
 

@@ -57,13 +57,16 @@ async function getUserAnalytics(req, res, next) {
       where: { userId, createdAt: { gte: oneWeekAgo() }, _count: { id: true } },
     });
   } catch (err) {
+    console.log("Get User Analytics Error Hit");
     next(err);
   }
+
   console.log("Get User Analytics:\n", {
     taskStats,
     recentTasks,
     weeklyProgress,
   });
+
   return res
     .status(StatusCodes.OK)
     .json({ taskStats, recentTasks, weeklyProgress });
@@ -88,12 +91,12 @@ async function getUsersWithStats(req, res, next) {
     const usersRaw = await prisma.user.findMany({
       include: {
         Task: {
-          where: { isComplete: false },
+          where: { isCompleted: false },
           select: { id: true },
           take: 5,
         },
+        _count: { select: { Task: true } },
       },
-      _count: { select: { Task: true } },
       skip: skip,
       take: limit,
       orderBy: { createdAt: "desc" },
@@ -110,6 +113,7 @@ async function getUsersWithStats(req, res, next) {
 
     totalUsers = await prisma.user.count();
   } catch (err) {
+    console.log("Get User With Stats Error Hit");
     return next(err);
   }
 
@@ -175,6 +179,7 @@ async function searchTasks(req, res, next) {
   LIMIT ${parseInt(limit)}
 `;
   } catch (err) {
+    console.log("Search Task Error Hit");
     next(err);
   }
 
