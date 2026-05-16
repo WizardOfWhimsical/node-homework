@@ -1,12 +1,12 @@
-const { morgan, express, StatusCodes } = require("./index");
-const { requestLogger, responseLogger } = require("./middleware/logger");
-const errorHandler = require("./middleware/error-handler");
-const authMiddleware = require("./middleware/auth");
-const notFound = require("./middleware/not-found");
-const prisma = require("./db/prisma");
-const useRouter = require("./routes/useRoutes");
-const taskRouter = require("./routes/taskRoutes");
-const analyticsRouter = require("./routes/analyticsRoutes");
+const { morgan, express, StatusCodes, prisma } = require("./index");
+const {
+  requestLogger,
+  responseLogger,
+  errorHandler,
+  authMiddleware,
+  notFound,
+} = require("./middleware/index");
+const { userRouter, taskRouter, analyticsRouter } = require("./routes/index");
 
 global.user_id = null;
 
@@ -18,7 +18,7 @@ app.use(express.json());
 app.use(morgan("dev"));
 app.use(requestLogger, responseLogger);
 
-app.use("/api/users", useRouter);
+app.use("/api/users", userRouter);
 app.use("/api/tasks", authMiddleware, taskRouter);
 app.use("/api/analytics/", authMiddleware, analyticsRouter);
 
