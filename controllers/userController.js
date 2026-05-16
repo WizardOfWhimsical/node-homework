@@ -1,6 +1,7 @@
 const { StatusCodes } = require("../index");
 const { userSchema } = require("../validation/userSchema");
 const prisma = require("../db/prisma");
+const getPrismaErrorInfo = require("../middleware/customPrismaErrorHandling/getPrismaErrorInfo");
 
 const crypto = require("crypto");
 const util = require("util");
@@ -19,13 +20,18 @@ async function comparePassword(inputPassword, storedHash) {
   return crypto.timingSafeEqual(keyBuffer, derivedKey);
 }
 
+/**
+ * @param {Object} req - The Express request object.
+ * @param {Object} res - The Express request object
+ * @param {Function} next - The Express Middleware
+ * @returns {Promise<void>}
+ */
 async function register(req, res, next) {
   if (!req.body) req.body = {};
 
   const { error, value } = userSchema.validate(req.body, { abortEarly: false });
 
   if (error) {
-    // console.log("Validation failed");
     return res.status(400).json({
       message: "Validation failed",
       details: error.details,
@@ -71,23 +77,30 @@ async function register(req, res, next) {
       return { user, welcomeTasks };
     });
   } catch (err) {
+    getPrismaErrorInfo(err);
     if (err.name === "PrismaClientKnownRequestError" && err.code === "P2002") {
       return res.status(400).json({ message: "Email already registered" });
     } else {
       return next(err);
     }
   }
+
   global.user_id = result.user.userId;
-  // console.log("Register/userController: ", result);
-  res.status(StatusCodes.CREATED).json({
+
+  console.log("Register/userController: ", result);
+  return res.status(StatusCodes.CREATED).json({
     user: result.user,
     welcomeTasks: result.welcomeTasks,
     transactionStatus: "success",
   });
-  return;
 }
-
-async function logon(req, res) {
+/**
+ * @param {Object} req - The Express request object.
+ * @param {Object} res - The Express request object
+ * @param {Function} next - The Express Middleware
+ * @returns {Promise<void>}
+ */
+async function logon(req, res, next) {
   if (!req.body) {
     return res.status(StatusCodes.BAD_REQUEST).json({
       message: "Your Request has no information",
@@ -104,17 +117,22 @@ async function logon(req, res) {
   }
 
   email = email.toLowerCase();
-  const user = await prisma.user.findUnique({
-    where: { email },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      createdAt: true,
-      hashedPassword: true,
-    },
-  });
-
+  let user = null;
+  try {
+    user = await prisma.user.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        createdAt: true,
+        hashedPassword: true,
+      },
+    });
+  } catch (err) {
+    getPrismaErrorInfo(err);
+    return next(err);
+  }
   if (!user) {
     return res.status(StatusCodes.NOT_FOUND).json({
       message: "Please Register an Account",
@@ -128,16 +146,20 @@ async function logon(req, res) {
     });
   }
 
-  user.isLoggedIn = true;
   global.user_id = user.id;
-  // console.log("Logon/userController: \n", user);
+
   res.status(StatusCodes.OK).json({
     name: user.name,
     email: user.email,
     message: "logged in",
   });
 }
-
+/**
+ * @param {Object} req - The Express request object.
+ * @param {Object} res - The Express request object
+ * @param {Function} next - The Express Middleware
+ * @returns {Promise<void>}
+ */
 async function show(req, res, next) {
   const userId = parseInt(req.params?.id);
   if (isNaN(userId)) {
@@ -167,13 +189,13 @@ async function show(req, res, next) {
       },
     });
   } catch (err) {
+    getPrismaErrorInfo(err);
     if (err.name === "P2003") {
       return res.status(400).json({ message: "User does not exist" });
     } else {
       return next(err);
     }
   }
-  // console.log("Show/userController: \n", user);
   return res.status(StatusCodes.OK).json({ user });
 }
 
