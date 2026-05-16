@@ -1,5 +1,6 @@
 const { StatusCodes, ReasonPhrases } = require("../index");
 const { taskSchema, patchTaskSchema } = require("../validation/taskSchema");
+const getPrismaErrorInfo = require("../middleware/customPrismaErrorHandling/getPrismaErrorInfo");
 const prisma = require("../db/prisma");
 
 async function create(req, res, next) {
@@ -23,6 +24,7 @@ async function create(req, res, next) {
       select: { title: true, priority: true, isCompleted: true, id: true },
     });
   } catch (err) {
+    getPrismaErrorInfo(err);
     if (err.code === "P2003" || err.code === "P2014") {
       return res
         .status(404)
@@ -32,7 +34,6 @@ async function create(req, res, next) {
     }
   }
 
-  // console.log("New Task Created:\n", newTaskCreated);
   return res.status(StatusCodes.CREATED).json(newTaskCreated);
 }
 
@@ -53,7 +54,11 @@ async function bulkCreate(req, res, next) {
         .json({ error: "Validation failed", details: error.details });
     }
 
-    // if(!global.user_id){}
+    if (!global.user_id) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "please log in", error: "Noone logged in" });
+    }
 
     validTasks.push({
       title: value.title,
@@ -70,15 +75,9 @@ async function bulkCreate(req, res, next) {
       skipDuplicates: false,
     });
   } catch (err) {
-    //this is where the error is happening
-    // console.log("ERROR for BULKCREATE\n", err);
+    getPrismaErrorInfo(err);
     return next(err);
   }
-
-  // console.log("bulkCreate/taskController: \n", {
-  //   tasksCreated: result.count,
-  //   totalRequested: validTasks.length,
-  // });
 
   return res.status(StatusCodes.CREATED).json({
     message: "success!",
@@ -140,6 +139,7 @@ async function index(req, res, next) {
 
     total = await prisma.task.count({ where: whereClause });
   } catch (err) {
+    getPrismaErrorInfo(err);
     if (err.code === "P1001") {
       return res.status(404).json({ message: "Database couldn't be reached" });
     } else if (err.code === "P2009") {
@@ -164,9 +164,7 @@ async function index(req, res, next) {
     hasPrev: page > 1,
   };
 
-  // console.log("Index/taskController: \n", { tasks, pagination });
-  res.status(StatusCodes.OK).json({ tasks, pagination });
-  return;
+  return res.status(StatusCodes.OK).json({ tasks, pagination });
 }
 
 async function show(req, res, next) {
@@ -181,7 +179,7 @@ async function show(req, res, next) {
       include: { User: { select: { id: true, name: true, email: true } } },
     });
   } catch (err) {
-    // console.log("ERROR in SHOW\n", err);
+    getPrismaErrorInfo(err);
     return next(err);
   }
 
@@ -189,7 +187,6 @@ async function show(req, res, next) {
     return res.status(404).json({ message: "The task/user was not found." });
   }
 
-  // console.log("Show Task: \n", taskWithUserInfo);
   return res.status(StatusCodes.OK).json(taskWithUserInfo);
 }
 
@@ -201,7 +198,11 @@ async function update(req, res, next) {
       error: ReasonPhrases.UNAUTHORIZED,
     });
   }
-  if (taskIndex < 0) return;
+  if (taskIndex < 0) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "Validation Error", error: "invalid id" });
+  }
   if (!req.body) req.body = {};
   const { error, value } = patchTaskSchema.validate(req.body, {
     abortEarly: false,
@@ -216,14 +217,22 @@ async function update(req, res, next) {
   let tasks = null;
   try {
     tasks = await prisma.task.update({
-      data: value,
       where: {
         id: taskIndex,
         userId: global.user_id,
       },
-      select: { title: true, isCompleted: true, id: true },
+      data: value,
+      select: {
+        id: true,
+        title: true,
+        isCompleted: true,
+        priority: true,
+        userId: true,
+      },
     });
   } catch (err) {
+    const info = getPrismaErrorInfo(err);
+    console.log("updated error:\n", info);
     if (err.code === "P2025") {
       return res.status(404).json({ message: "The task was not found." });
     } else {
@@ -231,8 +240,7 @@ async function update(req, res, next) {
     }
   }
 
-  // console.log("Updated Task: \n", tasks);
-  return res.status(StatusCodes.OK).json({ message: "Edit Successful", tasks });
+  return res.status(StatusCodes.OK).json(tasks);
 }
 
 async function deleteTask(req, res, next) {
@@ -249,6 +257,7 @@ async function deleteTask(req, res, next) {
       select: { title: true, isCompleted: true, id: true },
     });
   } catch (err) {
+    getPrismaErrorInfo(err);
     if (err.code === "P2025") {
       return res.status(404).json({ message: "The task was not found." });
     } else {
@@ -256,7 +265,6 @@ async function deleteTask(req, res, next) {
     }
   }
 
-  // console.log("Deleted Task: \n", task);
   return res.status(StatusCodes.OK).json(task);
 }
 
