@@ -36,7 +36,7 @@ async function create(req, res, next) {
   return res.status(StatusCodes.CREATED).json(newTaskCreated);
 }
 
-async function createMany(req, res, next) {
+async function bulkCreate(req, res, next) {
   const { tasks } = req.body;
   if (!tasks || !Array.isArray(tasks) || tasks.length === 0) {
     return res
@@ -68,10 +68,13 @@ async function createMany(req, res, next) {
       skipDuplicates: false,
     });
   } catch (err) {
+    console.log(
+      "is this throwing the error or is it happening after, if you see this you knwo what",
+    );
     return next(err);
   }
 
-  console.log("CreateMany/taskController: \n", {
+  console.log("bulkCreate/taskController: \n", {
     tasksCreated: result.count,
     totalRequested: validTasks.length,
   });
@@ -147,7 +150,7 @@ async function index(req, res, next) {
 
   if (tasks.length === 0) {
     return res
-      .status(StatusCodes.NOT_FOUND)
+      .status(StatusCodes.OK)
       .json({ task: [], pagination, message: "Task not found" });
   }
 
@@ -170,14 +173,14 @@ async function show(req, res, next) {
 
   if (taskIndex < 0) return;
 
-  let task = null;
+  let taskWithUserInfo = null;
   try {
-    task = await prisma.task.findUnique({
+    taskWithUserInfo = await prisma.task.findUnique({
       where: {
         id: taskIndex,
         userId: global.user_id,
       },
-      select: { title: true, isCompleted: true, id: true },
+      include: { User: { select: { id: true, name: true, email: true } } },
     });
   } catch (err) {
     if (err.code === "P2025") {
@@ -187,8 +190,8 @@ async function show(req, res, next) {
     }
   }
 
-  console.log("Show Task: \n", task);
-  res.status(StatusCodes.OK).json(task);
+  console.log("Show Task: \n", taskWithUserInfo);
+  res.status(StatusCodes.OK).json(taskWithUserInfo);
 }
 
 async function update(req, res, next) {
@@ -260,7 +263,7 @@ async function deleteTask(req, res, next) {
 
 module.exports = {
   create,
-  createMany,
+  bulkCreate,
   index,
   update,
   deleteTask,

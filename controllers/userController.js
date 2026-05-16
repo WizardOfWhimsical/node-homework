@@ -106,7 +106,13 @@ async function logon(req, res) {
   email = email.toLowerCase();
   const user = await prisma.user.findUnique({
     where: { email },
-    select: { id: true, name: true, email: true, createdAt: true },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      createdAt: true,
+      hashedPassword: true,
+    },
   });
 
   if (!user) {
@@ -149,11 +155,11 @@ async function show(req, res, next) {
         createdAt: true,
         Task: {
           where: { isCompleted: false },
-          selecrt: {
+          selecet: {
             id: true,
             title: true,
             priority: true,
-            createAt: true,
+            createdAt: true,
           },
           orderBy: { createAt: "desc" },
           take: 5,
@@ -168,7 +174,7 @@ async function show(req, res, next) {
     }
   }
   console.log("Show/userController: \n", user);
-  return res.status(StatusCodes.OK).json(user);
+  return res.status(StatusCodes.OK).json({ user });
 }
 
 async function logoff(req, res) {
