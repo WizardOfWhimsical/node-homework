@@ -59,6 +59,11 @@ async function getUserAnanlytics(req, res, next) {
   } catch (err) {
     next(err);
   }
+  console.log("Get User Analytics:\n", {
+    taskStats,
+    recentTasks,
+    weeklyProgress,
+  });
   return res
     .status(StatusCodes.OK)
     .json({ taskStats, recentTasks, weeklyProgress });
@@ -120,7 +125,7 @@ async function getUserWithStats(req, res, next) {
       .status(StatusCodes.OK)
       .json({ users: [], pagination: { ...pagination, totalUsers: 0 } });
   }
-
+  console.log("Get User With Analytics:\n", { users, pagination });
   return res.status(StatusCodes.OK).json({ users, pagination });
 }
 
@@ -173,6 +178,7 @@ async function searchTasks(req, res, next) {
     next(err);
   }
 
+  console.log("SearchTasks/analyticsController: \n", { results, query });
   return res
     .status(StatusCodes.OK)
     .json({ results, query, count: results.length });
