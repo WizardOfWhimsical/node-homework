@@ -20,7 +20,7 @@ app.use(requestLogger, responseLogger);
 
 app.use("/api/users", useRouter);
 app.use("/api/tasks", authMiddleware, taskRouter);
-app.use("/api/analytics/users", authMiddleware, analyticsRouter);
+app.use("/api/analytics/", authMiddleware, analyticsRouter);
 
 app.get("/health", async (req, res) => {
   try {
