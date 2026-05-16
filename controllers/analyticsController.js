@@ -6,7 +6,7 @@ const { StatusCodes } = require("../index");
  * @param {Object} res - The Express request object
  * @returns {Promise<void>}
  */
-async function tasksAnalytics(req, res) {
+async function tasksAnalytics(req, res, next) {
   const userId = parseInt(req.params.id);
   if (!userId || isNaN(userId)) {
     res
@@ -14,89 +14,98 @@ async function tasksAnalytics(req, res) {
       .json({ message: "Bad user request", error: "No user" });
   }
 
-  //will need to wrap these in a try catch for prisma error handling
-  // try{
-  const taskStats = await prisma.task.groupBy({
-    by: ["isCompleted"],
-    where: { userId },
-    _count: { id: true },
-  });
-
-  const recentTasks = await prisma.task.findMany({
-    where: { userId },
-    select: {
-      id: true,
-      title: true,
-      isCompleted: true,
-      priority: true,
-      createdAt: true,
-      userId: true,
-      User: { select: { name: true } },
-    },
-    orderBy: { createdAt: "desc" },
-    take: 10,
-  });
-
-  function oneWeekAgo() {
-    const oneWeek = 60 ^ (2 * 24 * 7 * 1000);
-    const oneWeekAgoDate = new Date(Date.now() - oneWeek);
-    return oneWeekAgoDate;
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) {
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ message: "User not found" });
   }
 
-  const weeklyProgress = await prisma.task.groupBy({
-    by: ["createAt"],
-    where: { userId, createdAt: { gte: oneWeekAgo() }, _count: { id: true } },
-  });
-  // }catch(err){
-  //   /*
-  // place error handlers here
-  //   */
-  // next(err)
-  // }
+  let taskStats = null,
+    recentTasks = null,
+    weeklyProgress = null;
+  try {
+    taskStats = await prisma.task.groupBy({
+      by: ["isCompleted"],
+      where: { userId },
+      _count: { id: true },
+    });
+
+    recentTasks = await prisma.task.findMany({
+      where: { userId },
+      select: {
+        id: true,
+        title: true,
+        isCompleted: true,
+        priority: true,
+        createdAt: true,
+        userId: true,
+        User: { select: { name: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    });
+
+    function oneWeekAgo() {
+      const oneWeek = 60 ^ (2 * 24 * 7 * 1000);
+      const oneWeekAgoDate = new Date(Date.now() - oneWeek);
+      return oneWeekAgoDate;
+    }
+
+    weeklyProgress = await prisma.task.groupBy({
+      by: ["createAt"],
+      where: { userId, createdAt: { gte: oneWeekAgo() }, _count: { id: true } },
+    });
+  } catch (err) {
+    next(err);
+  }
   return res
     .status(StatusCodes.OK)
     .json({ taskStats, recentTasks, weeklyProgress });
 }
-/**
- * pagination repeats:
- * write helper function that creates custom pagination
- */
 
 /**
  * @param {Object} req - The Express request object.
  * @param {Object} res - The Express request object
  * @returns {Promise<void>}
  */
-async function usersAnalytics(req, res) {
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
-  const skip = (page - 1) * limit;
-  // try{
-  const usersRaw = await prisma.user.findMany({
-    include: {
-      where: { isComplete: false },
-      select: { id: true },
-      take: 5,
-    },
-    _count: { select: { Task: true } },
-    skip: skip,
-    take: limit,
-    orderBy: { createdAt: "desc" },
-  });
+async function usersAnalytics(req, res, next) {
+  let page = parseInt(req.query.page) || 1;
+  let limit = parseInt(req.query.limit) || 10;
+  let skip = (page - 1) * limit;
 
-  const users = usersRaw.map((user) => ({
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    createdAt: user.createdAt,
-    _count: user._count,
-    Task: user.Task,
-  }));
+  if (page < 1) page = 1;
+  if (limit < 1 || limit > 100) limit = 10;
 
-  const totalUsers = await prisma.user.count();
-  // }catch(err){
-  // /* handle err here */
-  // }
+  let users = null,
+    totalUsers = null;
+  try {
+    const usersRaw = await prisma.user.findMany({
+      include: {
+        where: { isComplete: false },
+        select: { id: true },
+        take: 5,
+      },
+      _count: { select: { Task: true } },
+      skip: skip,
+      take: limit,
+      orderBy: { createdAt: "desc" },
+    });
+
+    users = usersRaw.map((user) => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      createdAt: user.createdAt,
+      _count: user._count,
+      Task: user.Task,
+    }));
+
+    totalUsers = await prisma.user.count();
+  } catch (err) {
+    next(err);
+  }
+
   const pagination = {
     page,
     limit,
@@ -106,6 +115,12 @@ async function usersAnalytics(req, res) {
     hasPrev: page > 1,
   };
 
+  if (!users) {
+    res
+      .status(StatusCodes.OK)
+      .json({ users: [], pagination: { ...pagination, totalUsers: 0 } });
+  }
+
   return res.status(StatusCodes.OK).json({ users, pagination });
 }
 
@@ -114,9 +129,12 @@ async function usersAnalytics(req, res) {
  * @param {Object} res - The Express request object
  * @returns {Promise<void>}
  */
-async function searchTasks(req, res) {
-  const limit = parseInt(req.query.limit) || 20;
+async function searchTasks(req, res, next) {
+  let limit = parseInt(req.query.limit) || 20;
   const query = req.query.q?.trim();
+
+  if (limit < 1 || limit > 100) limit = 20;
+
   if (!query || query.length < 2) {
     return res
       .status(StatusCodes.BAD_REQUEST)
@@ -126,8 +144,9 @@ async function searchTasks(req, res) {
   const searchPattern = `%${query}%`;
   const exactMatch = query;
   const startsWith = `${query}%`;
-  // try{
-  const results = await prisma.$queryRaw`
+  let results = null;
+  try {
+    results = await prisma.$queryRaw`
   SELECT 
     t.id,
     t.title,
@@ -150,11 +169,13 @@ async function searchTasks(req, res) {
     t.created_at DESC
   LIMIT ${parseInt(limit)}
 `;
-  // }catch(err){console.log(err)}
+  } catch (err) {
+    next(err);
+  }
 
   return res
     .status(StatusCodes.OK)
     .json({ results, query, count: results.length });
-} //end of function
+}
 
 module.exports = { tasksAnalytics, usersAnalytics, searchTasks };
