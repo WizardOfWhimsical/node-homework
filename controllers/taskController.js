@@ -141,7 +141,9 @@ async function index(req, res, next) {
   }
 
   if (tasks.length === 0) {
-    return res.status(StatusCodes.OK).json({ task: [], pagination });
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ task: [], pagination, message: "Task not found" });
   }
   const pagination = {
     page,
