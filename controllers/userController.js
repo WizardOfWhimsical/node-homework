@@ -7,12 +7,21 @@ const crypto = require("crypto");
 const util = require("util");
 const scrypt = util.promisify(crypto.scrypt);
 
+/**
+ * @param {String} password
+ * @returns string salted/hashed
+ */
 async function hashPassword(password) {
   const salt = crypto.randomBytes(16).toString("hex");
   const derivedKey = await scrypt(password, salt, 64);
   return `${salt}:${derivedKey.toString("hex")}`;
 }
 
+/**
+ * @param {String} inputPassword
+ * @param {String} storedHash
+ * @returns boolean of comparison
+ */
 async function comparePassword(inputPassword, storedHash) {
   const [salt, key] = storedHash.split(":");
   const keyBuffer = Buffer.from(key, "hex");
