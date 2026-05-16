@@ -3,7 +3,6 @@ const { taskSchema, patchTaskSchema } = require("../validation/taskSchema");
 const prisma = require("../db/prisma");
 
 async function create(req, res, next) {
-  // console.log("Creating somehting i hope\n", typeof req.body, req.body);
   if (!req.body) req.body = {};
   const { error, value } = taskSchema.validate(req.body, { abortEarly: false });
 
@@ -15,8 +14,8 @@ async function create(req, res, next) {
   }
 
   value.isCompleted = value.isCompleted ?? false;
-
   const { title, isCompleted, priority } = value;
+
   let newTaskCreated = null;
   try {
     newTaskCreated = await prisma.task.create({
@@ -44,6 +43,7 @@ async function createMany(req, res, next) {
       .status(StatusCodes.BAD_REQUEST)
       .json({ error: "Invalid request data. Expected an array of tasks" });
   }
+
   const validTasks = [];
   for (let task of tasks) {
     const { error, value } = taskSchema.validate(task);
@@ -52,6 +52,7 @@ async function createMany(req, res, next) {
         .status(StatusCodes.BAD_REQUEST)
         .json({ error: "Validation failed", details: error.details });
     }
+
     validTasks.push({
       title: value.title,
       isCompleted: value.isCompleted || false,
@@ -69,6 +70,12 @@ async function createMany(req, res, next) {
   } catch (err) {
     return next(err);
   }
+
+  console.log("CreateMany/taskController: \n", {
+    tasksCreated: result.count,
+    totalRequested: validTasks.length,
+  });
+
   return res.status(StatusCodes.CREATED).json({
     message: "success!",
     tasksCreated: result.count,
@@ -100,16 +107,14 @@ async function index(req, res, next) {
   }
 
   function getOrderBy(query) {
-    console.log("_*_*_*_*_*_*_*_*_*_");
-    console.log("Query\n", query);
-    console.log("*********");
-    //Ej, if i sort by priority and it is a string, does it not do it alphabetically?
     const validSortFields = ["title", "priority", "id", "isComplete"];
     const sortBy = query.sortBy || "createdAt";
     const sortDirection = query.sortDirection === "asc" ? "asc" : "desc";
+
     if (validSortFields.includes(sortBy)) {
       return { [sortBy]: sortDirection };
     }
+
     return { createdAt: "desc" };
   }
 
@@ -145,6 +150,7 @@ async function index(req, res, next) {
       .status(StatusCodes.NOT_FOUND)
       .json({ task: [], pagination, message: "Task not found" });
   }
+
   const pagination = {
     page,
     limit,
@@ -153,10 +159,8 @@ async function index(req, res, next) {
     hasNext: page * limit < total,
     hasPrev: page > 1,
   };
-  console.log("*************************************");
-  console.log("Task task:\n", tasks);
-  console.log("pagination:\n", pagination);
-  console.log("*************************************");
+
+  console.log("Index/taskController: \n", { tasks, pagination });
   res.status(StatusCodes.OK).json({ tasks, pagination });
   return;
 }
