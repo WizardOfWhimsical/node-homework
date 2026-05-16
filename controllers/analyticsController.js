@@ -6,7 +6,7 @@ const { StatusCodes } = require("../index");
  * @param {Object} res - The Express request object
  * @returns {Promise<void>}
  */
-async function getUserAnanlytics(req, res, next) {
+async function getUserAnalytics(req, res, next) {
   const userId = parseInt(req.params.id);
   if (!userId || isNaN(userId)) {
     res
@@ -74,7 +74,7 @@ async function getUserAnanlytics(req, res, next) {
  * @param {Object} res - The Express request object
  * @returns {Promise<void>}
  */
-async function getUserWithStats(req, res, next) {
+async function getUsersWithStats(req, res, next) {
   let page = parseInt(req.query.page) || 1;
   let limit = parseInt(req.query.limit) || 10;
   let skip = (page - 1) * limit;
@@ -87,9 +87,11 @@ async function getUserWithStats(req, res, next) {
   try {
     const usersRaw = await prisma.user.findMany({
       include: {
-        where: { isComplete: false },
-        select: { id: true },
-        take: 5,
+        Task: {
+          where: { isComplete: false },
+          select: { id: true },
+          take: 5,
+        },
       },
       _count: { select: { Task: true } },
       skip: skip,
@@ -108,7 +110,7 @@ async function getUserWithStats(req, res, next) {
 
     totalUsers = await prisma.user.count();
   } catch (err) {
-    next(err);
+    return next(err);
   }
 
   const pagination = {
@@ -121,9 +123,7 @@ async function getUserWithStats(req, res, next) {
   };
 
   if (!users) {
-    res
-      .status(StatusCodes.OK)
-      .json({ users: [], pagination: { ...pagination, totalUsers: 0 } });
+    return res.status(StatusCodes.OK).json({ users: [], pagination: 0 });
   }
   console.log("Get User With Analytics:\n", { users, pagination });
   return res.status(StatusCodes.OK).json({ users, pagination });
@@ -184,4 +184,4 @@ async function searchTasks(req, res, next) {
     .json({ results, query, count: results.length });
 }
 
-module.exports = { getUserAnanlytics, getUserWithStats, searchTasks };
+module.exports = { getUserAnalytics, getUsersWithStats, searchTasks };
