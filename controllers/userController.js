@@ -33,7 +33,7 @@ async function register(req, res, next) {
 
   value.hashedPassword = await hashPassword(value.password);
   delete value.password;
-  // let user = null;
+
   let result = null;
   try {
     const { name, email, hashedPassword } = value;
@@ -65,15 +65,8 @@ async function register(req, res, next) {
           priority: true,
         },
       });
-      // console.log("-----------");
-      // console.log("User\n", user);
-      // console.log("Welcome Tasks\n", welcomeTasks);
-      // console.log("------------");
+
       return { user, welcomeTasks };
-      // user = await prisma.user.create({
-      //   data: { name, email, hashedPassword },
-      //   select: { name: true, email: true, id: true },
-      // });
     });
   } catch (err) {
     if (err.name === "PrismaClientKnownRequestError" && err.code === "P2002") {
@@ -83,9 +76,7 @@ async function register(req, res, next) {
     }
   }
   global.user_id = result.user.id;
-  // console.log("**********************");
-  // console.log("User Registered\n", result);
-  // console.log("**********************");
+
   res.status(StatusCodes.CREATED).json({
     user: result.user,
     welcomeTasks: result.welcomeTasks,
@@ -109,7 +100,10 @@ async function logon(req, res) {
     });
   }
   email = email.toLowerCase();
-  const user = await prisma.user.findUnique({ where: { email } });
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: { id: true, name: true, email: true, createdAt: true },
+  });
 
   if (!user) {
     return res.status(StatusCodes.NOT_FOUND).json({
@@ -167,10 +161,6 @@ async function show(req, res, next) {
       return next(err);
     }
   }
-
-  // if (!user) {
-  //   return res.status(404).json({ message: "User not found" });
-  // }
 
   return res.status(StatusCodes.OK).json(user);
 }

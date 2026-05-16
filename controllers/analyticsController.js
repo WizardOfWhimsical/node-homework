@@ -122,7 +122,7 @@ async function searchTasks(req, res) {
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Search query must be at least 2 characters long" });
   }
-
+  //dont forget, never put users input directly in.
   const searchPattern = `%${query}%`;
   const exactMatch = query;
   const startsWith = `${query}%`;
