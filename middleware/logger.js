@@ -1,8 +1,4 @@
 const chalk = require("chalk");
-// const console.log = console.console.log;
-// const yellow = chalk.yellow;
-// const blue = chalk.blue;
-// const magenta = chalk.magenta;
 
 function requestLogger(req, res, next) {
   console.log("\n" + chalk.blue("=== Incoming Request ==="));
