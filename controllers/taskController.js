@@ -3,6 +3,12 @@ const { taskSchema, patchTaskSchema } = require("../validation/taskSchema");
 const getPrismaErrorInfo = require("../middleware/customPrismaErrorHandling/getPrismaErrorInfo");
 const prisma = require("../db/prisma");
 
+/**
+ * @param {Object} req - The Express request object.
+ * @param {Object} res - The Express request object
+ * @param {Function} next - The Express Middleware
+ * @returns {Promise<void>}
+ */
 async function create(req, res, next) {
   if (!req.body) req.body = {};
   const { error, value } = taskSchema.validate(req.body, { abortEarly: false });
@@ -37,6 +43,12 @@ async function create(req, res, next) {
   return res.status(StatusCodes.CREATED).json(newTaskCreated);
 }
 
+/**
+ * @param {Object} req - The Express request object.
+ * @param {Object} res - The Express request object
+ * @param {Function} next - The Express Middleware
+ * @returns {Promise<void>}
+ */
 async function bulkCreate(req, res, next) {
   const { tasks } = req.body;
   if (!tasks || !Array.isArray(tasks) || tasks.length === 0) {
@@ -86,6 +98,12 @@ async function bulkCreate(req, res, next) {
   });
 }
 
+/**
+ * @param {Object} req - The Express request object.
+ * @param {Object} res - The Express request object
+ * @param {Function} next - The Express Middleware
+ * @returns {Promise<void>}
+ */
 async function index(req, res, next) {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
@@ -167,6 +185,12 @@ async function index(req, res, next) {
   return res.status(StatusCodes.OK).json({ tasks, pagination });
 }
 
+/**
+ * @param {Object} req - The Express request object.
+ * @param {Object} res - The Express request object
+ * @param {Function} next - The Express Middleware
+ * @returns {Promise<void>}
+ */
 async function show(req, res, next) {
   const taskIndex = parseInt(req.params?.id);
 
@@ -190,6 +214,12 @@ async function show(req, res, next) {
   return res.status(StatusCodes.OK).json(taskWithUserInfo);
 }
 
+/**
+ * @param {Object} req - The Express request object.
+ * @param {Object} res - The Express request object
+ * @param {Function} next - The Express Middleware
+ * @returns {Promise<void>}
+ */
 async function update(req, res, next) {
   const taskIndex = parseInt(req.params?.id);
   if (!global.user_id) {
@@ -231,8 +261,7 @@ async function update(req, res, next) {
       },
     });
   } catch (err) {
-    const info = getPrismaErrorInfo(err);
-    console.log("updated error:\n", info);
+    getPrismaErrorInfo(err);
     if (err.code === "P2025") {
       return res.status(404).json({ message: "The task was not found." });
     } else {
@@ -242,7 +271,12 @@ async function update(req, res, next) {
 
   return res.status(StatusCodes.OK).json(tasks);
 }
-
+/**
+ * @param {Object} req - The Express request object.
+ * @param {Object} res - The Express request object
+ * @param {Function} next - The Express Middleware
+ * @returns {Promise<void>}
+ */
 async function deleteTask(req, res, next) {
   const taskIndex = parseInt(req.params?.id);
   if (taskIndex < 0) return;
