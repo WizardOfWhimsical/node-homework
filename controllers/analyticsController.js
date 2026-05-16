@@ -1,9 +1,11 @@
 const prisma = require("../db/prisma");
 const { StatusCodes } = require("../index");
+const getPrismaErrorInfo = require("../middleware/customPrismaErrorHandling/getPrismaErrorInfo");
 
 /**
  * @param {Object} req - The Express request object.
  * @param {Object} res - The Express request object
+ * @param {Function} next - The Express Middleware
  * @returns {Promise<void>}
  */
 async function getUserAnalytics(req, res, next) {
@@ -57,15 +59,9 @@ async function getUserAnalytics(req, res, next) {
       where: { userId, createdAt: { gte: oneWeekAgo() }, _count: { id: true } },
     });
   } catch (err) {
-    console.log("Get User Analytics Error Hit");
+    getPrismaErrorInfo(err);
     next(err);
   }
-
-  console.log("Get User Analytics:\n", {
-    taskStats,
-    recentTasks,
-    weeklyProgress,
-  });
 
   return res
     .status(StatusCodes.OK)
@@ -75,6 +71,7 @@ async function getUserAnalytics(req, res, next) {
 /**
  * @param {Object} req - The Express request object.
  * @param {Object} res - The Express request object
+ * @param {Function} next - The Express Middleware
  * @returns {Promise<void>}
  */
 async function getUsersWithStats(req, res, next) {
@@ -113,7 +110,7 @@ async function getUsersWithStats(req, res, next) {
 
     totalUsers = await prisma.user.count();
   } catch (err) {
-    console.log("Get User With Stats Error Hit");
+    getPrismaErrorInfo(err);
     return next(err);
   }
 
@@ -129,13 +126,14 @@ async function getUsersWithStats(req, res, next) {
   if (!users) {
     return res.status(StatusCodes.OK).json({ users: [], pagination: 0 });
   }
-  console.log("Get User With Analytics:\n", { users, pagination });
+
   return res.status(StatusCodes.OK).json({ users, pagination });
 }
 
 /**
  * @param {Object} req - The Express request object.
  * @param {Object} res - The Express request object
+ * @param {Function} next - The Express Middleware
  * @returns {Promise<void>}
  */
 async function searchTasks(req, res, next) {
@@ -179,11 +177,11 @@ async function searchTasks(req, res, next) {
   LIMIT ${parseInt(limit)}
 `;
   } catch (err) {
+    getPrismaErrorInfo(err);
     console.log("Search Task Error Hit");
-    next(err);
+    return next(err);
   }
 
-  console.log("SearchTasks/analyticsController: \n", { results, query });
   return res
     .status(StatusCodes.OK)
     .json({ results, query, count: results.length });
