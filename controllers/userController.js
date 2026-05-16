@@ -77,8 +77,8 @@ async function register(req, res, next) {
       return next(err);
     }
   }
-  global.user_id = result.user.id;
-
+  global.user_id = result.user.userId;
+  console.log("Register/userController: ", result);
   res.status(StatusCodes.CREATED).json({
     user: result.user,
     welcomeTasks: result.welcomeTasks,
@@ -124,6 +124,7 @@ async function logon(req, res) {
 
   user.isLoggedIn = true;
   global.user_id = user.id;
+  console.log("Logon/userController: \n", user);
   res.status(StatusCodes.OK).json({
     name: user.name,
     email: user.email,
@@ -166,7 +167,7 @@ async function show(req, res, next) {
       return next(err);
     }
   }
-
+  console.log("Show/userController: \n", user);
   return res.status(StatusCodes.OK).json(user);
 }
 
