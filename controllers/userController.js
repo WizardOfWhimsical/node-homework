@@ -4,7 +4,6 @@ const prisma = require("../db/prisma");
 
 const crypto = require("crypto");
 const util = require("util");
-// const { parse } = require("path");
 const scrypt = util.promisify(crypto.scrypt);
 
 async function hashPassword(password) {
@@ -22,7 +21,9 @@ async function comparePassword(inputPassword, storedHash) {
 
 async function register(req, res, next) {
   if (!req.body) req.body = {};
+
   const { error, value } = userSchema.validate(req.body, { abortEarly: false });
+
   if (error) {
     console.log("Validation failed");
     return res.status(400).json({
@@ -35,6 +36,7 @@ async function register(req, res, next) {
   delete value.password;
 
   let result = null;
+
   try {
     const { name, email, hashedPassword } = value;
 
@@ -92,6 +94,7 @@ async function logon(req, res) {
       error: "Bad request",
     });
   }
+
   let { email, password } = req.body;
   if (!email || !password) {
     return res.status(StatusCodes.BAD_REQUEST).json({
@@ -99,6 +102,7 @@ async function logon(req, res) {
       error: "Bad request",
     });
   }
+
   email = email.toLowerCase();
   const user = await prisma.user.findUnique({
     where: { email },
@@ -110,8 +114,8 @@ async function logon(req, res) {
       message: "Please Register an Account",
     });
   }
-  const compairison = await comparePassword(password, user.hashedPassword);
 
+  const compairison = await comparePassword(password, user.hashedPassword);
   if (!compairison) {
     return res.status(StatusCodes.UNAUTHORIZED).json({
       message: "Authentication Failed",
@@ -132,6 +136,7 @@ async function show(req, res, next) {
   if (isNaN(userId)) {
     return res.status(400).json({ error: "Invalid user id" });
   }
+
   let user = null;
   try {
     user = await prisma.user.findUnique({
@@ -166,6 +171,11 @@ async function show(req, res, next) {
 }
 
 async function logoff(req, res) {
+  if (global.user_id === null) {
+    res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "Register to login", error: "Noone logged in" });
+  }
   global.user_id = null;
   res.status(StatusCodes.OK).json({ message: "logged out" });
 }
