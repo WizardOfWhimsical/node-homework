@@ -1,11 +1,13 @@
 const { Router } = require("express");
 const {
-  usersAnalytics,
-  tasksAnalytics,
+  getUserAnanlytics,
+  getUserWithStats,
+  searchTasks,
 } = require("../controllers/analyticsController");
 const router = Router();
 
-router.route("/").get(usersAnalytics);
-router.route("/:id").get(tasksAnalytics);
+router.route("/users").get(getUserWithStats);
+router.route("/users/:id").get(getUserAnanlytics);
+router.route("/tasks/search").get(searchTasks);
 
 module.exports = router;
