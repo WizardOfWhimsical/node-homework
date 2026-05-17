@@ -96,7 +96,7 @@ async function register(req, res, next) {
 
   global.user_id = result.user.userId;
 
-  console.log("Register/userController: ", result);
+  // console.log("Register/userController: ", result);
   return res.status(StatusCodes.CREATED).json({
     user: result.user,
     welcomeTasks: result.welcomeTasks,

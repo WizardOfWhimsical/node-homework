@@ -261,10 +261,11 @@ async function update(req, res, next) {
       },
     });
   } catch (err) {
-    getPrismaErrorInfo(err);
+    // getPrismaErrorInfo(err);
     if (err.code === "P2025") {
       return res.status(404).json({ message: "The task was not found." });
     } else {
+      // console.log("update error catch\n", err);
       return next(err);
     }
   }

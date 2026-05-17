@@ -5,8 +5,8 @@ const {
   errorHandler,
   authMiddleware,
   notFound,
-} = require("./middleware/index");
-const { userRouter, taskRouter, analyticsRouter } = require("./routes/index");
+} = require("./middleware");
+const { userRouter, taskRouter, analyticsRouter } = require("./routes");
 
 global.user_id = null;
 
