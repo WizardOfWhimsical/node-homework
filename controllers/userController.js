@@ -18,8 +18,8 @@ async function hashPassword(password) {
 }
 
 /**
- * @param {String} inputPassword
- * @param {String} storedHash
+ * @param {String}
+ * @param {String}
  * @returns boolean of comparison
  */
 async function comparePassword(inputPassword, storedHash) {
@@ -87,6 +87,7 @@ async function register(req, res, next) {
     });
   } catch (err) {
     getPrismaErrorInfo(err);
+    //Failure on rollback, how do user know?
     if (err.name === "PrismaClientKnownRequestError" && err.code === "P2002") {
       return res.status(400).json({ message: "Email already registered" });
     } else {

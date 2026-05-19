@@ -50,6 +50,12 @@ async function create(req, res, next) {
  * @returns {Promise<void>}
  */
 async function bulkCreate(req, res, next) {
+  if (!global.user_id) {
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ message: "please log in", error: "Noone logged in" });
+  }
+
   const { tasks } = req.body;
   if (!tasks || !Array.isArray(tasks) || tasks.length === 0) {
     return res
@@ -64,12 +70,6 @@ async function bulkCreate(req, res, next) {
       return res
         .status(StatusCodes.BAD_REQUEST)
         .json({ error: "Validation failed", details: error.details });
-    }
-
-    if (!global.user_id) {
-      return res
-        .status(StatusCodes.NOT_FOUND)
-        .json({ message: "please log in", error: "Noone logged in" });
     }
 
     validTasks.push({
