@@ -8,7 +8,8 @@ const {
 } = require("../controllers/taskController");
 const router = Router();
 
-router.route("/").get(index).post(create);
+router.route("/").post(create);
+router.route("/").get(index);
 
 router.route("/:id").get(show).patch(update).delete(deleteTask);
 

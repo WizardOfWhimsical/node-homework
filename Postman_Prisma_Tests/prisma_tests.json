@@ -1,0 +1,950 @@
+{
+	"info": {
+		"_postman_id": "610ca240-fdc5-4b2d-86b9-2ead7f877b1d",
+		"name": "node-homework",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Register Tests",
+			"item": [
+				{
+					"name": "register/success",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "2c9e2e04-23ab-4c7f-9034-f2ae30a8e5ad",
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"",
+									"pm.test(\"✅ Status code is 201 Created\", () => {",
+									"      //just to make sure it can fail.",
+									"    // never trust tests that wont fail",
+									"    // pm.expect(pm.response.code).to.equal(200);",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"});",
+									"",
+									"pm.test(\"✅ Response has name and email\", () => {",
+									"    pm.expect(jsonData).to.have.property(\"name\").that.is.a(\"string\");",
+									"    pm.expect(jsonData).to.have.property(\"email\").that.is.a(\"string\");",
+									"});",
+									"",
+									"pm.test(\"✅ Returned email matches the one we sent\", () => {",
+									"    pm.expect(jsonData.email).to.equal(pm.variables.get(\"uniqueEmail\"));",
+									"});",
+									"",
+									"pm.test(\"✅ No password or hashedPassword leaked\", () => {",
+									"    pm.expect(jsonData).to.not.have.property(\"password\");",
+									"    pm.expect(jsonData).to.not.have.property(\"hashedPassword\");",
+									"});",
+									"",
+									"pm.test(\"✅ Response time is reasonable\", () => {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});",
+									"",
+									"// console.log(\"✅ Registration Success Test Passed - User:\", jsonData);",
+									"// === NEW: Save the created email for later tests ===",
+									"pm.test(\"💾 Save email for duplicate test\", () => {",
+									"    pm.collectionVariables.set(\"registeredEmail\", jsonData.email);",
+									"    console.log(\"💾 Saved email for duplicate test:\", jsonData.email);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "6d5e92c3-8c1d-4079-8aaa-eac17824ed04",
+								"exec": [
+									"// Generate unique email every time",
+									"pm.variables.set(\"timestamp\", Date.now());",
+									"pm.variables.set(\"uniqueEmail\", `test${pm.variables.get(\"timestamp\")}@example.com`);"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"id": "ab5e519f-3009-41ad-8d33-3e6fb5b9ccc4",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"{{uniqueEmail}}\",\n  \"password\": \"SuperSecret123!\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "localhost:3000/api/users/register"
+					},
+					"response": []
+				},
+				{
+					"name": "register/duplicateEmail",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "2c9e2e04-23ab-4c7f-9034-f2ae30a8e5ad",
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"",
+									"pm.test(\"✅ Status code is 400 for duplicate email\", () => {",
+									"    pm.expect(pm.response.code).to.equal(400);",
+									"});",
+									"",
+									"pm.test(\"✅ Returns 'Email already registered' message\", () => {",
+									"    pm.expect(jsonData).to.have.property(\"message\");",
+									"    pm.expect(jsonData.message).to.equal(\"Email already registered\");",
+									"});",
+									"",
+									"pm.test(\"✅ No validation details (it's a duplicate, not schema error)\", () => {",
+									"    pm.expect(jsonData).to.not.have.property(\"details\");",
+									"});",
+									"",
+									"console.log(\"Duplicate email test response:\", jsonData);"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "878b8a83-0a1a-42eb-9473-04f94738b320",
+								"exec": [
+									"// No need for new timestamp here",
+									"// pm.variables.set(\"existingEmail\", \"test1778259881694@example.com\");",
+									"// Use the email saved from the success test",
+									"const savedEmail = pm.collectionVariables.get(\"registeredEmail\");",
+									"",
+									"if (!savedEmail) {",
+									"    console.error(\"No saved email found! Run Success test first.\");",
+									"}",
+									"",
+									"pm.variables.set(\"duplicateEmail\", savedEmail);"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"id": "bb54a9ff-3ce8-422c-b775-7187c996bd00",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Duplicate User\",\n  \"email\": \"{{duplicateEmail}}\",\n  \"password\": \"SuperSecret123!\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "localhost:3000/api/users/register"
+					},
+					"response": []
+				},
+				{
+					"name": "register/invalidEmail",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "2c9e2e04-23ab-4c7f-9034-f2ae30a8e5ad",
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"",
+									"pm.test(\"✅ Status code is 400 for validation failure\", () => {",
+									"    pm.expect(pm.response.code).to.equal(400);",
+									"});",
+									"",
+									"pm.test(\"✅ Returns 'Validation failed' message\", () => {",
+									"    pm.expect(jsonData).to.have.property(\"message\", \"Validation failed\");",
+									"});",
+									"",
+									"pm.test(\"✅ Returns validation details array\", () => {",
+									"    pm.expect(jsonData).to.have.property(\"details\");",
+									"    pm.expect(jsonData.details).to.be.an(\"array\").that.is.not.empty;",
+									"});",
+									"",
+									"pm.test(\"✅ Contains email validation error\", () => {",
+									"    const hasEmailError = jsonData.details.some(detail => ",
+									"        detail.message.includes(\"email\") || ",
+									"        detail.path.includes(\"email\")",
+									"    );",
+									"    pm.expect(hasEmailError).to.be.true;",
+									"});",
+									"",
+									"console.log(\"Invalid email test details:\", jsonData.details);"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "878b8a83-0a1a-42eb-9473-04f94738b320",
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"id": "4513279f-7f61-4435-8041-0b359b5a9600",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Bad Email User\",\n  \"email\": \"thisisnotavalidemail\",\n  \"password\": \"SuperSecret123!\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "localhost:3000/api/users/register"
+					},
+					"response": []
+				}
+			],
+			"id": "373995a0-db12-4890-8078-8b31f12b2871"
+		},
+		{
+			"name": "Create Tests",
+			"item": [
+				{
+					"name": "create/success",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "55df245d-c826-4189-8ff5-b18ad16226ea",
+								"exec": [
+									"const registeredEmail = pm.collectionVariables.get(\"registeredEmail\");",
+									"pm.variables.set(\"loginEmail\", registeredEmail || \"test@example.com\");",
+									"pm.variables.set(\"timestamp\", Date.now());"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "375584d0-4725-49f8-8cfb-69a5fa21c2e0",
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"",
+									"pm.test(\"✅ Status code is 201 Created\", () => {",
+									"    pm.expect(pm.response.code).to.equal(201);",
+									"});",
+									"",
+									"pm.test(\"✅ Returns id, title, and isCompleted\", () => {",
+									"    pm.expect(jsonData).to.have.property(\"id\");",
+									"    pm.expect(jsonData).to.have.property(\"title\").that.is.a(\"string\");",
+									"    pm.expect(jsonData).to.have.property(\"isCompleted\").that.is.a(\"boolean\");",
+									"});",
+									"",
+									"pm.test(\"✅ Title matches what we sent\", () => {",
+									"    pm.expect(jsonData.title).to.include(\"Test Task\");",
+									"});",
+									"",
+									"pm.test(\"✅ Response time is good\", () => {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});",
+									"",
+									"console.log(\"✅ Task Created Successfully:\", jsonData);"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"id": "faccdc5d-b16f-445e-ac70-fd710fe781be",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Test Task {{timestamp}}\",\n  \"isCompleted\": false\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{HOST_URL}}/api/tasks/"
+					},
+					"response": []
+				},
+				{
+					"name": "create/validationError",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "55df245d-c826-4189-8ff5-b18ad16226ea",
+								"exec": [
+									"const registeredEmail = pm.collectionVariables.get(\"registeredEmail\");",
+									"pm.variables.set(\"loginEmail\", registeredEmail || \"test@example.com\");",
+									"pm.variables.set(\"timestamp\", Date.now());"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "375584d0-4725-49f8-8cfb-69a5fa21c2e0",
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"",
+									"pm.test(\"✅ Status code is 400 Bad Request\", () => {",
+									"    pm.expect(pm.response.code).to.equal(400);",
+									"});",
+									"",
+									"pm.test(\"✅ Returns 'Validation Error' message\", () => {",
+									"    pm.expect(jsonData).to.have.property(\"message\", \"Validation Error\");",
+									"});",
+									"",
+									"pm.test(\"✅ Returns error details from Joi\", () => {",
+									"    pm.expect(jsonData).to.have.property(\"error\");",
+									"    pm.expect(jsonData.error).to.be.a(\"string\");",
+									"});",
+									"",
+									"console.log(\"Validation error details:\", jsonData.error);"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"id": "ce94205e-50cd-4119-b6b0-c281b4864067",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"\",\n  \"isCompleted\": \"not-a-boolean\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{HOST_URL}}/api/tasks/"
+					},
+					"response": []
+				},
+				{
+					"name": "create/!login",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "55df245d-c826-4189-8ff5-b18ad16226ea",
+								"exec": [
+									"pm.variables.set(\"timestamp\", Date.now());",
+									"global.user_id = null;  "
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "375584d0-4725-49f8-8cfb-69a5fa21c2e0",
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"",
+									"pm.test(\"✅ Status code is NOT 201 (should fail)\", () => {",
+									"    pm.expect(pm.response.code).to.not.equal(201);",
+									"});",
+									"",
+									"pm.test(\"✅ Returns some kind of error (either 400, 401, or 500)\", () => {",
+									"    pm.expect(pm.response.code).to.be.oneOf([400, 401, 500, 403]);",
+									"});",
+									"",
+									"pm.test(\"✅ Response contains error information\", () => {",
+									"    pm.expect(jsonData).to.have.property(\"message\").that.is.a(\"string\");",
+									"    // or \"error\" depending on how Prisma error is handled",
+									"});",
+									"",
+									"console.log(\"Not logged in response:\", jsonData);",
+									"console.log(\"Status code received:\", pm.response.code);"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"id": "9a9f5e04-d66f-4844-9451-c75187c4f543",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Task Without Login {{timestamp}}\",\n  \"isCompleted\": false\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{HOST_URL}}/api/tasks/"
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"id": "d4c78aef-dc4a-4413-9e9e-a142232db872",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			],
+			"id": "a24cc26d-52c7-4e63-a6d6-e44afd307ad4"
+		},
+		{
+			"name": "Logon Tests",
+			"item": [
+				{
+					"name": "logon/success",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "74f869ba-9993-4945-b54e-1c46f28e4669",
+								"exec": [
+									"const registeredEmail = pm.collectionVariables.get(\"registeredEmail\");",
+									"",
+									"if (registeredEmail) {",
+									"    pm.variables.set(\"loginEmail\", registeredEmail);",
+									"} else {",
+									"    pm.variables.set(\"loginEmail\", \"test@example.com\"); // fallback",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "699b0cc4-19b7-49fe-8197-b6b1d029e44b",
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"",
+									"pm.test(\"✅ Status code is 200 OK\", () => {",
+									"    pm.expect(pm.response.code).to.equal(200);",
+									"});",
+									"",
+									"pm.test(\"✅ Returns name, email and success message\", () => {",
+									"    pm.expect(jsonData).to.have.property(\"name\").that.is.a(\"string\");",
+									"    pm.expect(jsonData).to.have.property(\"email\").that.is.a(\"string\");",
+									"    pm.expect(jsonData).to.have.property(\"message\", \"logged in\");",
+									"});",
+									"",
+									"pm.test(\"✅ Email matches the one we sent\", () => {",
+									"    pm.expect(jsonData.email).to.equal(pm.variables.get(\"loginEmail\"));",
+									"});",
+									"",
+									"pm.test(\"✅ Response time is acceptable\", () => {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});",
+									"",
+									"console.log(\"✅ Login Success - User:\", jsonData);"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"id": "84aa5a8b-8261-4b30-bd0b-ca356a84ec9c",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{loginEmail}}\",\n  \"password\": \"SuperSecret123!\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{HOST_URL}}/api/users/logon"
+					},
+					"response": []
+				},
+				{
+					"name": "logon/badPassword",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "74f869ba-9993-4945-b54e-1c46f28e4669",
+								"exec": [
+									"const registeredEmail = pm.collectionVariables.get(\"registeredEmail\");",
+									"pm.variables.set(\"loginEmail\", registeredEmail || \"test@example.com\");"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "699b0cc4-19b7-49fe-8197-b6b1d029e44b",
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"",
+									"pm.test(\"✅ Status code is 401 Unauthorized\", () => {",
+									"    pm.expect(pm.response.code).to.equal(401);",
+									"});",
+									"",
+									"pm.test(\"✅ Returns 'Authentication Failed' message\", () => {",
+									"    pm.expect(jsonData).to.have.property(\"message\", \"Authentication Failed\");",
+									"});",
+									"",
+									"pm.test(\"✅ Does not return user info on failure\", () => {",
+									"    pm.expect(jsonData).to.not.have.property(\"name\");",
+									"    pm.expect(jsonData).to.not.have.property(\"email\");",
+									"});",
+									"",
+									"console.log(\"Bad password test response:\", jsonData);"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"id": "0f852862-7f06-4b6a-aad5-f5a3791f7925",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{loginEmail}}\",\n  \"password\": \"ThisIsTheWrongPassword123!\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{HOST_URL}}/api/users/logon"
+					},
+					"response": []
+				},
+				{
+					"name": "logon/!loggedin",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "74f869ba-9993-4945-b54e-1c46f28e4669",
+								"exec": [
+									"pm.variables.set(\"fakeEmail\", `nonexistent${Date.now()}@example.com`);"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "699b0cc4-19b7-49fe-8197-b6b1d029e44b",
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"",
+									"pm.test(\"✅ Status code is 404 Not Found\", () => {",
+									"    pm.expect(pm.response.code).to.equal(404);",
+									"});",
+									"",
+									"pm.test(\"✅ Returns 'Please Register an Account' message\", () => {",
+									"    pm.expect(jsonData).to.have.property(\"message\", \"Please Register an Account\");",
+									"});",
+									"",
+									"pm.test(\"✅ Does not return user details on failure\", () => {",
+									"    pm.expect(jsonData).to.not.have.property(\"name\");",
+									"    pm.expect(jsonData).to.not.have.property(\"email\");",
+									"});",
+									"",
+									"console.log(\"User not registered test response:\", jsonData);"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"id": "ce91c7d6-0ef5-4011-9ded-d7f5d52be55a",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{fakeEmail}}\",\n  \"password\": \"SuperSecret123!\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{HOST_URL}}/api/users/logon"
+					},
+					"response": []
+				}
+			],
+			"id": "8043ba39-7046-426a-9b55-291b05bb6d0b"
+		},
+		{
+			"name": "CRUD Operations",
+			"item": [
+				{
+					"name": "CRUD/update",
+					"item": [
+						{
+							"name": "register/createUser",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "2c9e2e04-23ab-4c7f-9034-f2ae30a8e5ad",
+										"exec": [
+											"const jsonData = pm.response.json();",
+											"",
+											"pm.test(\"✅ Status code is 201 Created\", () => {",
+											"    pm.expect(pm.response.code).to.equal(201);",
+											"});",
+											"",
+											"pm.test(\"✅ Saves email for later use (login/create)\", () => {",
+											"    pm.collectionVariables.set(\"uniqueEmail\", jsonData.email);",
+											"    console.log(\"💾 Saved unique email:\", jsonData.email);",
+											"});",
+											"",
+											"console.log(\"✅ Register Success:\", jsonData);"
+										],
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "6d5e92c3-8c1d-4079-8aaa-eac17824ed04",
+										"exec": [
+											"pm.variables.set(\"uniqueEmail\", `Lewis@example.com`);"
+										],
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
+									}
+								}
+							],
+							"id": "f837c303-768d-4d05-87f1-db3899ee6dc5",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"{{uniqueEmail}}\",\n  \"password\": \"SuperSecret123!\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "localhost:3000/api/users/register"
+							},
+							"response": []
+						},
+						{
+							"name": "create/make3Tasks",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "55df245d-c826-4189-8ff5-b18ad16226ea",
+										"exec": [
+											"pm.collectionVariables.set(\"taskIds\", JSON.stringify([]));",
+											"pm.variables.set(\"tasksToCreate\", 3);",
+											"pm.variables.set(\"baseTitle\", `Lewis Task ${Date.now()}`);",
+											"",
+											"const registeredEmail = pm.collectionVariables.get(\"registeredEmail\");",
+											"pm.variables.set(\"loginEmail\", registeredEmail || \"test@example.com\");",
+											"pm.variables.set(\"timestamp\", Date.now());"
+										],
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "375584d0-4725-49f8-8cfb-69a5fa21c2e0",
+										"exec": [
+											"const taskIds = JSON.parse(pm.collectionVariables.get(\"taskIds\")) || [];",
+											"",
+											"pm.test(\"✅ Created multiple tasks successfully\", () => {",
+											"    pm.expect(pm.response.code).to.equal(201);",
+											"});",
+											"",
+											"// This is a bit advanced — it chains creates using pm.sendRequest",
+											"function createTask(index) {",
+											"    if (index === 0) {",
+											"        pm.collectionVariables.set(\"taskIds\", JSON.stringify(taskIds));",
+											"        console.log(\"✅ All tasks created. Saved IDs:\", taskIds);",
+											"        return;",
+											"    }",
+											"",
+											"    const title = `${pm.variables.get(\"baseTitle\")} #${index + 1}`;",
+											"",
+											"    const requestBody = {",
+											"        title: title,",
+											"        isCompleted: false",
+											"    };",
+											"",
+											"    pm.sendRequest({",
+											"        url: pm.request.url,",
+											"        method: \"POST\",",
+											"        header: { \"Content-Type\": \"application/json\" },",
+											"        body: JSON.stringify(requestBody)",
+											"        ",
+											"    }, (err, res) => {",
+											"        if (err) {",
+											"            console.error(\"Error creating task\", index, err);",
+											"            return;",
+											"        }",
+											"",
+											"        const data = res.json();",
+											"        taskIds.push(data.id);",
+											"",
+											"        pm.test(`✅ Task ${index + 1} created - ID: ${data.id}`, () => {",
+											"            pm.expect(data).to.have.property(\"id\");",
+											"            pm.expect(data.title).to.include(\"Lewis Task\");",
+											"        });",
+											"",
+											"        createTask(index - 1); ",
+											"    });",
+											"}",
+											"",
+											"// Start creating tasks",
+											"createTask(3);"
+										],
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
+									}
+								}
+							],
+							"id": "08e7a6a0-cf92-43f0-93fd-541f8e5445fb",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"title\": \"Test Task timestamp\",\n  \"isCompleted\": false\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{HOST_URL}}/api/tasks/"
+							},
+							"response": []
+						},
+						{
+							"name": "index/success",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "f9014d65-fe72-451f-badc-800ba9a62bba",
+										"exec": [
+											"pm.variables.set(\"timestamp\", Date.now());",
+											"console.log(\"🔍 Running Index test at:\", new Date().toISOString());"
+										],
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"id": "eb7cac70-9d96-4c24-8462-22759596b3a3",
+										"exec": [
+											"const jsonData = pm.response.json();",
+											"",
+											"pm.test(\"✅ Status code is 200 OK\", () => {",
+											"    pm.expect(pm.response.code).to.equal(200);",
+											"});",
+											"",
+											"pm.test(\"✅ Returns an array of tasks\", () => {",
+											"    pm.expect(jsonData).to.be.an(\"array\");",
+											"});",
+											"",
+											"pm.test(\"✅ At least one task is returned\", () => {",
+											"    pm.expect(jsonData.length).to.be.at.least(1);",
+											"});",
+											"",
+											"pm.test(\"✅ Each task has id, title, and isCompleted\", () => {",
+											"    jsonData.forEach((task, index) => {",
+											"        pm.expect(task).to.have.property(\"id\");",
+											"        pm.expect(task).to.have.property(\"title\").that.is.a(\"string\");",
+											"        pm.expect(task).to.have.property(\"isCompleted\").that.is.a(\"boolean\");",
+											"        ",
+											"        console.log(`Task ${index + 1}:`, task.title);",
+											"    });",
+											"});",
+											"",
+											"pm.test(\"✅ Response time is acceptable\", () => {",
+											"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+											"});",
+											"",
+											"console.log(`✅ Index Success - ${jsonData.length} tasks returned`);"
+										],
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
+									}
+								}
+							],
+							"id": "876be867-a2c1-4848-8804-bdc8e68da1c1",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"title\": \"\",\n  \"isCompleted\": \"not-a-boolean\"\n}"
+								},
+								"url": "{{HOST_URL}}/api/tasks/"
+							},
+							"response": []
+						}
+					],
+					"id": "d730e608-1545-40df-a24c-bba8f68c9b71"
+				},
+				{
+					"name": "delete()",
+					"id": "e2b63292-ea57-463a-9db5-5720c1482bc2",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{HOST_URL}}/api/tasks?id=1",
+							"host": [
+								"{{HOST_URL}}"
+							],
+							"path": [
+								"api",
+								"tasks"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"id": "4ab40562-ad9a-4c60-b3da-48e1d3b03413"
+		}
+	],
+	"variable": [
+		{
+			"key": "registeredEmail",
+			"value": ""
+		},
+		{
+			"key": "taskIds",
+			"value": ""
+		},
+		{
+			"key": "uniqueEmail",
+			"value": ""
+		}
+	]
+}

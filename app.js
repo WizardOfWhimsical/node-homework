@@ -3,13 +3,11 @@ const { requestLogger, responseLogger } = require("./middleware/logger");
 const errorHandler = require("./middleware/error-handler");
 const authMiddleware = require("./middleware/auth");
 const notFound = require("./middleware/not-found");
-const pool = require("./db/pg-pool");
+const prisma = require("./db/prisma");
 const useRouter = require("./routes/useRoutes");
 const taskRouter = require("./routes/taskRoutes");
 
 global.user_id = null;
-global.users = [];
-global.taskes = [];
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -24,13 +22,15 @@ app.use("/api/tasks", authMiddleware, taskRouter);
 
 app.get("/health", async (req, res) => {
   try {
-    await pool.query("SELECT 1");
+    await prisma.$queryRaw`SELECT 1`;
+
     res.status(StatusCodes.OK).json({ status: "OK", db: "connected" });
   } catch (error) {
     console.error("Error in health check:", error);
     res.status(500).json({ status: "Error" });
   }
 });
+
 app.use(notFound);
 app.use(errorHandler);
 
@@ -52,7 +52,9 @@ async function shutdown(code = 0) {
   try {
     await new Promise((resolve) => server.close(resolve));
     console.log("HTTP server closed.");
-    await pool.end();
+    // await pool.end();
+    await prisma.$disconnect();
+    console.log("Prisma Disconnected");
   } catch (err) {
     console.error("Error during shutdown:\n", err);
     code = 1;
