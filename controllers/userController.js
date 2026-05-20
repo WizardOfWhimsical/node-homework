@@ -95,7 +95,7 @@ async function register(req, res, next) {
     }
   }
 
-  global.user_id = result.user.userId;
+  global.user_id = result.user.id;
 
   // console.log("Register/userController: ", result);
   return res.status(StatusCodes.CREATED).json({

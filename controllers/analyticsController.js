@@ -49,13 +49,13 @@ async function getUserAnalytics(req, res, next) {
     });
 
     function oneWeekAgo() {
-      const oneWeek = 60 ^ (2 * 24 * 7 * 1000);
+      const oneWeek = (60 ^ 2) * 24 * 7 * 1000;
       const oneWeekAgoDate = new Date(Date.now() - oneWeek);
       return oneWeekAgoDate;
     }
 
     weeklyProgress = await prisma.task.groupBy({
-      by: ["createAt"],
+      by: ["createdAt"],
       where: { userId, createdAt: { gte: oneWeekAgo() }, _count: { id: true } },
     });
   } catch (err) {

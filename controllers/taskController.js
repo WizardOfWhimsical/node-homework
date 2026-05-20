@@ -167,12 +167,6 @@ async function index(req, res, next) {
     }
   }
 
-  if (tasks.length === 0) {
-    return res
-      .status(StatusCodes.OK)
-      .json({ task: [], pagination, message: "Task not found" });
-  }
-
   const pagination = {
     page,
     limit,
@@ -181,6 +175,12 @@ async function index(req, res, next) {
     hasNext: page * limit < total,
     hasPrev: page > 1,
   };
+
+  if (tasks.length === 0) {
+    return res
+      .status(StatusCodes.OK)
+      .json({ task: [], pagination, message: "Task not found" });
+  }
 
   return res.status(StatusCodes.OK).json({ tasks, pagination });
 }
