@@ -1,32 +1,41 @@
 $kind: http-request
-name: SearchTooShort
-url: "{{HOST}}/api/analytics/tasks/search?q=a"
+name: SearchQueryWithLof
+url: "{{HOST}}/api/analytics/tasks/search?q=task&limit=20"
 method: GET
 queryParams:
-  q: a
+  q: task
+  limit: "20"
 scripts:
   - type: afterResponse
     code: |-
-      pm.test("Status code is 400 for short queries", function () {
-          pm.response.to.have.status(400);
+      pm.test("Status code is 200", function () {
+          pm.response.to.have.status(200);
+      });
+
+      const jsonData = pm.response.json();
+
+      pm.test("Search response matches exact schema", function () {
+          pm.expect(jsonData).to.have.property("results");
+          pm.expect(jsonData).to.have.property("query");
+          pm.expect(jsonData).to.have.property("count");
+          pm.expect(jsonData.results).to.be.an('array');
       });
 
 
-      // pm.sendRequest({
-      //     url: "{{HOST}}/api/users/logoff",
-      //     method: 'DELETE',
-      // }, (err, res) => {
-      //     if (err) {
-      //         console.log("Post-res logoff: ", err);
-      //     } else {
-      //         console.log("Server global variable is null");
-      //     }
-      // });
+      pm.sendRequest({
+          url: "{{HOST}}/api/users/logoff",
+          method: 'DELETE',
+      }, (err, res) => {
+          if (err) {
+              console.log("Post-res logoff: ", err);
+          } else {
+              console.log("Server global variable is null");
+          }
+      });
     language: text/javascript
   - type: beforeRequest
     code: |
       // this is only needed when we run singular tests
-
       // pm.sendRequest({
       //     url: "{{HOST}}/api/users/logon",
       //     method: 'POST',
@@ -46,4 +55,4 @@ scripts:
       //     }
       // });
     language: text/javascript
-order: 4409949856934520
+order: 4274258455814810

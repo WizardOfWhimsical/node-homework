@@ -1,0 +1,4 @@
+$kind: collection
+name: AnaylyticsTests
+description: These tests are ment to be _**ran in order**_. The first test pre-script logs user in using global variables set for this folder. The last test, as stated in the name, has a post-script that logs said user off.
+order: 3394443726028799
