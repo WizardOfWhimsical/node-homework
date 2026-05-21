@@ -1,5 +1,6 @@
 const { morgan, express, StatusCodes, prisma } = require("./index");
 const {
+  setUniqueId,
   requestLogger,
   responseLogger,
   errorHandler,
@@ -16,7 +17,7 @@ const port = process.env.PORT || 3000;
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(morgan("dev"));
-app.use(requestLogger, responseLogger);
+app.use(setUniqueId, requestLogger, responseLogger);
 
 app.use("/api/users", userRouter);
 app.use("/api/tasks", authMiddleware, taskRouter);
