@@ -57,7 +57,13 @@ async function bulkCreate(req, res, next) {
   }
 
   const { tasks } = req.body;
-  if (!tasks || !Array.isArray(tasks) || tasks.length === 0) {
+  console.log(
+    "Received tasks for bulk creation:",
+    !Array.isArray(tasks),
+    tasks.length > 2,
+    !tasks,
+  );
+  if (!tasks || !Array.isArray(tasks) || !(tasks.length > 2)) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ error: "Invalid request data. Expected an array of tasks" });

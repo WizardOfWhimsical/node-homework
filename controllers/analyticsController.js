@@ -56,7 +56,8 @@ async function getUserAnalytics(req, res, next) {
 
     weeklyProgress = await prisma.task.groupBy({
       by: ["createdAt"],
-      where: { userId, createdAt: { gte: oneWeekAgo() }, _count: { id: true } },
+      where: { userId, createdAt: { gte: oneWeekAgo() } },
+      _count: { id: true },
     });
   } catch (err) {
     getPrismaErrorInfo(err);
