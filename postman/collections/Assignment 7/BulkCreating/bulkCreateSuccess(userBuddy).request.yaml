@@ -1,0 +1,66 @@
+$kind: http-request
+name: bulkCreateSuccess(userBuddy)
+url: "{{HOST}}/api/tasks/bulk"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+        "tasks": [
+            { "title": "Bulk task 5", "priority": "high" },
+            { "title": "Bulk task 6", "priority": "medium" },
+            { "title": "Bulk task 7", "priority": "low" }
+        ]
+    }
+scripts:
+  - type: beforeRequest
+    code: |
+      // Sends a login request to trigger your server's global variable assignment
+      pm.sendRequest({
+          url: "{{HOST}}/api/users/logon",
+          method: 'POST',
+          header: { 'Content-Type': 'application/json' },
+          body: {
+              mode: 'raw',
+              raw: JSON.stringify({
+                  email: pm.globals.get("userBuddyEmail"),
+                  password: pm.globals.get("password")
+              })
+          }
+      }, function (err, res) {
+          if (err) {
+              console.log("Pre-request login failed: ", err);
+          } else {
+              console.log("Server global variable updated for user1");
+          }
+      });
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 201", function () {
+          pm.response.to.have.status(201);
+      });
+
+      const jsonData = pm.response.json();
+
+      pm.test("Tasks created count matches", function () {
+          pm.expect(jsonData.tasksCreated).to.eql(3);
+      });
+
+      pm.test("Total requested count matches", function () {
+          pm.expect(jsonData.totalRequested).to.eql(3);
+      });
+
+
+      pm.sendRequest({
+          url: "{{HOST}}/api/users/logoff",
+          method: 'DELETE',
+      }, (err, res) => {
+          if (err) {
+              console.log("Post-res logoff: ", err);
+          } else {
+              console.log("Server global variable is null");
+          }
+      });
+    language: text/javascript
+order: 1779387494795

@@ -1,0 +1,26 @@
+$kind: http-request
+name: UsersAnalytics
+url: "{{HOST}}/api/analytics/users/"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |
+      pm.test("Status code is 200", function () {
+          pm.response.to.have.status(200);
+      });
+
+      const jsonData = pm.response.json();
+
+      pm.test("Response contains users and pagination objects", function () {
+          pm.expect(jsonData).to.have.property("users");
+          pm.expect(jsonData).to.have.property("pagination");
+      });
+
+      pm.test("User data contains nested Task count", function () {
+          if (jsonData.users.length > 0) {
+              pm.expect(jsonData.users[0]).to.have.property("_count");
+              pm.expect(jsonData.users[0]._count).to.have.property("Task");
+          }
+      });
+    language: text/javascript
+order: 4360117716427823

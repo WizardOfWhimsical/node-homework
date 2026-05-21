@@ -1,0 +1,52 @@
+$kind: http-request
+name: SpecificUserAnalytics
+url: "{{HOST}}/api/analytics/users/{{userBuddy_db_id}}"
+method: GET
+scripts:
+  - type: beforeRequest
+    code: |
+      pm.sendRequest({
+          url: "{{HOST}}/api/users/logon",
+          method: 'POST',
+          header: { 'Content-Type': 'application/json' },
+          body: {
+              mode: 'raw',
+              raw: JSON.stringify({
+                  email: pm.globals.get("userBuddyEmail"),
+                  password: pm.globals.get("password")
+              })
+          }
+      }, function (err, res) {
+          if (err) {
+              console.log("Pre-request login failed: ", err);
+          } else {
+              console.log("Server global variable updated for user1");
+          }
+      });
+    language: text/javascript
+  - type: afterResponse
+    code: |+
+      pm.test("Status code is 200", function () {
+          pm.response.to.have.status(200);
+      });
+
+      const jsonData = pm.response.json();
+
+      pm.test("Response has required analytics properties", function () {
+          pm.expect(jsonData).to.have.property("taskStats");
+          pm.expect(jsonData).to.have.property("recentTasks");
+          pm.expect(jsonData).to.have.property("weeklyProgress");
+      });
+
+      pm.test("taskStats is an array with correct group by keys", function () {
+          pm.expect(jsonData.taskStats).to.be.an('array');
+          
+          // If the array has data, check its property keys
+          if (jsonData.taskStats.length > 0) {
+              pm.expect(jsonData.taskStats[0]).to.have.property("isCompleted");
+              pm.expect(jsonData.taskStats[0]).to.have.property("_count");
+          }
+      });
+
+    language: text/javascript
+order: 4177189509190145
