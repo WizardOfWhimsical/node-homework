@@ -1,0 +1,20 @@
+$kind: http-request
+name: DuplicateEmailCheck
+url: "{{HOST}}/api/users/register"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+      "email": "{{uniqueEmail1}}",
+      "name": "Buddy",
+      "password": "Pa$$word20"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 400", function () {
+          pm.response.to.have.status(400);
+      });
+    language: text/javascript
+order: 4461935026930475

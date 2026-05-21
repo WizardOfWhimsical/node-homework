@@ -1,0 +1,9 @@
+$kind: http-request
+name: EagerLoadingShowWithPagination
+url: "{{HOST}}/api/tasks/9"
+method: GET
+scripts:
+  - type: beforeRequest
+    code: // pm.collectionVariables.get("saveTaskId")
+    language: text/javascript
+order: 4204593114203454
