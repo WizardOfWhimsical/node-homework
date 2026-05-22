@@ -1,6 +1,6 @@
 const { StatusCodes, prisma, jwt, crypto, util } = require("../index");
 const { userSchema } = require("../validation/userSchema");
-const getPrismaErrorInfo = require("../middleware/index");
+const { getPrismaErrorInfo } = require("../middleware/index");
 
 const scrypt = util.promisify(crypto.scrypt);
 const { randomUUID } = crypto;
@@ -123,11 +123,11 @@ async function register(req, res, next) {
       return { user, welcomeTasks };
     });
   } catch (err) {
-    getPrismaErrorInfo(err);
     //Failure on rollback, how do user know?
     if (err.name === "PrismaClientKnownRequestError" && err.code === "P2002") {
       return res.status(400).json({ message: "Email already registered" });
     } else {
+      getPrismaErrorInfo(err);
       return next(err);
     }
   }
@@ -248,12 +248,6 @@ async function show(req, res, next) {
 }
 
 async function logoff(req, res) {
-  if (global.user_id === null) {
-    return res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ message: "Register to login", error: "Noone logged in" });
-  }
-  // global.user_id = null;
   res.clearCookie("jwt", cookieFlags(req));
   return res.status(StatusCodes.OK).json({ message: "logged out" });
 }
