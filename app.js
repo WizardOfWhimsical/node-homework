@@ -24,11 +24,21 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.set("trust proxy", 1);
+
+app.use(
+  rateLimiter({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+  }),
+);
+
 app.use(
   express.urlencoded({ extended: true }),
   express.json(),
   morgan("dev"),
   cookieParser(),
+  helmet(),
+  xss(),
   setUniqueId,
   requestLogger,
   responseLogger,
