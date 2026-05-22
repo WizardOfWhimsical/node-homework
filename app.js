@@ -13,12 +13,9 @@ const {
   requestLogger,
   responseLogger,
   errorHandler,
-  // authMiddleware,
   notFound,
 } = require("./middleware");
 const { userRouter, taskRouter, analyticsRouter } = require("./routes");
-
-global.user_id = null;
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -79,7 +76,6 @@ async function shutdown(code = 0) {
   try {
     await new Promise((resolve) => server.close(resolve));
     console.log("HTTP server closed.");
-    // await pool.end();
     await prisma.$disconnect();
     console.log("Prisma Disconnected");
   } catch (err) {

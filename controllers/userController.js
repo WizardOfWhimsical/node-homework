@@ -5,12 +5,6 @@ const { getPrismaErrorInfo } = require("../middleware/index");
 const scrypt = util.promisify(crypto.scrypt);
 const { randomUUID } = crypto;
 
-// const prisma = require("../db/prisma");
-// const jwt = require("jsonewebtoken")
-// const crypto = require("crypto");
-// const { randomUUID } = crypto;
-// const util = require("util");
-
 /**
  * @param {String} password
  * @returns string salted/hashed
@@ -132,15 +126,15 @@ async function register(req, res, next) {
     }
   }
 
-  // global.user_id = result.user.id;
   result.user.csrfToken = setJwtCookie(req, res, result.user);
-  // console.log("Register/userController: ", result);
+
   return res.status(StatusCodes.CREATED).json({
     user: result.user,
     welcomeTasks: result.welcomeTasks,
     transactionStatus: "success",
   });
 }
+
 /**
  * @param {Object} req - The Express request object.
  * @param {Object} res - The Express request object
@@ -192,8 +186,8 @@ async function logon(req, res, next) {
       message: "Authentication Failed",
     });
   }
+
   user.csrfToken = setJwtCookie(req, res, user);
-  // global.user_id = user.id;
 
   res.status(StatusCodes.OK).json({
     name: user.name,
