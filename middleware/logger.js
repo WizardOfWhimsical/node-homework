@@ -18,16 +18,25 @@ function requestLogger(req, res, next) {
 }
 
 function responseLogger(req, res, next) {
+  const originalJson = res.json;
+
+  res.json = function (body) {
+    res.responseBody = body;
+    return originalJson.call(this, body);
+  };
+
   res.on("finish", () => {
-    console.log("\n" + chalk.blue("=== Out going response ==="));
-    // console.log(chalk.magenta("Response Request"), res.req);
+    console.log("\n" + chalk.blue("=== Out going Response ==="));
     console.log(
       chalk.magenta("Response Message"),
-      res.message || "Was not one",
+      res.responseBody.message || "Was not one",
     );
     console.log(chalk.magenta("Requested Url"), res.req.originalUrl);
+    console.log(chalk.magenta("Requested Id"), res.req.req);
     console.log(chalk.magenta("Response Method"), res.req.method);
     console.log(chalk.magenta("Response Headers"), "\n", res.getHeaders());
+    console.log(chalk.magenta("Response Body"), "\n", res.responseBody);
+
     console.log(chalk.blue("=== End ===" + "\n"));
   });
   next();
