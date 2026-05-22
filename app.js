@@ -4,6 +4,9 @@ const {
   StatusCodes,
   prisma,
   cookieParser,
+  helmet,
+  xss,
+  rateLimiter,
 } = require("./index");
 const {
   setUniqueId,
@@ -20,6 +23,7 @@ global.user_id = null;
 const app = express();
 const port = process.env.PORT || 3000;
 
+app.set("trust proxy", 1);
 app.use(
   express.urlencoded({ extended: true }),
   express.json(),
