@@ -11,7 +11,8 @@ const prisma = require("../db/prisma");
  */
 async function create(req, res, next) {
   if (!req.body) req.body = {};
-  if (!req.user) {
+  const user = parseInt(req.user);
+  if (!user || !isNaN(user)) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "No user logged in", error: "Bad Request" });
@@ -32,7 +33,7 @@ async function create(req, res, next) {
   let newTaskCreated = null;
   try {
     newTaskCreated = await prisma.task.create({
-      data: { title, isCompleted, priority, userId: req.user },
+      data: { title, isCompleted, priority, userId: user },
       select: { title: true, priority: true, isCompleted: true, id: true },
     });
   } catch (err) {
