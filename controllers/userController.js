@@ -132,8 +132,8 @@ async function register(req, res, next) {
     }
   }
 
-  global.user_id = result.user.id;
-
+  // global.user_id = result.user.id;
+  result.user.csrfToken = setJwtCookie(req, res, result.user);
   // console.log("Register/userController: ", result);
   return res.status(StatusCodes.CREATED).json({
     user: result.user,
