@@ -11,6 +11,12 @@ const prisma = require("../db/prisma");
  */
 async function create(req, res, next) {
   if (!req.body) req.body = {};
+  if (!req.user) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "No user logged in", error: "Bad Request" });
+  }
+
   const { error, value } = taskSchema.validate(req.body, { abortEarly: false });
 
   if (error) {
@@ -26,16 +32,16 @@ async function create(req, res, next) {
   let newTaskCreated = null;
   try {
     newTaskCreated = await prisma.task.create({
-      data: { title, isCompleted, priority, userId: global.user_id },
+      data: { title, isCompleted, priority, userId: req.user },
       select: { title: true, priority: true, isCompleted: true, id: true },
     });
   } catch (err) {
-    getPrismaErrorInfo(err);
     if (err.code === "P2003" || err.code === "P2014") {
       return res
         .status(404)
         .json({ message: "Invalid user, email not registered" });
     } else {
+      getPrismaErrorInfo(err);
       return next(err);
     }
   }
@@ -50,7 +56,7 @@ async function create(req, res, next) {
  * @returns {Promise<void>}
  */
 async function bulkCreate(req, res, next) {
-  if (!global.user_id) {
+  if (!req.user) {
     return res
       .status(StatusCodes.NOT_FOUND)
       .json({ message: "please log in", error: "Noone logged in" });
@@ -82,7 +88,7 @@ async function bulkCreate(req, res, next) {
       title: value.title,
       isCompleted: value.isCompleted || false,
       priority: value.priority || "medium",
-      userId: global.user_id,
+      userId: req.user,
     });
   }
 
@@ -114,7 +120,7 @@ async function index(req, res, next) {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
-  const whereClause = { userId: global.user_id };
+  const whereClause = { userId: req.user };
 
   let tasks = null;
   let total = null;
@@ -126,7 +132,7 @@ async function index(req, res, next) {
     };
   }
 
-  if (!global.user_id) {
+  if (!req.user) {
     return res.status(StatusCodes.UNAUTHORIZED).json({
       message: "No user logged in",
       error: ReasonPhrases.UNAUTHORIZED,
@@ -163,12 +169,12 @@ async function index(req, res, next) {
 
     total = await prisma.task.count({ where: whereClause });
   } catch (err) {
-    getPrismaErrorInfo(err);
     if (err.code === "P1001") {
       return res.status(404).json({ message: "Database couldn't be reached" });
     } else if (err.code === "P2009") {
       return res.status(404).json({ message: "Field(s) does not exist" });
     } else {
+      getPrismaErrorInfo(err);
       return next(err);
     }
   }
@@ -205,7 +211,7 @@ async function show(req, res, next) {
   let taskWithUserInfo = null;
   try {
     taskWithUserInfo = await prisma.task.findUnique({
-      where: { id_userId: { id: taskIndex, userId: global.user_id } },
+      where: { id_userId: { id: taskIndex, userId: req.user } },
       include: { User: { select: { id: true, name: true, email: true } } },
     });
   } catch (err) {
@@ -228,7 +234,7 @@ async function show(req, res, next) {
  */
 async function update(req, res, next) {
   const taskIndex = parseInt(req.params?.id);
-  if (!global.user_id) {
+  if (!req.user) {
     return res.status(StatusCodes.UNAUTHORIZED).json({
       message: "No user logged in",
       error: ReasonPhrases.UNAUTHORIZED,
@@ -255,7 +261,7 @@ async function update(req, res, next) {
     tasks = await prisma.task.update({
       where: {
         id: taskIndex,
-        userId: global.user_id,
+        userId: req.user,
       },
       data: value,
       select: {
@@ -267,11 +273,10 @@ async function update(req, res, next) {
       },
     });
   } catch (err) {
-    // getPrismaErrorInfo(err);
     if (err.code === "P2025") {
       return res.status(404).json({ message: "The task was not found." });
     } else {
-      // console.log("update error catch\n", err);
+      getPrismaErrorInfo(err);
       return next(err);
     }
   }
@@ -293,15 +298,15 @@ async function deleteTask(req, res, next) {
     task = await prisma.task.delete({
       where: {
         id: taskIndex,
-        userId: global.user_id,
+        userId: req.user,
       },
       select: { title: true, isCompleted: true, id: true },
     });
   } catch (err) {
-    getPrismaErrorInfo(err);
     if (err.code === "P2025") {
       return res.status(404).json({ message: "The task was not found." });
     } else {
+      getPrismaErrorInfo(err);
       return next(err);
     }
   }
