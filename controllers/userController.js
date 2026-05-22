@@ -192,12 +192,13 @@ async function logon(req, res, next) {
       message: "Authentication Failed",
     });
   }
-
-  global.user_id = user.id;
+  user.csrfToken = setJwtCookie(req, res, user);
+  // global.user_id = user.id;
 
   res.status(StatusCodes.OK).json({
     name: user.name,
     email: user.email,
+    csrfToken: user.csrfToken,
     message: "logged in",
   });
 }
