@@ -253,7 +253,8 @@ async function logoff(req, res) {
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Register to login", error: "Noone logged in" });
   }
-  global.user_id = null;
+  // global.user_id = null;
+  res.clearCookie("jwt", cookieFlags(req));
   return res.status(StatusCodes.OK).json({ message: "logged out" });
 }
 
