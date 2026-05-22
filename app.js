@@ -14,10 +14,14 @@ global.user_id = null;
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-app.use(morgan("dev"));
-app.use(setUniqueId, requestLogger, responseLogger);
+app.use(
+  express.urlencoded({ extended: true }),
+  express.json(),
+  morgan("dev"),
+  setUniqueId,
+  requestLogger,
+  responseLogger,
+);
 
 app.use("/api/users", userRouter);
 app.use("/api/tasks", authMiddleware, taskRouter);
@@ -34,8 +38,7 @@ app.get("/health", async (req, res) => {
   }
 });
 
-app.use(notFound);
-app.use(errorHandler);
+app.use(notFound, errorHandler);
 
 const server = app.listen(port, () => console.log(`Listening @ port ${3000}`));
 

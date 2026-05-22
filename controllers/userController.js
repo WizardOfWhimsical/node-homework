@@ -210,13 +210,15 @@ async function show(req, res, next) {
 }
 
 async function logoff(req, res) {
+  // console.log("hitting");
+  // return;
   if (global.user_id === null) {
     res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Register to login", error: "Noone logged in" });
   }
   global.user_id = null;
-  res.status(StatusCodes.OK).json({ message: "logged out" });
+  return res.status(StatusCodes.OK).json({ message: "logged out" });
 }
 
 module.exports = { register, logon, logoff, show };
