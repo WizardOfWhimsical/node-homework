@@ -4,7 +4,7 @@ const {
   requestLogger,
   responseLogger,
   errorHandler,
-  authMiddleware,
+  // authMiddleware,
   notFound,
 } = require("./middleware");
 const { userRouter, taskRouter, analyticsRouter } = require("./routes");
@@ -24,8 +24,8 @@ app.use(
 );
 
 app.use("/api/users", userRouter);
-app.use("/api/tasks", authMiddleware, taskRouter);
-app.use("/api/analytics/", authMiddleware, analyticsRouter);
+app.use("/api/tasks", taskRouter);
+app.use("/api/analytics/", analyticsRouter);
 
 app.get("/health", async (req, res) => {
   try {
