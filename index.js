@@ -8,7 +8,7 @@ const morgan = require("morgan");
 const { Pool } = require("pg");
 const prisma = require("./db/prisma");
 const crypto = require("crypto");
-const jwt = require("jsonewebtoken");
+const jwt = require("jsonwebtoken");
 const util = require("util");
 
 module.exports = {
