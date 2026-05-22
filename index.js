@@ -10,6 +10,7 @@ const prisma = require("./db/prisma");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const util = require("util");
+const cookieParser = require("cookie-parser");
 
 module.exports = {
   StatusCodes,
@@ -22,4 +23,5 @@ module.exports = {
   crypto,
   jwt,
   util,
+  cookieParser,
 };

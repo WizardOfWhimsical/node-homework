@@ -1,4 +1,10 @@
-const { morgan, express, StatusCodes, prisma } = require("./index");
+const {
+  morgan,
+  express,
+  StatusCodes,
+  prisma,
+  cookieParser,
+} = require("./index");
 const {
   setUniqueId,
   requestLogger,
@@ -18,6 +24,7 @@ app.use(
   express.urlencoded({ extended: true }),
   express.json(),
   morgan("dev"),
+  cookieParser(),
   setUniqueId,
   requestLogger,
   responseLogger,
