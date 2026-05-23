@@ -29,10 +29,10 @@ function responseLogger(req, res, next) {
     console.log("\n" + chalk.blue("=== Out going Response ==="));
     console.log(
       chalk.magenta("Response Message"),
-      res.responseBody.message || "Was not one",
+      res.responseBody.message || res.responseBody.error || "Should be one",
     );
     console.log(chalk.magenta("Requested Url"), res.req.originalUrl);
-    console.log(chalk.magenta("Requested Id"), res.req.req);
+    console.log(chalk.magenta("Requested Id"), res.req.requestId);
     console.log(chalk.magenta("Response Method"), res.req.method);
     console.log(chalk.magenta("Response Headers"), "\n", res.getHeaders());
     console.log(chalk.magenta("Response Body"), "\n", res.responseBody);
