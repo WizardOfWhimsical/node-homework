@@ -7,6 +7,7 @@ function requestLogger(req, res, next) {
   console.log(chalk.yellow("Path:"), req?.path || "Nothing was here");
   console.log(chalk.yellow("Query:"), req?.query || "Nothing was here");
   console.log(chalk.yellow("Params:"), req?.params || "Nothing was here");
+  console.log(chalk.yellow("User:"), req?.user || "Nothing was here");
   console.log(chalk.yellow("Body:"), req?.body || "Nothing was here");
   console.log(
     chalk.yellow("Headers:"),
