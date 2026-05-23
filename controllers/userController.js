@@ -117,7 +117,6 @@ async function register(req, res, next) {
       return { user, welcomeTasks };
     });
   } catch (err) {
-    //Failure on rollback, how do user know?
     if (err.name === "PrismaClientKnownRequestError" && err.code === "P2002") {
       return res.status(400).json({ message: "Email already registered" });
     } else {

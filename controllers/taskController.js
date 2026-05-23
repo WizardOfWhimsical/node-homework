@@ -1,7 +1,6 @@
-const { StatusCodes, ReasonPhrases } = require("../index");
+const { StatusCodes, prisma } = require("../index");
 const { taskSchema, patchTaskSchema } = require("../validation/taskSchema");
-const getPrismaErrorInfo = require("../middleware/customPrismaErrorHandling/getPrismaErrorInfo");
-const prisma = require("../db/prisma");
+const getPrismaErrorInfo = require("../middleware/index");
 
 /**
  * @param {Object} req - The Express request object.
@@ -24,15 +23,6 @@ async function create(req, res, next) {
       error: "Invalid user id",
     });
   }
-  // const validUser = await prisma.user.findUnique({
-  //   where: { id: user_id },
-  // });
-  // if (!validUser) {
-  //   return res.status(StatusCodes.BAD_REQUEST).json({
-  //     message: "User not found",
-  //     error: "User does not exist in Database",
-  //   });
-  // }
 
   const { error, value } = taskSchema.validate(req.body, { abortEarly: false });
 
@@ -176,14 +166,8 @@ async function index(req, res, next) {
 
     total = await prisma.task.count({ where: whereClause });
   } catch (err) {
-    // if (err.code === "P1001") {
-    //   return res.status(404).json({ message: "Database couldn't be reached" });
-    // } else if (err.code === "P2009") {
-    //   return res.status(404).json({ message: "Field(s) does not exist" });
-    // } else {
     getPrismaErrorInfo(err);
     return next(err);
-    // }
   }
 
   const pagination = {
