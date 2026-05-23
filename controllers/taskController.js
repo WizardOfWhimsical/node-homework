@@ -14,7 +14,7 @@ async function create(req, res, next) {
   if (!req.body) req.body = {};
 
   const user_id = parseInt(req.user.id);
-  if (!user_id || !isNaN(user_id)) {
+  if (!user_id || isNaN(user_id)) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "No user logged in", error: "Bad Request" });
@@ -61,7 +61,7 @@ async function create(req, res, next) {
 async function bulkCreate(req, res, next) {
   //DRY
   const user_id = parseInt(req.user.id);
-  if (!user_id || !isNaN(user_id)) {
+  if (!user_id || isNaN(user_id)) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "No user logged in", error: "Bad Request" });
@@ -122,7 +122,7 @@ async function index(req, res, next) {
   const skip = (page - 1) * limit;
   //DRY
   const user_id = parseInt(req.user.id);
-  if (!user_id || !isNaN(user_id)) {
+  if (!user_id || isNaN(user_id)) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "No user logged in", error: "Bad Request" });
@@ -208,7 +208,7 @@ async function show(req, res, next) {
   const taskIndex = parseInt(req.params?.id);
   const user_id = parseInt(req.user.id);
   //DRY
-  if (!user_id || !isNaN(user_id)) {
+  if (!user_id || isNaN(user_id)) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "No user logged in", error: "Bad Request" });
@@ -247,7 +247,7 @@ async function update(req, res, next) {
   const taskIndex = parseInt(req.params?.id);
   const user_id = parseInt(req.user.id);
   //DRY
-  if (!user_id || !isNaN(user_id)) {
+  if (!user_id || isNaN(user_id)) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "No user logged in", error: "Bad Request" });
@@ -311,7 +311,7 @@ async function deleteTask(req, res, next) {
       .json({ message: "Must be a number", error: "taskIndex check failed" });
   }
 
-  if (!user_id || !isNaN(user_id)) {
+  if (!user_id || isNaN(user_id)) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "No user logged in", error: "Bad Request, log in" });
