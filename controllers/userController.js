@@ -130,6 +130,7 @@ async function register(req, res, next) {
 
   return res.status(StatusCodes.CREATED).json({
     user: result.user,
+    csrfToken: result.user.csrfToken,
     welcomeTasks: result.welcomeTasks,
     transactionStatus: "success",
   });

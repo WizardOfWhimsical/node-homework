@@ -10,23 +10,36 @@ const prisma = require("../db/prisma");
  * @returns {Promise<void>}
  */
 async function create(req, res, next) {
-  //DRY
   if (!req.body) req.body = {};
-
+  //DRY
   const user_id = parseInt(req.user.id);
-  if (!user_id || isNaN(user_id)) {
+
+  if (!user_id) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "No user logged in", error: "Bad Request" });
+  } else if (isNaN(user_id)) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message: "Something went wrong with the request",
+      error: "Invalid user id",
+    });
   }
+  // const validUser = await prisma.user.findUnique({
+  //   where: { id: user_id },
+  // });
+  // if (!validUser) {
+  //   return res.status(StatusCodes.BAD_REQUEST).json({
+  //     message: "User not found",
+  //     error: "User does not exist in Database",
+  //   });
+  // }
 
   const { error, value } = taskSchema.validate(req.body, { abortEarly: false });
 
   if (error) {
-    res
+    return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Validation Error", error: error.message });
-    return;
   }
 
   value.isCompleted = value.isCompleted ?? false;
@@ -39,16 +52,9 @@ async function create(req, res, next) {
       select: { title: true, priority: true, isCompleted: true, id: true },
     });
   } catch (err) {
-    if (err.code === "P2003" || err.code === "P2014") {
-      return res
-        .status(404)
-        .json({ message: "Invalid user, email not registered" });
-    } else {
-      getPrismaErrorInfo(err);
-      return next(err);
-    }
+    getPrismaErrorInfo(err);
+    return next(err);
   }
-
   return res.status(StatusCodes.CREATED).json(newTaskCreated);
 }
 
@@ -170,14 +176,14 @@ async function index(req, res, next) {
 
     total = await prisma.task.count({ where: whereClause });
   } catch (err) {
-    if (err.code === "P1001") {
-      return res.status(404).json({ message: "Database couldn't be reached" });
-    } else if (err.code === "P2009") {
-      return res.status(404).json({ message: "Field(s) does not exist" });
-    } else {
-      getPrismaErrorInfo(err);
-      return next(err);
-    }
+    // if (err.code === "P1001") {
+    //   return res.status(404).json({ message: "Database couldn't be reached" });
+    // } else if (err.code === "P2009") {
+    //   return res.status(404).json({ message: "Field(s) does not exist" });
+    // } else {
+    getPrismaErrorInfo(err);
+    return next(err);
+    // }
   }
 
   const pagination = {
