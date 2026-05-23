@@ -203,15 +203,21 @@ async function logon(req, res, next) {
  * @returns {Promise<void>}
  */
 async function show(req, res, next) {
-  const userId = parseInt(req.params?.id);
-  if (isNaN(userId)) {
-    return res.status(400).json({ error: "Invalid user id" });
+  const user_id = parseInt(req.user.id);
+  if (!user_id) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "No user logged in", error: "Bad Request" });
+  } else if (isNaN(user_id)) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ error: "Invalid user id" });
   }
 
   let user = null;
   try {
     user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: user_id },
       select: {
         id: true,
         name: true,
