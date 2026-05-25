@@ -30,7 +30,7 @@ function responseLogger(req, res, next) {
     console.log("\n" + chalk.blue("=== Out going Response ==="));
     console.log(
       chalk.magenta("Response Message"),
-      res.responseBody.message || res.responseBody.error || "Should be one",
+      res?.responseBody?.message || res?.responseBody?.error || "Should be one",
     );
     console.log(chalk.magenta("Requested Url"), res.req.originalUrl);
     console.log(chalk.magenta("Requested Id"), res.req.requestId);
