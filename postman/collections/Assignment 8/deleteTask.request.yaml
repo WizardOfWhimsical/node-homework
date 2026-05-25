@@ -1,0 +1,8 @@
+$kind: http-request
+url: "{{HOST}}/api/tasks?id={{todo_id}}"
+method: DELETE
+headers:
+  X-CSRF-TOKEN: "{{csrfToken}}"
+queryParams:
+  id: "{{todo_id}}"
+order: 4338533195994695

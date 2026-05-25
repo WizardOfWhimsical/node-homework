@@ -8,6 +8,7 @@ const { getPrismaErrorInfo } = require("../middleware/index");
  * @param {Function} next - The Express Middleware
  * @returns {Promise<void>}
  */
+
 async function create(req, res, next) {
   if (!req.body) req.body = {};
   //DRY
@@ -47,7 +48,6 @@ async function create(req, res, next) {
   }
   return res.status(StatusCodes.CREATED).json(newTaskCreated);
 }
-
 /**
  * @param {Object} req - The Express request object.
  * @param {Object} res - The Express request object
@@ -295,7 +295,7 @@ async function update(req, res, next) {
 async function deleteTask(req, res, next) {
   const taskIndex = parseInt(req.params?.id);
   const user_id = parseInt(req.user?.id);
-  if (taskIndex < 0) {
+  if (taskIndex <= 0) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Must be a number", error: "taskIndex check failed" });

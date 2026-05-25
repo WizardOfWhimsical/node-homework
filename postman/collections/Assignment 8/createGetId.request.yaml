@@ -1,0 +1,19 @@
+$kind: http-request
+name: createGetId
+url: "{{HOST}}/api/tasks"
+method: POST
+headers:
+  X-CSRF-TOKEN: "{{csrfToken}}"
+body:
+  type: json
+  content: |-
+    {
+        "title": "Something to do for the test"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      const response = pm.response.json()
+      pm.collectionVariables.set("todo_id", response.id)
+    language: text/javascript
+order: 3813960559243506

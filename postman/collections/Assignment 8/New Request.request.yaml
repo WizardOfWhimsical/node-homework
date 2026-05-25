@@ -1,5 +1,0 @@
-$kind: http-request
-name: New Request
-url: "{{HOST}}/api/users/logoff"
-method: DELETE
-order: 1088190869609700

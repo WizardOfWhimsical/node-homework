@@ -1,0 +1,10 @@
+$kind: http-request
+name: allPropsChanged
+url: ?id={{todo_id}}
+method: PATCH
+headers:
+  X-CSRF-TOKEN: "{{csrfToken}}"
+queryParams:
+  - key: id
+    value: "{{todo_id}}"
+order: 4325995024343470
