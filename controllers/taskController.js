@@ -8,21 +8,22 @@ const { getPrismaErrorInfo } = require("../middleware/index");
  * @param {Function} next - The Express Middleware
  * @returns {Promise<void>}
  */
+
 async function create(req, res, next) {
   if (!req.body) req.body = {};
   //DRY
-  const user_id = parseInt(req?.user?.id);
-  if (!user_id || isNaN(user_id)) {
+  const user_id = parseInt(req.user.id);
+
+  if (!user_id) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "No user logged in", error: "Bad Request" });
+  } else if (isNaN(user_id)) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message: "Something went wrong with the request",
+      error: "Invalid user id",
+    });
   }
-  // else if (isNaN(user_id)) {
-  //   return res.status(StatusCodes.BAD_REQUEST).json({
-  //     message: "Something went wrong with the request",
-  //     error: "Invalid user id",
-  //   });
-  // }
 
   const { error, value } = taskSchema.validate(req.body, { abortEarly: false });
 
@@ -32,7 +33,7 @@ async function create(req, res, next) {
       .json({ message: "Validation Error", error: error.message });
   }
 
-  // value.isCompleted = value.isCompleted ?? false;
+  value.isCompleted = value.isCompleted ?? false;
   const { title, isCompleted, priority } = value;
 
   let newTaskCreated = null;
@@ -42,23 +43,11 @@ async function create(req, res, next) {
       select: { title: true, priority: true, isCompleted: true, id: true },
     });
   } catch (err) {
-    // const {
-    //   message,
-    //   status = 400,
-    //   error,
-    //   // meta,
-    //   prError,
-    // } = getPrismaErrorInfo(err);
-
-    // if (prError) {
-    //   return res.status(status).json({ message, error });
-    // }
     getPrismaErrorInfo(err);
     return next(err);
   }
   return res.status(StatusCodes.CREATED).json(newTaskCreated);
 }
-
 /**
  * @param {Object} req - The Express request object.
  * @param {Object} res - The Express request object
