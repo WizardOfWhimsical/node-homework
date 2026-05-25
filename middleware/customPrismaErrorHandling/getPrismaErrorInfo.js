@@ -20,15 +20,18 @@ function getPrismaErrorInfo(error) {
       case "P2017": //relation records not connect
       case "P2020": //value outta range
       case "P2022": //column missing
+        console.log("Prisma Error Info", message, meta);
         return { status: 400, message, meta, prError };
 
       case "P2015": //related record not found
       case "P2018": //required for not connected
       case "P2025": //rquired not found
+        console.log("Prisma Error Info", message, meta);
         return { status: 404, message, meta, prError };
 
       case "P2002": //unqie key constraint failed
       case "P2014": //relation violation
+        console.log("Prisma Error Info", message, meta);
         return { status: 409, message, meta, prError };
 
       case "P2010": //raw query failed
@@ -57,6 +60,7 @@ function getPrismaErrorInfo(error) {
       prError,
     };
   } else {
+    console.log("Prisma Error Info Else to pass");
     return {
       error,
       message: "does not seem to have been a prisma error?",

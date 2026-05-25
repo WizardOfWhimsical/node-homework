@@ -1,6 +1,6 @@
 const { StatusCodes, prisma } = require("../index");
 const { taskSchema, patchTaskSchema } = require("../validation/taskSchema");
-const getPrismaErrorInfo = require("../middleware/index");
+const { getPrismaErrorInfo } = require("../middleware/index");
 
 /**
  * @param {Object} req - The Express request object.
@@ -12,11 +12,12 @@ async function create(req, res, next) {
   if (!req.body) req.body = {};
   //DRY
   const user_id = parseInt(req?.user?.id);
-  // if (!user_id) {
-  //   return res
-  //     .status(StatusCodes.BAD_REQUEST)
-  //     .json({ message: "No user logged in", error: "Bad Request" });
-  // } else if (isNaN(user_id)) {
+  if (!user_id || isNaN(user_id)) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "No user logged in", error: "Bad Request" });
+  }
+  // else if (isNaN(user_id)) {
   //   return res.status(StatusCodes.BAD_REQUEST).json({
   //     message: "Something went wrong with the request",
   //     error: "Invalid user id",
@@ -41,17 +42,18 @@ async function create(req, res, next) {
       select: { title: true, priority: true, isCompleted: true, id: true },
     });
   } catch (err) {
-    const {
-      message,
-      status = 400,
-      error,
-      // meta,
-      prError,
-    } = getPrismaErrorInfo(err);
+    // const {
+    //   message,
+    //   status = 400,
+    //   error,
+    //   // meta,
+    //   prError,
+    // } = getPrismaErrorInfo(err);
 
-    if (prError) {
-      res.status(status).json({ message, error });
-    }
+    // if (prError) {
+    //   return res.status(status).json({ message, error });
+    // }
+    getPrismaErrorInfo(err);
     return next(err);
   }
   return res.status(StatusCodes.CREATED).json(newTaskCreated);
