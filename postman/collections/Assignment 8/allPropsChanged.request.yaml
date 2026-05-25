@@ -1,10 +1,32 @@
 $kind: http-request
 name: allPropsChanged
-url: ?id={{todo_id}}
+url: "{{HOST}}/api/tasks/{{todo_id}}"
 method: PATCH
 headers:
   X-CSRF-TOKEN: "{{csrfToken}}"
-queryParams:
-  - key: id
-    value: "{{todo_id}}"
+body:
+  type: json
+  content: |-
+    {
+        "title": "This is the new statement",
+        "priority":"high",
+        "isCompleted": true
+    }
+scripts:
+  - type: afterResponse
+    code: |
+      pm.test("Status code is 200 OK", function () {
+          pm.response.to.have.status(200);
+      });
+
+      const jsonData = pm.response.json();
+
+      pm.test("Returned object matches updated values", () => {
+          pm.expect(jsonData.title).to.eql("This is the new statement");
+          
+          pm.expect(jsonData.isCompleted).to.eql(true);
+          
+          pm.expect(jsonData.priority).to.eql("high");
+      });
+    language: text/javascript
 order: 4325995024343470

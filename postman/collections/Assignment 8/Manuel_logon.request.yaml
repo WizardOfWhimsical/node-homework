@@ -6,12 +6,16 @@ body:
   type: json
   content: |-
     {
-        "email":{{userManuelEmail}},
-        "password":{{password}}
+        "email":"{{userManuelEmail}}",
+        "password":"{{password}}"
     }
 scripts:
   - type: afterResponse
     code: |-
+      pm.test("Login success code is 200 OK", function () {
+          pm.response.to.have.status(200);
+      });
+
       const payload = pm.response.json()
       pm.globals.set("csrfToken", payload.csrfToken);
     language: text/javascript
