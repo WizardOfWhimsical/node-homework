@@ -234,8 +234,8 @@ async function show(req, res, next) {
  * @returns {Promise<void>}
  */
 async function update(req, res, next) {
-  const taskIndex = parseInt(req.params?.id);
-  const user_id = parseInt(req.user.id);
+  const taskIndex = parseInt(req?.params?.id);
+  const user_id = parseInt(req?.user?.id);
   //DRY
   if (!user_id || isNaN(user_id)) {
     return res
