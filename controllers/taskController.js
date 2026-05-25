@@ -11,18 +11,17 @@ const getPrismaErrorInfo = require("../middleware/index");
 async function create(req, res, next) {
   if (!req.body) req.body = {};
   //DRY
-  const user_id = parseInt(req.user.id);
-
-  if (!user_id) {
-    return res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ message: "No user logged in", error: "Bad Request" });
-  } else if (isNaN(user_id)) {
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      message: "Something went wrong with the request",
-      error: "Invalid user id",
-    });
-  }
+  const user_id = parseInt(req?.user?.id);
+  // if (!user_id) {
+  //   return res
+  //     .status(StatusCodes.BAD_REQUEST)
+  //     .json({ message: "No user logged in", error: "Bad Request" });
+  // } else if (isNaN(user_id)) {
+  //   return res.status(StatusCodes.BAD_REQUEST).json({
+  //     message: "Something went wrong with the request",
+  //     error: "Invalid user id",
+  //   });
+  // }
 
   const { error, value } = taskSchema.validate(req.body, { abortEarly: false });
 
@@ -32,7 +31,7 @@ async function create(req, res, next) {
       .json({ message: "Validation Error", error: error.message });
   }
 
-  value.isCompleted = value.isCompleted ?? false;
+  // value.isCompleted = value.isCompleted ?? false;
   const { title, isCompleted, priority } = value;
 
   let newTaskCreated = null;
@@ -42,7 +41,17 @@ async function create(req, res, next) {
       select: { title: true, priority: true, isCompleted: true, id: true },
     });
   } catch (err) {
-    getPrismaErrorInfo(err);
+    const {
+      message,
+      status = 400,
+      error,
+      // meta,
+      prError,
+    } = getPrismaErrorInfo(err);
+
+    if (prError) {
+      res.status(status).json({ message, error });
+    }
     return next(err);
   }
   return res.status(StatusCodes.CREATED).json(newTaskCreated);
@@ -295,7 +304,7 @@ async function update(req, res, next) {
 async function deleteTask(req, res, next) {
   const taskIndex = parseInt(req.params?.id);
   const user_id = parseInt(req.user?.id);
-  if (taskIndex < 0) {
+  if (taskIndex <= 0) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Must be a number", error: "taskIndex check failed" });

@@ -1,0 +1,18 @@
+$kind: http-request
+name: Manuel_logon
+url: "{{HOST}}/api/users/logon"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+        "email":{{userManuelEmail}},
+        "password":{{password}}
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      const payload = pm.response.json()
+      pm.globals.set("csrfToken", payload.csrfToken);
+    language: text/javascript
+order: 1779719026775

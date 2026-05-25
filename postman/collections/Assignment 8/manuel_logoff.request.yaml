@@ -1,0 +1,7 @@
+$kind: http-request
+name: manuel_logoff
+url: "{{HOST}}/api/users"
+method: DELETE
+headers:
+  X-CSRF-TOKEN: "{{csrfToken}}"
+order: 4420917712359012
