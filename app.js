@@ -30,9 +30,9 @@ app.use(
 );
 
 app.use(
+  morgan("dev"),
   express.urlencoded({ extended: true }),
   express.json(),
-  morgan("dev"),
   cookieParser(),
   helmet(),
   xss(),
@@ -43,7 +43,7 @@ app.use(
 
 app.use("/api/users", userRouter);
 app.use("/api/tasks", taskRouter);
-app.use("/api/analytics/", analyticsRouter);
+app.use("/api/analytics", analyticsRouter);
 
 app.get("/health", async (req, res) => {
   try {
