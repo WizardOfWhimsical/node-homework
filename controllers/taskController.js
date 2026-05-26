@@ -95,7 +95,10 @@ async function bulkCreate(req, res, next) {
       skipDuplicates: false,
     });
   } catch (err) {
-    getPrismaErrorInfo(err);
+    const { message, error, status = 400, prError } = getPrismaErrorInfo(err);
+    if (!prError) {
+      return res.status(status).json({ message, error });
+    }
     return next(err);
   }
 
@@ -166,7 +169,10 @@ async function index(req, res, next) {
 
     total = await prisma.task.count({ where: whereClause });
   } catch (err) {
-    getPrismaErrorInfo(err);
+    const { message, error, status = 400, prError } = getPrismaErrorInfo(err);
+    if (!prError) {
+      return res.status(status).json({ message, error });
+    }
     return next(err);
   }
 
