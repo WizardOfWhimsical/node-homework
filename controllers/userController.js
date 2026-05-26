@@ -125,11 +125,11 @@ async function register(req, res, next) {
     }
   }
 
-  result.user.csrfToken = setJwtCookie(req, res, result.user);
+  const csrfToken = setJwtCookie(req, res, result.user);
 
   return res.status(StatusCodes.CREATED).json({
     user: result.user,
-    csrfToken: result.user.csrfToken,
+    csrfToken,
     welcomeTasks: result.welcomeTasks,
     transactionStatus: "success",
   });
@@ -187,12 +187,12 @@ async function logon(req, res, next) {
     });
   }
 
-  user.csrfToken = setJwtCookie(req, res, user);
+  const csrfToken = setJwtCookie(req, res, user);
 
   res.status(StatusCodes.OK).json({
     name: user.name,
     email: user.email,
-    csrfToken: user.csrfToken,
+    csrfToken,
     message: "logged in",
   });
 }
