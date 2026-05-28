@@ -14,8 +14,10 @@ const cookieParser = require("cookie-parser");
 const helmet = require("helmet");
 const { xss } = require("express-xss-sanitizer");
 const rateLimiter = require("express-rate-limit");
+const httpMocks = require("node-mocks-http");
 
 module.exports = {
+  httpMocks,
   helmet,
   xss,
   rateLimiter,
