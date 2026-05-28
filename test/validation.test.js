@@ -2,17 +2,24 @@ const { userSchema } = require("../validation/userSchema");
 const { taskSchema, patchSchema } = require("../validation/taskSchema");
 
 const abortFlag = { abortEarly: false };
-let user = {
-  name: "Bob",
-  email: "bob@sample.com",
-  password: "StrongPassword123",
-};
+
+function makeNewUser(overRide = {}) {
+  return {
+    name: "Bob",
+    email: "bob@sample.com",
+    password: "StrongPassword123!",
+    ...overRide,
+  };
+}
 let error = null,
   value = null;
 
 describe("User schema validation test", () => {
   it("1. Does not permit a trivial password", () => {
-    ({ error, value } = userSchema.validate({ ...user }, abortFlag));
+    ({ error, value } = userSchema.validate(
+      makeNewUser({ password: "password" }),
+      abortFlag,
+    ));
 
     expect(
       error.details.find((detail) => detail.context.key === "password"),
@@ -20,7 +27,7 @@ describe("User schema validation test", () => {
   });
 
   it("2. The user schema requires email", () => {
-    ({ email, ...user } = user);
+    let { email, ...user } = makeNewUser();
     ({ error } = userSchema.validate(user, abortFlag));
 
     expect(
@@ -29,7 +36,7 @@ describe("User schema validation test", () => {
   });
   it("3. The user schema does not accept invalid email", () => {
     ({ error } = userSchema.validate(
-      { ...user, email: "bademail.com" },
+      makeNewUser({ email: "bademail.com" }),
       abortFlag,
     ));
 
@@ -39,7 +46,7 @@ describe("User schema validation test", () => {
   });
 
   it("4. The user Schema requires password", () => {
-    ({ password, ...user } = user);
+    let { password, ...user } = makeNewUser();
     ({ error } = userSchema.validate(user, abortFlag));
 
     expect(
@@ -47,22 +54,23 @@ describe("User schema validation test", () => {
     ).toBeDefined();
   });
   it("5. The user Schema requires name", () => {
-    ({ name, ...user } = user);
+    let { name, ...user } = makeNewUser();
     ({ error } = userSchema.validate(user, abortFlag));
     expect(
       error.details.find((detail) => detail.context.key === "name"),
     ).toBeDefined();
   });
   it("6. The user name must be valid (3 - 30 characters)", () => {
-    ({ error } = userSchema.validate({ ...user, name: "Po" }));
-
+    // console.log("user", { ...user, name: "Po" });
+    ({ error } = userSchema.validate(makeNewUser({ name: "Po" }), abortFlag));
+    // console.log("error", error, "\n", error.details);
     expect(
       error.details.find((detail) => detail.context.key === "name"),
     ).toBeDefined();
   });
   it("7. If validation is performed on a valid user object, error comes back falsy", () => {
-    ({ error, value } = userSchema.validate(user, abortFlag));
-    expect(error).toBeNull();
+    ({ error, value } = userSchema.validate(makeNewUser(), abortFlag));
+    expect(error).toBeUndefined();
   });
 });
 // describe("Task schema validation testing", () => {
