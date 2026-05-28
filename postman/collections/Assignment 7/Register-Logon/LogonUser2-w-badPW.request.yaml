@@ -1,0 +1,20 @@
+$kind: http-request
+name: LogonUser2-w/badPW
+url: "{{HOST}}/api/users/logon"
+method: POST
+body:
+  type: json
+  content: |
+    {
+      "email": "{{uniqueEmail1}}",
+      "password": "BadPassWord"
+    }
+scripts:
+  - type: afterResponse
+    code: |+
+      pm.test("Status code is 401", function () {
+          pm.response.to.have.status(401);
+      });
+
+    language: text/javascript
+order: 4382729953193528

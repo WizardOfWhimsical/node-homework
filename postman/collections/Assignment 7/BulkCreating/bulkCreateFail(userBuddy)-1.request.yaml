@@ -1,0 +1,31 @@
+$kind: http-request
+name: bulkCreateFail(userBuddy)
+url: "{{HOST}}/api/tasks/bulk"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+        "tasks": [
+            { "title": "Bulk task 3", "priority": "low" }
+        ]
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 400 for invalid data", function () {
+          pm.response.to.have.status(400);
+      });
+
+      pm.sendRequest({
+          url: "{{HOST}}/api/users/logoff",
+          method: 'DELETE',
+      }, (err, res) => {
+          if (err) {
+              console.log("Post-res logoff: ", err);
+          } else {
+              console.log("Server global variable is null");
+          }
+      });
+    language: text/javascript
+order: 4026390442807244

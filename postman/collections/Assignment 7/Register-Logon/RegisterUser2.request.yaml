@@ -1,0 +1,28 @@
+$kind: http-request
+name: RegisterUser2
+url: "{{HOST}}/api/users/register"
+method: POST
+body:
+  type: json
+  content: |+
+    {
+      "email": "{{uniqueEmail2}}",
+      "name": "Manuel",
+      "password": "Pa$$word20"
+    }
+
+scripts:
+  - type: beforeRequest
+    code: |
+      pm.collectionVariables.set("uniqueEmail2", `manuel@sample.com`);
+    language: text/javascript
+  - type: afterResponse
+    code: |+
+      pm.test("Status code is 201", function () {
+          pm.response.to.have.status(201);
+      });
+
+
+
+    language: text/javascript
+order: 4346832460721581

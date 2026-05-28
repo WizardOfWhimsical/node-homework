@@ -1,0 +1,28 @@
+$kind: http-request
+name: DefaultPriority
+url: "{{HOST}}/api/tasks"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+      "title": "second task"
+    }
+scripts:
+  - type: afterResponse
+    code: |
+      pm.test("Status code is 201", function () {
+          pm.response.to.have.status(201);
+      });
+
+      const jsonData = pm.response.json();
+
+      pm.test("Verify default field values", function () {
+          // This is the core check for your 'default priority' test
+          pm.expect(jsonData.priority).to.eql("medium");
+
+          // This confirms it isn't marked as done immediately
+          pm.expect(jsonData.isCompleted).to.be.false; 
+      });
+    language: text/javascript
+order: 3432765000390261

@@ -1,6 +1,7 @@
 const { Router } = require("express");
 const {
   create,
+  bulkCreate,
   index,
   update,
   deleteTask,
@@ -8,8 +9,9 @@ const {
 } = require("../controllers/taskController");
 const router = Router();
 
-router.route("/").post(create);
-router.route("/").get(index);
+router.route("/").post(create).get(index);
+
+router.route("/bulk").post(bulkCreate);
 
 router.route("/:id").get(show).patch(update).delete(deleteTask);
 

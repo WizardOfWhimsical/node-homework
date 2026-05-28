@@ -1,0 +1,16 @@
+$kind: collection
+name: Assignment 7
+description: |-
+  This collection tests the core features of a Node.js task-management REST API, covering the full user and task lifecycle.
+
+  **Register & Logon** — Verifies user registration (with welcome-task seeding), duplicate-email rejection, successful login, and 401 rejection for bad credentials.
+
+  **Priority Creation** — Confirms that tasks can be created with an explicit priority level and that the API correctly applies a default priority of `medium` when none is supplied.
+
+  **Bulk Creating** — Tests the `/api/tasks/bulk` endpoint, asserting a 201 response and correct task counts on success, and a 400 response when the request payload is invalid.
+
+  **Eager Loading** — Validates that task list and single-task endpoints return eagerly-loaded `User` data alongside full pagination metadata (`page`, `limit`, `total`, `pages`, `hasNext`, `hasPrev`).
+
+  **Analytics Tests** — Exercises the analytics endpoints: paginated user summaries with task counts, per-user stats (task breakdown, recent tasks, weekly progress), full-text task search with schema validation, and a 400 guard for search queries that are too short.
+
+  Pre-request and post-response scripts handle session management (logon/logoff) and capture dynamic IDs into collection variables so requests can be chained reliably across a full collection run.
