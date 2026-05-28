@@ -14,3 +14,22 @@ let user1,
   saveRes,
   saveData,
   saveTaskId = null;
+
+beforeAll(async () => {
+  await prisma.task.deleteMany();
+  await prisma.user.deleteMany();
+  user1 = await prisma.user.create({
+    name: "Bob",
+    email: "bob@sample.com",
+    password: "StrongPassword123!",
+  });
+  user2 = await prisma.user.create({
+    name: "Alice",
+    email: "alice@sample.com",
+    password: "StrongPassword123!",
+  });
+});
+
+afterAll(() => {
+  prisma.$disconnect();
+});
