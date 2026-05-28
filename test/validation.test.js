@@ -1,7 +1,5 @@
 const { userSchema } = require("../validation/userSchema");
-const { taskSchema, patchSchema } = require("../validation/taskSchema");
-const { styleText } = require("node:util");
-// const e = require("express");
+const { taskSchema, patchTaskSchema } = require("../validation/taskSchema");
 
 const abortFlag = { abortEarly: false };
 
@@ -75,11 +73,10 @@ describe("User schema validation test", () => {
   });
 });
 
+function makeNewTask(overRide = {}) {
+  return { title: "Some task todo", ...overRide };
+}
 describe("Task schema validation testing", () => {
-  function makeNewTask(overRide = {}) {
-    return { title: "Some task todo", ...overRide };
-  }
-
   it("8. The task schema requires a title", () => {
     const { title, ...task } = makeNewTask();
     ({ error, value } = taskSchema.validate(task));
@@ -99,19 +96,21 @@ describe("Task schema validation testing", () => {
     ({ error, value } = taskSchema.validate(
       makeNewTask({ isCompleted: true }),
     ));
-    logger(value);
     expect(value.isCompleted).toBe(true);
   });
 });
 
-// describe("Patch Task schema testing", () => {
-//   it("12. The patch schema does not require a title", () => {});
-//   it("13. If no value i sprovided for isCompleted this remains undefined in the returned value", () => {});
-// });
-
-function logger(a) {
-  console.log(styleText("yellow", "======================"));
-  console.log(styleText("green", "Start Here"));
-  console.log(a);
-  console.log(styleText("yellow", "======================"));
-}
+describe("Patch Task schema testing", () => {
+  it("12. The patch schema does not require a title", () => {
+    const { title, ...removedTitle } = makeNewTask({
+      isCompleted: true,
+      priority: "low",
+    });
+    ({ error, value } = patchTaskSchema.validate(removedTitle));
+    expect(error).toBeUndefined();
+  });
+  it("13. If no value i sprovided for isCompleted this remains undefined in the returned value", () => {
+    const noIsCompleted = makeNewTask({ priority: "low" });
+    expect(noIsCompleted.isCompleted).toBeUndefined();
+  });
+});
