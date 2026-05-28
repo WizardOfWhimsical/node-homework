@@ -1,20 +1,23 @@
 const { userSchema } = require("../validation/userSchema");
 const { taskSchema, patchSchema } = require("../validation/taskSchema");
+const { styleText } = require("node:util");
+// const e = require("express");
 
 const abortFlag = { abortEarly: false };
 
-function makeNewUser(overRide = {}) {
-  return {
-    name: "Bob",
-    email: "bob@sample.com",
-    password: "StrongPassword123!",
-    ...overRide,
-  };
-}
 let error = null,
   value = null;
 
 describe("User schema validation test", () => {
+  function makeNewUser(overRide = {}) {
+    return {
+      name: "Bob",
+      email: "bob@sample.com",
+      password: "StrongPassword123!",
+      ...overRide,
+    };
+  }
+
   it("1. Does not permit a trivial password", () => {
     ({ error, value } = userSchema.validate(
       makeNewUser({ password: "password" }),
@@ -61,9 +64,7 @@ describe("User schema validation test", () => {
     ).toBeDefined();
   });
   it("6. The user name must be valid (3 - 30 characters)", () => {
-    // console.log("user", { ...user, name: "Po" });
     ({ error } = userSchema.validate(makeNewUser({ name: "Po" }), abortFlag));
-    // console.log("error", error, "\n", error.details);
     expect(
       error.details.find((detail) => detail.context.key === "name"),
     ).toBeDefined();
@@ -73,13 +74,44 @@ describe("User schema validation test", () => {
     expect(error).toBeUndefined();
   });
 });
-// describe("Task schema validation testing", () => {
-//   it("8. The task schema requires a title", () => {});
-//   it("9. If an isCompleted value is specified, it must be valid", () => {});
-//   it("10. If an isCompleted value is not specified but the rest of the object is valid, a default of false is provided by validation", () => {});
-//   it("11. If isCompleted in the provided object has the value true, it remains true after validation", () => {});
-// });
+
+describe("Task schema validation testing", () => {
+  function makeNewTask(overRide = {}) {
+    return { title: "Some task todo", ...overRide };
+  }
+
+  it("8. The task schema requires a title", () => {
+    const { title, ...task } = makeNewTask();
+    ({ error, value } = taskSchema.validate(task));
+    expect(
+      error.details.find((detail) => detail.context.key === "title"),
+    ).toBeDefined();
+  });
+  it("9. If an isCompleted value is specified, it must be valid", () => {
+    ({ error, value } = taskSchema.validate(makeNewTask({ isCompleted: 2 })));
+    expect(error.details[0].message).toMatch(/must be a boolean/);
+  });
+  it("10. If an isCompleted value is not specified but the rest of the object isvalid, a default of false is provided by validation", () => {
+    ({ error, value } = taskSchema.validate(makeNewTask()));
+    expect(value.isCompleted).toBe(false);
+  });
+  it("11. If isCompleted in the provided object has the value true, it remains true after validation", () => {
+    ({ error, value } = taskSchema.validate(
+      makeNewTask({ isCompleted: true }),
+    ));
+    logger(value);
+    expect(value.isCompleted).toBe(true);
+  });
+});
+
 // describe("Patch Task schema testing", () => {
 //   it("12. The patch schema does not require a title", () => {});
 //   it("13. If no value i sprovided for isCompleted this remains undefined in the returned value", () => {});
 // });
+
+function logger(a) {
+  console.log(styleText("yellow", "======================"));
+  console.log(styleText("green", "Start Here"));
+  console.log(a);
+  console.log(styleText("yellow", "======================"));
+}
