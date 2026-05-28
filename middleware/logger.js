@@ -1,4 +1,5 @@
 const chalk = require("chalk");
+const { styleText } = require("node:util");
 
 function requestLogger(req, res, next) {
   console.log("\n" + chalk.blue("=== Incoming Request ==="));
@@ -43,4 +44,10 @@ function responseLogger(req, res, next) {
   next();
 }
 
-module.exports = { requestLogger, responseLogger };
+function logger(a) {
+  console.log(styleText("yellow", "======================"));
+  console.log(styleText("green", "Start Here"));
+  console.log(a);
+  console.log(styleText("yellow", "======================"));
+}
+module.exports = { requestLogger, responseLogger, logger };
