@@ -2,6 +2,9 @@ require("dotenv").config();
 process.env.DATABASE_URL = process.env.TEST_DATABASE_URL;
 const { prisma, httpMocks } = require("../index");
 const {
+  waitForRouteHandlerCompletions,
+} = require("./waitForRouteHandlerCompletion");
+const {
   index,
   show,
   create,
