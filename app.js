@@ -1,26 +1,49 @@
-const { morgan, express, StatusCodes, prisma } = require("./index");
 const {
+  morgan,
+  express,
+  StatusCodes,
+  prisma,
+  cookieParser,
+  helmet,
+  xss,
+  rateLimiter,
+} = require("./index");
+const {
+  setUniqueId,
   requestLogger,
   responseLogger,
   errorHandler,
-  authMiddleware,
   notFound,
 } = require("./middleware");
 const { userRouter, taskRouter, analyticsRouter } = require("./routes");
 
-global.user_id = null;
-
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-app.use(morgan("dev"));
-app.use(requestLogger, responseLogger);
+app.set("trust proxy", 1);
+
+app.use(
+  rateLimiter({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+  }),
+);
+
+app.use(
+  morgan("dev"),
+  express.urlencoded({ extended: true }),
+  express.json(),
+  cookieParser(),
+  helmet(),
+  xss(),
+  setUniqueId,
+  requestLogger,
+  responseLogger,
+);
 
 app.use("/api/users", userRouter);
-app.use("/api/tasks", authMiddleware, taskRouter);
-app.use("/api/analytics/", authMiddleware, analyticsRouter);
+app.use("/api/tasks", taskRouter);
+app.use("/api/analytics", analyticsRouter);
 
 app.get("/health", async (req, res) => {
   try {
@@ -33,8 +56,7 @@ app.get("/health", async (req, res) => {
   }
 });
 
-app.use(notFound);
-app.use(errorHandler);
+app.use(notFound, errorHandler);
 
 const server = app.listen(port, () => console.log(`Listening @ port ${3000}`));
 
@@ -54,7 +76,6 @@ async function shutdown(code = 0) {
   try {
     await new Promise((resolve) => server.close(resolve));
     console.log("HTTP server closed.");
-    // await pool.end();
     await prisma.$disconnect();
     console.log("Prisma Disconnected");
   } catch (err) {

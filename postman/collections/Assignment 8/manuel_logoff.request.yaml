@@ -1,0 +1,14 @@
+$kind: http-request
+name: manuel_logoff
+url: "{{HOST}}/api/users/logoff"
+method: DELETE
+headers:
+  X-CSRF-TOKEN: "{{csrfToken}}"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Logout success code is 200 OK", function () {
+          pm.response.to.have.status(200);
+      });
+    language: text/javascript
+order: 4420917712359012
