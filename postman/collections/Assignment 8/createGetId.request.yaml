@@ -1,0 +1,36 @@
+$kind: http-request
+name: createGetId
+url: "{{HOST}}/api/tasks"
+method: POST
+headers:
+  X-CSRF-TOKEN: "{{csrfToken}}"
+body:
+  type: json
+  content: |-
+    {
+        "title": "This is a new task"
+    }
+scripts:
+  - type: afterResponse
+    code: |
+      pm.test("Status code is 201 Created",() => {
+          pm.response.to.have.status(201);
+      });
+
+      const jsonData = pm.response.json();
+
+      pm.test("Created item has the correct data values", () => {
+          pm.expect(jsonData.title).to.eql("This is a new task");
+
+          pm.expect(jsonData.isCompleted).to.eql(false);
+          
+          pm.expect(jsonData.priority).to.eql("medium");
+      });
+
+      pm.test("Task ID was generated and saved",() => {
+          pm.expect(jsonData.id).to.exist;
+          
+          pm.environment.set("todo_id", jsonData.id);
+      });
+    language: text/javascript
+order: 3813960559243506

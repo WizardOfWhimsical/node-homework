@@ -7,8 +7,18 @@ const express = require("express");
 const morgan = require("morgan");
 const { Pool } = require("pg");
 const prisma = require("./db/prisma");
+const crypto = require("crypto");
+const jwt = require("jsonwebtoken");
+const util = require("util");
+const cookieParser = require("cookie-parser");
+const helmet = require("helmet");
+const { xss } = require("express-xss-sanitizer");
+const rateLimiter = require("express-rate-limit");
 
 module.exports = {
+  helmet,
+  xss,
+  rateLimiter,
   StatusCodes,
   ReasonPhrases,
   Router,
@@ -16,4 +26,8 @@ module.exports = {
   morgan,
   Pool,
   prisma,
+  crypto,
+  jwt,
+  util,
+  cookieParser,
 };

@@ -1,11 +1,9 @@
-const { StatusCodes } = require("../index");
+const { StatusCodes, prisma, jwt, crypto, util } = require("../index");
 const { userSchema } = require("../validation/userSchema");
-const prisma = require("../db/prisma");
-const getPrismaErrorInfo = require("../middleware/customPrismaErrorHandling/getPrismaErrorInfo");
+const { getPrismaErrorInfo } = require("../middleware/index");
 
-const crypto = require("crypto");
-const util = require("util");
 const scrypt = util.promisify(crypto.scrypt);
+const { randomUUID } = crypto;
 
 /**
  * @param {String} password
@@ -27,6 +25,39 @@ async function comparePassword(inputPassword, storedHash) {
   const keyBuffer = Buffer.from(key, "hex");
   const derivedKey = await scrypt(inputPassword, salt, 64);
   return crypto.timingSafeEqual(keyBuffer, derivedKey);
+}
+
+/**
+ *
+ * @param {Object} req - The Express request object.
+ * @returns
+ * Object {{
+ *    httpOnly:boolean,
+ *    secure: boolean,
+ *    sameSite: string
+ *     }}
+ */
+function cookieFlags(req) {
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "Strict",
+  };
+}
+
+/**
+ *
+ * @param {Object} req - The Express request object.
+ * @param {Object} res - The Express request object
+ * @param {object} user {{unknown}}
+ * @returns string
+ */
+function setJwtCookie(req, res, user) {
+  const payload = { id: user.id, csrfToken: randomUUID() };
+  const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
+
+  res.cookie("jwt", token, { ...cookieFlags(req), maxAge: 3600000 });
+  return payload.csrfToken;
 }
 
 /**
@@ -86,24 +117,24 @@ async function register(req, res, next) {
       return { user, welcomeTasks };
     });
   } catch (err) {
-    getPrismaErrorInfo(err);
-    //Failure on rollback, how do user know?
     if (err.name === "PrismaClientKnownRequestError" && err.code === "P2002") {
       return res.status(400).json({ message: "Email already registered" });
     } else {
+      getPrismaErrorInfo(err);
       return next(err);
     }
   }
 
-  global.user_id = result.user.id;
+  const csrfToken = setJwtCookie(req, res, result.user);
 
-  // console.log("Register/userController: ", result);
   return res.status(StatusCodes.CREATED).json({
     user: result.user,
+    csrfToken,
     welcomeTasks: result.welcomeTasks,
     transactionStatus: "success",
   });
 }
+
 /**
  * @param {Object} req - The Express request object.
  * @param {Object} res - The Express request object
@@ -156,11 +187,12 @@ async function logon(req, res, next) {
     });
   }
 
-  global.user_id = user.id;
+  const csrfToken = setJwtCookie(req, res, user);
 
   res.status(StatusCodes.OK).json({
     name: user.name,
     email: user.email,
+    csrfToken,
     message: "logged in",
   });
 }
@@ -171,15 +203,21 @@ async function logon(req, res, next) {
  * @returns {Promise<void>}
  */
 async function show(req, res, next) {
-  const userId = parseInt(req.params?.id);
-  if (isNaN(userId)) {
-    return res.status(400).json({ error: "Invalid user id" });
+  const user_id = parseInt(req.user.id);
+  if (!user_id) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "No user logged in", error: "Bad Request" });
+  } else if (isNaN(user_id)) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ error: "Invalid user id" });
   }
 
   let user = null;
   try {
     user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: user_id },
       select: {
         id: true,
         name: true,
@@ -210,13 +248,8 @@ async function show(req, res, next) {
 }
 
 async function logoff(req, res) {
-  if (global.user_id === null) {
-    res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ message: "Register to login", error: "Noone logged in" });
-  }
-  global.user_id = null;
-  res.status(StatusCodes.OK).json({ message: "logged out" });
+  res.clearCookie("jwt", cookieFlags(req));
+  return res.status(StatusCodes.OK).json({ message: "logged out" });
 }
 
 module.exports = { register, logon, logoff, show };

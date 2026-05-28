@@ -10,7 +10,7 @@ const router = Router();
 
 router.route("/register").post(register);
 router.route("/logon").post(logon);
-router.route("/logoff").delete(logoff);
+router.route("/logoff").post(logoff).delete(logoff);
 router.route("/:id").get(show);
 
 module.exports = router;
