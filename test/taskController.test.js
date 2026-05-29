@@ -102,8 +102,18 @@ describe("Testing task creation", () => {
     saveRes = httpMocks.createResponse({ eventEmitter: EventEmitter });
     await waitForRouteHandlerCompletions(create, req, saveRes);
     saveData = saveRes._getJSONData();
-    // logger(saveData);
     expect(saveData.isCompleted).toBe(false);
+  });
+  it("19. The object does not have a value for userId", async () => {
+    const req = httpMocks.createRequest({
+      method: "POST",
+      body: { title: "second user this time" },
+    });
+    req.user = { id: user2.id };
+    saveRes = httpMocks.createResponse({ eventEmitter: EventEmitter });
+    await waitForRouteHandlerCompletions(create, req, saveRes);
+    saveData = saveRes._getJSONData();
+    expect(saveData).not.toHaveProperty("userId");
   });
 }); //end of describe
 
