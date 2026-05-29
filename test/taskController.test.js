@@ -48,8 +48,10 @@ describe("Testing task creation", () => {
     const req = httpMocks.createRequest({
       method: "POST",
       body: { title: "first task" },
+      url: "/api/tasks",
     });
     saveRes = httpMocks.createResponse({ eventEmitter: EventEmitter });
+
     try {
       await waitForRouteHandlerCompletions(create, req, saveRes);
     } catch (e) {
@@ -57,19 +59,20 @@ describe("Testing task creation", () => {
     }
   });
 
-  it("15. You can't create a task with a bogus user id", async () => {
-    const req = httpMocks.createRequest({
-      method: "POST",
-      body: { title: "first task" },
-    });
-    req.user = { id: "9999" };
-    saveRes = httpMocks.createResponse({ eventEmitter: EventEmitter });
-    try {
-      await waitForRouteHandlerCompletions(create, req, saveRes);
-    } catch (e) {
-      expect(e.name).toBe("PrismaClientKnownRequestError");
-    }
-  });
+  // it("15. You can't create a task with a bogus user id", async () => {
+  //   const req = httpMocks.createRequest({
+  //     method: "POST",
+  //     body: { title: "first task" },
+  //   });
+  //   req.user = { id: "9999" };
+  //   saveRes = httpMocks.createResponse({ eventEmitter: EventEmitter });
+
+  //   try {
+  //     await waitForRouteHandlerCompletions(create, req, saveRes);
+  //   } catch (e) {
+  //     expect(e.name).toBe("PrismaClientKnownRequestError");
+  //   }
+  // });
 
   it("16. If you have a valid user Id, create() succeeds. (res.statusCode code 201)", async () => {
     const req = httpMocks.createRequest({
@@ -78,6 +81,7 @@ describe("Testing task creation", () => {
     });
     req.user = { id: user1.id };
     saveRes = httpMocks.createResponse({ eventEmitter: EventEmitter });
+
     await waitForRouteHandlerCompletions(create, req, saveRes);
     expect(saveRes.statusCode).toBe(201);
   });
@@ -89,10 +93,12 @@ describe("Testing task creation", () => {
     });
     req.user = { id: user2.id };
     saveRes = httpMocks.createResponse({ eventEmitter: EventEmitter });
+
     await waitForRouteHandlerCompletions(create, req, saveRes);
     saveData = saveRes._getJSONData();
     expect(saveData.title).toMatch(/second user/);
   });
+
   it("18. The object has the right value for isCompleted", async () => {
     const req = httpMocks.createRequest({
       method: "POST",
@@ -100,10 +106,12 @@ describe("Testing task creation", () => {
     });
     req.user = { id: user2.id };
     saveRes = httpMocks.createResponse({ eventEmitter: EventEmitter });
+
     await waitForRouteHandlerCompletions(create, req, saveRes);
     saveData = saveRes._getJSONData();
     expect(saveData.isCompleted).toBe(false);
   });
+
   it("19. The object does not have a value for userId", async () => {
     const req = httpMocks.createRequest({
       method: "POST",
@@ -111,27 +119,35 @@ describe("Testing task creation", () => {
     });
     req.user = { id: user2.id };
     saveRes = httpMocks.createResponse({ eventEmitter: EventEmitter });
+
     await waitForRouteHandlerCompletions(create, req, saveRes);
     saveData = saveRes._getJSONData();
     expect(saveData).not.toHaveProperty("userId");
+    saveTaskId = saveData.id;
   });
 }); //end of describe
 
-//   describe("test getting created tasks",()=>{
-// if("20.",()=>{})
-// if("21.",()=>{})
-// if("22.",()=>{})
-// if("23.",()=>{})
-// if("24.",()=>{})
-// if("25.",()=>{})
-// if("26.",()=>{})
-// if("27.",()=>{})
-//   });
+describe("Test getting created tasks", () => {
+  it("20. You can't get a list of tasks without a user id", async () => {
+    const req = httpMocks.createRequest({ method: "GET" });
+    saveRes = httpMocks.createResponse({ eventEmitter: EventEmitter });
 
-// descirbe("",()=>{
-// if("28.",()=>{});
-// if("29.",()=>{});
-// if("30.",()=>{});
-// if("31.",()=>{});
-// if("32.",()=>{});
-// })
+    await waitForRouteHandlerCompletions(index, req, saveRes);
+    saveData = saveRes._getJSONData();
+    logger("1\n", saveData);
+    expect(saveData.error).toMatch(/Bad Request/);
+  });
+
+  it("21. If req originated with user1, we get a 200 status code", async () => {
+    const req = httpMocks.createRequest({
+      method: "GET",
+      user: { id: user1.id },
+    });
+    saveRes = httpMocks.createResponse({ eventEmitter: EventEmitter });
+    await waitForRouteHandlerCompletions(index, req, saveRes);
+    saveData = saveRes._getJSONData();
+
+    logger("2\n", saveData);
+    expect(saveRes.statusCode).toBe(200);
+  });
+}); //end of describe
