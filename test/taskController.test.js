@@ -49,25 +49,36 @@ describe("Testing task creation", () => {
       method: "POST",
       body: { title: "first task" },
     });
-    req.user = { id: user1.id };
     saveRes = httpMocks.createResponse({ eventEmitter: EventEmitter });
     try {
       await waitForRouteHandlerCompletions(create, req, saveRes);
     } catch (e) {
       expect(e.name).toBe("TypeError");
     }
-    // expect(saveRes.statusCode).toBe(201);
   });
-  it("15. You can't create a task with a bogus user id", () => {
+
+  it("15. You can't create a task with a bogus user id", async () => {
     const req = httpMocks.createRequest({
       method: "POST",
       body: { title: "first task" },
     });
-    req.user = { id: 9999 };
-    // await waitForRouteHandlerCompletions(create, req, saveRes);
-    // expect(saveRes.statusCode).toBe(201);
+    req.user = { id: "9999" };
+    try {
+      await waitForRouteHandlerCompletions(create, req, saveRes);
+    } catch (e) {
+      expect(e.name).toBe("PrismaClientKnownRequestError");
+    }
   });
-});
+  it("16. If you have a valid user Id, create() succeeds. (res.statusCode code 201)", async () => {
+    const req = httpMocks.createRequest({
+      method: "POST",
+      body: { title: "first task" },
+    });
+    req.user = { id: user1.id };
+    await waitForRouteHandlerCompletions(create, req, saveRes);
+    expect(saveRes.statusCode).toBe(201);
+  });
+}); //end of describe
 
 //   describe("test getting created tasks",()=>{
 // if("20.",()=>{})
