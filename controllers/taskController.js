@@ -12,7 +12,7 @@ const { getPrismaErrorInfo } = require("../middleware/index");
 async function create(req, res, next) {
   if (!req.body) req.body = {};
   //DRY
-  const user_id = parseInt(req.user.id);
+  const user_id = parseInt(req?.user?.id);
 
   if (!user_id) {
     return res
