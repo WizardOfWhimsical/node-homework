@@ -91,8 +91,19 @@ describe("Testing task creation", () => {
     saveRes = httpMocks.createResponse({ eventEmitter: EventEmitter });
     await waitForRouteHandlerCompletions(create, req, saveRes);
     saveData = saveRes._getJSONData();
-    logger(saveData);
     expect(saveData.title).toMatch(/second user/);
+  });
+  it("18. The object has the right value for isCompleted", async () => {
+    const req = httpMocks.createRequest({
+      method: "POST",
+      body: { title: "second user this time" },
+    });
+    req.user = { id: user2.id };
+    saveRes = httpMocks.createResponse({ eventEmitter: EventEmitter });
+    await waitForRouteHandlerCompletions(create, req, saveRes);
+    saveData = saveRes._getJSONData();
+    // logger(saveData);
+    expect(saveData.isCompleted).toBe(false);
   });
 }); //end of describe
 
