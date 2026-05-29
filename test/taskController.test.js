@@ -63,20 +63,36 @@ describe("Testing task creation", () => {
       body: { title: "first task" },
     });
     req.user = { id: "9999" };
+    saveRes = httpMocks.createResponse({ eventEmitter: EventEmitter });
     try {
       await waitForRouteHandlerCompletions(create, req, saveRes);
     } catch (e) {
       expect(e.name).toBe("PrismaClientKnownRequestError");
     }
   });
+
   it("16. If you have a valid user Id, create() succeeds. (res.statusCode code 201)", async () => {
     const req = httpMocks.createRequest({
       method: "POST",
       body: { title: "first task" },
     });
     req.user = { id: user1.id };
+    saveRes = httpMocks.createResponse({ eventEmitter: EventEmitter });
     await waitForRouteHandlerCompletions(create, req, saveRes);
     expect(saveRes.statusCode).toBe(201);
+  });
+
+  it("17. The object returned from the create() call has the expected title", async () => {
+    const req = httpMocks.createRequest({
+      method: "POST",
+      body: { title: "second user this time" },
+    });
+    req.user = { id: user2.id };
+    saveRes = httpMocks.createResponse({ eventEmitter: EventEmitter });
+    await waitForRouteHandlerCompletions(create, req, saveRes);
+    saveData = saveRes._getJSONData();
+    logger(saveData);
+    expect(saveData.title).toMatch(/second user/);
   });
 }); //end of describe
 
