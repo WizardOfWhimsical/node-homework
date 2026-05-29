@@ -120,7 +120,8 @@ async function index(req, res, next) {
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
   //DRY
-  const user_id = parseInt(req.user.id);
+  const user_id = parseInt(req.user?.id);
+  // console.log("seeing what hits the user_id", user_id);
   if (!user_id || isNaN(user_id)) {
     return res
       .status(StatusCodes.BAD_REQUEST)
