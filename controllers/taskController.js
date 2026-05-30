@@ -188,8 +188,8 @@ async function index(req, res, next) {
 
   if (tasks.length === 0) {
     return res
-      .status(StatusCodes.OK)
-      .json({ task: [], pagination, message: "Task not found" });
+      .status(StatusCodes.NOT_FOUND)
+      .json({ error: "User has no tasks", message: "No tasks found" });
   }
 
   return res.status(StatusCodes.OK).json({ tasks, pagination });
@@ -203,7 +203,7 @@ async function index(req, res, next) {
  */
 async function show(req, res, next) {
   const taskIndex = parseInt(req.params?.id);
-  const user_id = parseInt(req.user.id);
+  const user_id = parseInt(req.user?.id);
   //DRY
   if (!user_id || isNaN(user_id)) {
     return res
