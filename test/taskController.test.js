@@ -88,21 +88,21 @@ describe("Testing task creation", () => {
   it("17. The object returned from the create() call has the expected title", async () => {
     const req = httpMocks.createRequest({
       method: "POST",
-      body: { title: "second user this time" },
-      user: { id: user2.id },
+      body: { title: "second task this time" },
+      user: { id: user1.id },
     });
     saveRes = httpMocks.createResponse({ eventEmitter: EventEmitter });
 
     await waitForRouteHandlerCompletions(create, req, saveRes);
     saveData = saveRes._getJSONData();
-    expect(saveData.title).toMatch(/second user/);
+    expect(saveData.title).toMatch(/second task/);
   });
 
   it("18. The object has the right value for isCompleted", async () => {
     const req = httpMocks.createRequest({
       method: "POST",
-      body: { title: "second user this time" },
-      user: { id: user2.id },
+      body: { title: "You can do it. Believe It!" },
+      user: { id: user1.id },
     });
     saveRes = httpMocks.createResponse({ eventEmitter: EventEmitter });
 
@@ -114,8 +114,8 @@ describe("Testing task creation", () => {
   it("19. The object does not have a value for userId", async () => {
     const req = httpMocks.createRequest({
       method: "POST",
-      body: { title: "second user this time" },
-      user: { id: user2.id },
+      body: { title: "Third task of something todo" },
+      user: { id: user1.id },
     });
     saveRes = httpMocks.createResponse({ eventEmitter: EventEmitter });
 
@@ -149,7 +149,22 @@ describe("Test getting created tasks", () => {
 
   it("22. The returned object has a task length for the array", async () => {
     saveData = saveRes._getJSONData();
-    logger(saveData);
     expect(saveData.tasks.length).toBeGreaterThanOrEqual(1);
   });
+
+  it("23. The title in the first array object is as expected", async () => {
+    // logger(saveData.tasks);
+    expect(saveData.tasks[0].title).toMatch(/Third task/);
+  });
+
+  it("24. The first array object does not contain a userId", () => {
+    expect(saveData.tasks[0]).not.toHaveProperty("userId");
+    for (let task of saveData.tasks) {
+      Object.hasOwn("userId") && console.log(task.id);
+      expect(task).not.toHaveProperty("userId");
+      expect(task).not.toHaveProperty("User.userId");
+    }
+  });
+
+  it("25. If you get the list of tasks using the userId from user2, you get a 404", () => {});
 }); //end of describe
