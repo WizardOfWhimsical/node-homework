@@ -189,4 +189,19 @@ describe("Test getting created tasks", () => {
     expect(saveData.id).toBe(saveTaskId);
     expect(saveData.userId).toBe(user1.id);
   });
+
+  it("27. User2 can't retrieve this entry (returns 404)", async () => {
+    const req = httpMocks.createRequest({
+      method: "GET",
+      user: { id: user2.id },
+      params: { id: saveTaskId },
+    });
+    saveRes = httpMocks.createResponse({ eventEmitter: EventEmitter });
+
+    await waitForRouteHandlerCompletions(show, req, saveRes);
+    saveData = saveRes._getJSONData();
+
+    expect(saveRes.statusCode).toBe(404);
+    expect(saveData.error).toBeDefined();
+  });
 }); //end of describe
