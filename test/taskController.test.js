@@ -207,7 +207,7 @@ describe("Test getting created tasks", () => {
 }); //end of describe
 
 describe("Testing the update and delete", () => {
-  it("28.User1 can set task for saved task to isCompleted: true", async () => {
+  it("28. User1 can set task for saved task to isCompleted: true", async () => {
     const req = httpMocks.createRequest({
       method: "PATCH",
       user: { id: user1.id },
@@ -221,7 +221,7 @@ describe("Testing the update and delete", () => {
     expect(saveData.isCompleted).toBe(true);
   });
 
-  it("29.User2 can not do this", async () => {
+  it("29. User2 can not do this", async () => {
     const req = httpMocks.createRequest({
       method: "PATCH",
       user: { id: user2.id },
@@ -232,6 +232,45 @@ describe("Testing the update and delete", () => {
 
     await waitForRouteHandlerCompletions(update, req, saveRes);
 
+    expect(saveRes.statusCode).toBe(404);
+  });
+
+  it("30. User2 can not delete this task", async () => {
+    const req = httpMocks.createRequest({
+      method: "DELETE",
+      user: { id: user2.id },
+      // body: { isCompleted: true },
+      params: { id: saveTaskId },
+    });
+    saveRes = httpMocks.createResponse({ eventEmitter: EventEmitter });
+
+    await waitForRouteHandlerCompletions(deleteTask, req, saveRes);
+    expect(saveRes.statusCode).toBe(404);
+  });
+
+  it("31. User1 can delete this task", async () => {
+    const req = httpMocks.createRequest({
+      method: "DELETE",
+      user: { id: user1.id },
+      // body: { isCompleted: true },
+      params: { id: saveTaskId },
+    });
+    saveRes = httpMocks.createResponse({ eventEmitter: EventEmitter });
+
+    await waitForRouteHandlerCompletions(deleteTask, req, saveRes);
+    expect(saveRes.statusCode).toBe(200);
+  });
+
+  it("32. The task now returns a 404", async () => {
+    const req = httpMocks.createRequest({
+      method: "GET",
+      user: { id: user1.id },
+      params: { id: saveTaskId },
+    });
+    saveRes = httpMocks.createResponse({ eventEmitter: EventEmitter });
+    await waitForRouteHandlerCompletions(show, req, saveRes);
+    logger(saveRes._getJSONData());
+    // expect("something").toBe("nothing");
     expect(saveRes.statusCode).toBe(404);
   });
 }); //end of describe
