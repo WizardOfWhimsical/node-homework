@@ -12,6 +12,7 @@ const {
   handleAuthMiddleware: jwtMiddleware,
   logger,
 } = require("../middleware/index");
+// const { it } = require("@faker-js/faker");
 
 let saveRes,
   saveData = null;
@@ -72,15 +73,32 @@ describe("Testing register, logon and log off", () => {
 
   it("36. The string contains 'HTTPOnly'.", async () => {
     const setCookieArray = saveRes.get("Set-Cookie");
-    // logger(setCookieArray[0].split());
     expect(setCookieArray[0]).toMatch(/HttpOnly/);
   });
 
-  it("37. The returned data contains a csrfToken.", async () => {
-    const resp = saveRes._getJSONData();
-    logger({ resp });
-    expect(resp).toHaveProperty("csrfToken");
+  it("37. The returned object has the expected name", () => {
+    saveData = saveRes._getJSONData();
+    expect(saveData.name).toBe("Bob");
   });
 
-  it("38. ");
+  it("38. The returned data contains a csrfToken.", async () => {
+    saveData = saveRes._getJSONData();
+    expect(saveData).toHaveProperty("csrfToken");
+  });
+
+  it("39. You can now logoff.", async () => {
+    const req = httpMocks.createRequest({ method: "POST", body: Bob });
+    saveRes = MockResponseWithCookies();
+    await waitForRouteHandlerCompletions(logoff, req, saveRes);
+    saveData = saveRes._getJSONData();
+    expect(saveData.message).toMatch(/logged out/);
+  });
+
+  it("40. The logoff clears the cookie.", () => {
+    const setCookieArray = saveRes.get("Set-Cookie");
+    jwtCookie = setCookieArray.find((str) => str.startsWith("jwt="));
+    expect(jwtCookie).toContain("Jan 1970");
+  });
+
+  it("41. A logon with a bad password returns a 401.", () => {});
 }); //end of describe
