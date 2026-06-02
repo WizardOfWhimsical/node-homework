@@ -15,8 +15,12 @@ const helmet = require("helmet");
 const { xss } = require("express-xss-sanitizer");
 const rateLimiter = require("express-rate-limit");
 const httpMocks = require("node-mocks-http");
+const cookie = require("cookie");
+const { EventEmitter } = require("pg-cursor");
 
 module.exports = {
+  EventEmitter,
+  cookie,
   httpMocks,
   helmet,
   xss,
