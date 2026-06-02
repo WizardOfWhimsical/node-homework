@@ -12,7 +12,6 @@ const {
   handleAuthMiddleware: jwtMiddleware,
   logger,
 } = require("../middleware/index");
-// const { it } = require("@faker-js/faker");
 
 let saveRes,
   saveData = null;
@@ -100,5 +99,24 @@ describe("Testing register, logon and log off", () => {
     expect(jwtCookie).toContain("Jan 1970");
   });
 
-  it("41. A logon with a bad password returns a 401.", () => {});
-}); //end of describe
+  it("41. A logon with a bad password returns a 401.", async () => {
+    const req = httpMocks.createRequest({
+      method: "POST",
+      body: { ...Bob, password: "BadPassword" },
+    });
+
+    saveRes = MockResponseWithCookies();
+    await waitForRouteHandlerCompletions(logon, req, saveRes);
+
+    expect(saveRes.statusCode).toBe(401);
+  });
+
+  it("42. You can't register with an email that has already been registered.", async () => {
+    const req = httpMocks.createRequest({ method: "POST", body: Bob });
+    saveRes = MockResponseWithCookies();
+    await waitForRouteHandlerCompletions(register, req, saveRes);
+    saveData = saveRes._getJSONData();
+    // logger(saveData);
+    expect(saveData.message).toBe("Email already registered");
+  });
+});
