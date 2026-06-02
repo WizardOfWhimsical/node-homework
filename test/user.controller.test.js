@@ -120,3 +120,28 @@ describe("Testing register, logon and log off", () => {
     expect(saveData.message).toBe("Email already registered");
   });
 });
+
+describe("Testing JWT middleware", () => {
+  it("61. jwtMiddleware Returns a 401 if the JWT cookie is not present in the req", async () => {
+    const req = httpMocks.createRequest({ method: "POST", body: Bob });
+    saveRes = MockResponseWithCookies();
+
+    await waitForRouteHandlerCompletions(jwtMiddleware, req, saveRes);
+    expect(saveRes.statusCode).toBe(401);
+  });
+
+  it("62. returns a 401 if jwt is invalid", async () => {
+    const req = httpMocks.createRequest({
+      method: "POST",
+    });
+    saveRes = MockResponseWithCookies();
+    const jwtCookie = jwt.sign({ id: 5, csrfToken: "badToken" }, "badSecret", {
+      expiresIn: "1h",
+    });
+    req.cookies = { jwt: jwtCookie };
+    await waitForRouteHandlerCompletions(jwtMiddleware, req, saveRes);
+    expect(saveRes.statusCode).toBe(401);
+  });
+
+  it("63");
+}); //end of describe
