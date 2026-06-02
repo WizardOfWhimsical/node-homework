@@ -1,9 +1,9 @@
-// const {
-//   register,
-//   logon,
-//   logoff,
-//   show,
-// } = require("./userController");
+const {
+  register,
+  logon,
+  logoff,
+  //  show
+} = require("./userController");
 const {
   getUserAnalytics,
   getUsersWithStats,
@@ -19,10 +19,10 @@ const {
 } = require("./taskController");
 
 module.exports = {
-  // showUser,
-  // register,
-  // logon,
-  // logoff,
+  // show: showUserStats,
+  register,
+  logon,
+  logoff,
   getUserAnalytics,
   getUsersWithStats,
   searchTasks,
