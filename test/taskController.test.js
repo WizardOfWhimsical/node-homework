@@ -1,18 +1,11 @@
 require("dotenv").config();
 process.env.DATABASE_URL = process.env.TEST_DATABASE_URL;
-const { prisma, httpMocks } = require("../index");
+const { prisma, httpMocks, EventEmitter } = require("../index");
 const { logger } = require("../middleware/index");
 const {
   waitForRouteHandlerCompletions,
 } = require("./waitForRouteHandlerCompletion");
-const {
-  index,
-  show,
-  create,
-  update,
-  deleteTask,
-} = require("../controllers/index");
-const { EventEmitter } = require("pg-cursor");
+const { index, show, create, update, deleteTask };
 
 let user1, user2, saveRes, saveData, saveTaskId;
 
@@ -55,17 +48,17 @@ describe("Testing task creation", () => {
   });
 
   it("15. You can't create a task with a bogus user id", async () => {
-    // const req = httpMocks.createRequest({
-    //   method: "POST",
-    //   body: { title: "first task" },
-    //   user: { id: "9999" },
-    // });
-    // req.saveRes = httpMocks.createResponse({ eventEmitter: EventEmitter });
-    // try {
-    //   await waitForRouteHandlerCompletions(create, req, saveRes);
-    // } catch (e) {
-    //   expect(e.name).toBe("PrismaClientKnownRequestError");
-    // }
+    const req = httpMocks.createRequest({
+      method: "POST",
+      body: { title: "first task" },
+      user: { id: "9999" },
+    });
+    req.saveRes = httpMocks.createResponse({ eventEmitter: EventEmitter });
+    try {
+      await waitForRouteHandlerCompletions(create, req, saveRes);
+    } catch (e) {
+      expect(e.name).toBe("PrismaClientKnownRequestError");
+    }
   });
 
   it("16. If you have a valid user Id, create() succeeds. (res.statusCode code 201)", async () => {
