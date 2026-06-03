@@ -44,6 +44,39 @@ describe("register a user", () => {
       password: "Pa$$word20",
     };
     saveRes = await agent.post("/api/users/logon").send(user);
-    expect(saveRes.body.messsage).toMatch(/logged/);
+    logger(saveRes.body);
+    expect(saveRes.body.message).toBe("logged in");
+  });
+
+  it("50. Verify that you are logged in: /api/tasks should not return a 401", async () => {
+    const user = {
+      // name: "John Deere",
+      email: "jdeere@example.com",
+      password: "Pa$$word20",
+    };
+    saveRes = await agent.get("/api/tasks").send(user);
+    // logger(saveRes.status);
+    expect(saveRes.status).not.toBe(401);
+  });
+
+  it("51. Verify that you can log out", async () => {
+    const user = {
+      // name: "John Deere",
+      email: "jdeere@example.com",
+      password: "Pa$$word20",
+    };
+    saveRes = await agent.delete("/api/users/logoff").send(user);
+    expect(saveRes.body.message).toMatch(/logged out/);
+  });
+
+  it("52. Make sure that you are really logged out: /api/tasks should now return a 401", async () => {
+    const user = {
+      // name: "John Deere",
+      email: "jdeere@example.com",
+      password: "Pa$$word20",
+    };
+    saveRes = await agent.get("/api/tasks").send(user);
+    // logger(saveRes.status);
+    expect(saveRes.status).toBe(401);
   });
 });
