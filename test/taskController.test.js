@@ -1,7 +1,7 @@
 require("dotenv").config();
 process.env.DATABASE_URL = process.env.TEST_DATABASE_URL;
 const { prisma, httpMocks, EventEmitter } = require("../index");
-const { logger } = require("../middleware/index");
+// const { logger } = require("../middleware/index");
 const {
   waitForRouteHandlerCompletions,
 } = require("./waitForRouteHandlerCompletion");
