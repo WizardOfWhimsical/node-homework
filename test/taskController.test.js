@@ -5,14 +5,20 @@ const { logger } = require("../middleware/index");
 const {
   waitForRouteHandlerCompletions,
 } = require("./waitForRouteHandlerCompletion");
-const { index, show, create, update, deleteTask };
+const {
+  index,
+  show,
+  create,
+  update,
+  deleteTask,
+} = require("../controllers/index");
 
 let user1, user2, saveRes, saveData, saveTaskId;
 
 beforeAll(async () => {
   await prisma.task.deleteMany();
   await prisma.user.deleteMany();
-  user1 = await prisma.User.create({
+  user1 = await prisma.user.create({
     data: {
       name: "Bob",
       email: "bob@sample.com",
@@ -43,7 +49,7 @@ describe("Testing task creation", () => {
     try {
       await waitForRouteHandlerCompletions(create, req, saveRes);
     } catch (e) {
-      expect(e.name).toBe("TypeError");
+      expect(e.name).toBe("why wont you break!");
     }
   });
 

@@ -71,12 +71,10 @@ describe("register a user", () => {
 
   it("52. Make sure that you are really logged out: /api/tasks should now return a 401", async () => {
     const user = {
-      // name: "John Deere",
       email: "jdeere@example.com",
       password: "Pa$$word20",
     };
     saveRes = await agent.get("/api/tasks").send(user);
-    // logger(saveRes.status);
     expect(saveRes.status).toBe(401);
   });
 });

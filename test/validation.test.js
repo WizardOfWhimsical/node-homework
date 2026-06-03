@@ -61,6 +61,7 @@ describe("User schema validation test", () => {
       error.details.find((detail) => detail.context.key === "name"),
     ).toBeDefined();
   });
+
   it("6. The user name must be valid (3 - 30 characters)", () => {
     ({ error } = userSchema.validate(makeNewUser({ name: "Po" }), abortFlag));
     expect(
@@ -84,10 +85,12 @@ describe("Task schema validation testing", () => {
       error.details.find((detail) => detail.context.key === "title"),
     ).toBeDefined();
   });
+
   it("9. If an isCompleted value is specified, it must be valid", () => {
     ({ error, value } = taskSchema.validate(makeNewTask({ isCompleted: 2 })));
     expect(error.details[0].message).toMatch(/must be a boolean/);
   });
+
   it("10. If an isCompleted value is not specified but the rest of the object isvalid, a default of false is provided by validation", () => {
     ({ error, value } = taskSchema.validate(makeNewTask()));
     expect(value.isCompleted).toBe(false);
