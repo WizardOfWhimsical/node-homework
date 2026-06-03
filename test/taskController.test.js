@@ -45,12 +45,10 @@ describe("Testing task creation", () => {
       body: { title: "first task" },
     });
     saveRes = httpMocks.createResponse({ eventEmitter: EventEmitter });
+    //This does not throw a 'TpyeError' because we handle it gracefully
+    await waitForRouteHandlerCompletions(create, req, saveRes);
 
-    try {
-      await waitForRouteHandlerCompletions(create, req, saveRes);
-    } catch (e) {
-      expect(e.name).toBe("why wont you break!");
-    }
+    expect(saveRes.statusCode).toBe(400);
   });
 
   it("15. You can't create a task with a bogus user id", async () => {
@@ -59,7 +57,7 @@ describe("Testing task creation", () => {
       body: { title: "first task" },
       user: { id: "9999" },
     });
-    req.saveRes = httpMocks.createResponse({ eventEmitter: EventEmitter });
+    saveRes = httpMocks.createResponse({ eventEmitter: EventEmitter });
     try {
       await waitForRouteHandlerCompletions(create, req, saveRes);
     } catch (e) {
@@ -147,7 +145,6 @@ describe("Test getting created tasks", () => {
   });
 
   it("23. The title in the first array object is as expected", async () => {
-    // logger(saveData.tasks);
     expect(saveData.tasks[0].title).toMatch(/Third task/);
   });
 
@@ -268,8 +265,7 @@ describe("Testing the update and delete", () => {
     });
     saveRes = httpMocks.createResponse({ eventEmitter: EventEmitter });
     await waitForRouteHandlerCompletions(show, req, saveRes);
-    logger(saveRes._getJSONData());
-    // expect("something").toBe("nothing");
+
     expect(saveRes.statusCode).toBe(404);
   });
 }); //end of describe
