@@ -12,7 +12,7 @@ const { getPrismaErrorInfo } = require("../middleware/index");
 async function create(req, res, next) {
   if (!req.body) req.body = {};
   //DRY
-  const user_id = parseInt(req.user.id);
+  const user_id = parseInt(req?.user?.id);
 
   if (!user_id) {
     return res
@@ -120,7 +120,8 @@ async function index(req, res, next) {
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
   //DRY
-  const user_id = parseInt(req.user.id);
+  const user_id = parseInt(req.user?.id);
+  // console.log("seeing what hits the user_id", user_id);
   if (!user_id || isNaN(user_id)) {
     return res
       .status(StatusCodes.BAD_REQUEST)
@@ -187,8 +188,8 @@ async function index(req, res, next) {
 
   if (tasks.length === 0) {
     return res
-      .status(StatusCodes.OK)
-      .json({ task: [], pagination, message: "Task not found" });
+      .status(StatusCodes.NOT_FOUND)
+      .json({ error: "User has no tasks", message: "No tasks found" });
   }
 
   return res.status(StatusCodes.OK).json({ tasks, pagination });
@@ -202,7 +203,7 @@ async function index(req, res, next) {
  */
 async function show(req, res, next) {
   const taskIndex = parseInt(req.params?.id);
-  const user_id = parseInt(req.user.id);
+  const user_id = parseInt(req.user?.id);
   //DRY
   if (!user_id || isNaN(user_id)) {
     return res
@@ -227,7 +228,12 @@ async function show(req, res, next) {
   }
 
   if (!taskWithUserInfo) {
-    return res.status(404).json({ message: "The task/user was not found." });
+    return res
+      .status(404)
+      .json({
+        message: "The task/user was not found.",
+        error: "No data found",
+      });
   }
 
   return res.status(StatusCodes.OK).json(taskWithUserInfo);
@@ -240,8 +246,8 @@ async function show(req, res, next) {
  * @returns {Promise<void>}
  */
 async function update(req, res, next) {
-  const taskIndex = parseInt(req?.params?.id);
-  const user_id = parseInt(req?.user?.id);
+  const taskIndex = parseInt(req.params?.id);
+  const user_id = parseInt(req.user?.id);
   //DRY
   if (!user_id || isNaN(user_id)) {
     return res
