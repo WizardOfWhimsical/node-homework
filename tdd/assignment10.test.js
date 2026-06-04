@@ -225,17 +225,14 @@ describe("Testing JWT middleware", () => {
 });
 describe("testing task creation", () => {
   it("cant create a task without a user id", async () => {
-    expect.assertions(1);
     const req = httpMocks.createRequest({
       method: "POST",
       body: { title: "first task" },
     });
     saveRes = httpMocks.createResponse({ eventEmitter: EventEmitter });
-    try {
-      await waitForRouteHandlerCompletion(create, req, saveRes);
-    } catch (e) {
-      expect(e.name).toBe("TypeError");
-    }
+    //This does not throw a 'TpyeError' because we handle it gracefully
+    await waitForRouteHandlerCompletion(create, req, saveRes);
+    expect(saveRes.statusCode).toBe(400);
   });
   it("You can't create a task with a bogus user id.", async () => {
     expect.assertions(1);
@@ -509,8 +506,10 @@ describe("function tests of user operations", () => {
         email: "jdeere@example.com",
         password: "Pa$$word20",
       };
-      saveRes = await agent.post("/api/users/register")
-        .set("X-Recaptcha-Test", process.env.JWT_SECRET).send(newUser);
+      saveRes = await agent
+        .post("/api/users/register")
+        .set("X-Recaptcha-Test", process.env.JWT_SECRET)
+        .send(newUser);
       expect(saveRes.status).toBe(201);
     });
     it("47. Registration returns an object with the expected name.", () => {
