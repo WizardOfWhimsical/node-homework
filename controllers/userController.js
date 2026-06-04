@@ -37,6 +37,7 @@ async function comparePassword(inputPassword, storedHash) {
  *    sameSite: string
  *     }}
  */
+// eslint-disable-next-line no-unused-vars
 function cookieFlags(req) {
   return {
     httpOnly: true,
