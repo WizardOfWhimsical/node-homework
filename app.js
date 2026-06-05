@@ -30,7 +30,7 @@ app.use(
 );
 
 app.use(
-  morgan("dev"),
+  // morgan("dev"),
   express.urlencoded({ extended: true }),
   express.json(),
   cookieParser(),
