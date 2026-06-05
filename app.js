@@ -45,7 +45,7 @@ app.use("/api/users", userRouter);
 app.use("/api/tasks", taskRouter);
 app.use("/api/analytics", analyticsRouter);
 
-app.get("/health", async (req, res) => {
+app.get("/api/health", async (req, res) => {
   try {
     await prisma.$queryRaw`SELECT 1`;
 
