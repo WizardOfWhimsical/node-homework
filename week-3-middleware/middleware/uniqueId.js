@@ -1,7 +1,7 @@
-const { v4: uuidv4 } = require("uuid");
+const { randomUUID } = require("crypto");
 
 function setUniqueId(req, res, next) {
-  req.requestId = uuidv4();
+  req.requestId = randomUUID;
   res.setHeader("X-Request-Id", req.requestId);
   next();
 }
