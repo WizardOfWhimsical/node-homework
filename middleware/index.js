@@ -3,7 +3,7 @@ const errorHandler = require("./error-handler");
 const handleAuthMiddleware = require("./jwtMiddleware");
 const notFound = require("./not-found");
 const getPrismaErrorInfo = require("./customPrismaErrorHandling/getPrismaErrorInfo");
-const setUniqueId = require("../week-3-middleware/middleware/uniqueId");
+const setUniqueId = require("./uniqueId");
 
 module.exports = {
   logger,
