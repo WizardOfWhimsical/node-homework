@@ -2,17 +2,20 @@ $kind: http-request
 name: Manuel_logon
 url: "{{HOST}}/api/users/logon"
 method: POST
+headers:
+  X-Recaptcha-Test: you-will-not-figure-this-out
+  X-CSRF-TOKEN: "{{csrfToken}}"
 body:
   type: json
   content: |-
     {
-        "email":"{{userManuelEmail}}",
-        "password":"{{password}}"
+        "email":"st.rayis1085@yahoo.com",
+        "password":"Buddy@13"
     }
 scripts:
   - type: afterResponse
     code: |-
-      pm.test("Login success code is 200 OK", function () {
+      pm.test("Login success code is 200 OK", ()=> {
           pm.response.to.have.status(200);
       });
 

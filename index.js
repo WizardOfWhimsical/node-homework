@@ -1,7 +1,4 @@
-const {
-  StatusCodes,
-  ReasonPhrases,
-} = require("./node_modules/http-status-codes");
+const { StatusCodes, ReasonPhrases } = require("http-status-codes");
 const { Router } = require("express");
 const express = require("express");
 const morgan = require("morgan");

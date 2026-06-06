@@ -14,8 +14,8 @@ const {
   responseLogger,
   errorHandler,
   notFound,
-} = require("./middleware");
-const { userRouter, taskRouter, analyticsRouter } = require("./routes");
+} = require("./middleware/index");
+const { userRouter, taskRouter, analyticsRouter } = require("./routes/index");
 
 const app = express();
 const port = process.env.PORT || 3000;
