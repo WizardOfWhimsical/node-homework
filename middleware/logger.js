@@ -1,9 +1,9 @@
 const chalk = require("chalk");
-const { styleText } = require("node:util");
+// const { styleText } = require("node:util");
 
 function requestLogger(req, res, next) {
   console.log("\n" + chalk.blue("=== Incoming Request ==="));
-  console.log(chalk.yellow("RequestId:"), req.requestId);
+  console.log(chalk.yellow("RequestId:"), req?.requestId);
   console.log(chalk.yellow("Method:"), req?.method || "Nothing was here");
   console.log(chalk.yellow("Path:"), req?.path || "Nothing was here");
   console.log(chalk.yellow("Query:"), req?.query || "Nothing was here");
@@ -44,10 +44,14 @@ function responseLogger(req, res, next) {
   next();
 }
 
-function logger(a) {
-  console.log(styleText("yellow", "======================"));
-  console.log(styleText("green", "Start Here"));
-  console.log(a);
-  console.log(styleText("yellow", "======================"));
-}
-module.exports = { requestLogger, responseLogger, logger };
+// function logger(a) {
+//   console.log(styleText("yellow", "======================"));
+//   console.log(styleText("green", "Start Here"));
+//   console.log(a);
+//   console.log(styleText("yellow", "======================"));
+// }
+module.exports = {
+  requestLogger,
+  responseLogger,
+  // logger
+};

@@ -40,21 +40,25 @@ app.use(
   requestLogger,
   responseLogger,
 );
-
+app.get("/", (req, res, next) => {
+  console.log("health check hit");
+  res.status(StatusCodes.OK).json({ message: "test success" });
+  next();
+});
 app.use("/api/users", userRouter);
 app.use("/api/tasks", taskRouter);
 app.use("/api/analytics", analyticsRouter);
 
-app.get("/api/health", async (req, res) => {
-  try {
-    await prisma.$queryRaw`SELECT 1`;
+// app.get("/api/health", async (req, res) => {
+//   try {
+//     await prisma.$queryRaw`SELECT 1`;
 
-    res.status(StatusCodes.OK).json({ status: "OK", db: "connected" });
-  } catch (error) {
-    console.error("Error in health check:", error);
-    res.status(500).json({ status: "Error" });
-  }
-});
+//     res.status(StatusCodes.OK).json({ status: "OK", db: "connected" });
+//   } catch (error) {
+//     console.error("Error in health check:", error);
+//     res.status(500).json({ status: "Error" });
+//   }
+// });
 
 app.use(notFound, errorHandler);
 

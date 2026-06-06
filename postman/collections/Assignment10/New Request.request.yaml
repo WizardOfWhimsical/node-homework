@@ -1,4 +1,28 @@
 $kind: http-request
-url: ""
-method: GET
-order: 1780612397035
+name: New Request
+url: "{{HOST}}/api/users/logon"
+method: POST
+headers:
+  X-Recaptcha-Test: you-will-not-figure-this-out
+  X-CSRF-TOKEN: "{{csrfToken}}"
+body:
+  type: json
+  content: |-
+    {
+        "email":"st.rayis1085@yahoo.com",
+        "password": "Buddy@13"
+    }
+scripts:
+  - type: beforeRequest
+    code: pm.globals.unset("csrfToken")
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      pm.test("Login success code is 200 OK", function () {
+          pm.response.to.have.status(200);
+      });
+
+      const payload = pm.response.json()
+      pm.globals.set("csrfToken", payload.csrfToken);
+    language: text/javascript
+order: 1780707152333
