@@ -1,0 +1,28 @@
+$kind: http-request
+url: "{{HOST}}/api/users/register"
+method: POST
+headers:
+  X-Recaptcha-Test: you-will-not-figure-this-out
+  X-CSRF-TOKEN: "{{csrfToken}}"
+body:
+  type: json
+  content: |-
+    {
+        "name":"Stephen",
+        "email":"st.rayis1085@yahoo.com",
+        "password": "Buddy@13"
+    }
+scripts:
+  - type: beforeRequest
+    code: pm.globals.unset("csrfToken")
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      pm.test("Login success code is 200 OK", function () {
+          pm.response.to.have.status(200);
+      });
+
+      const payload = pm.response.json()
+      pm.globals.set("csrfToken", payload.csrfToken);
+    language: text/javascript
+order: 207486412605547
