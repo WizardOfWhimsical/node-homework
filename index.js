@@ -1,7 +1,6 @@
 const { StatusCodes, ReasonPhrases } = require("http-status-codes");
 const { Router } = require("express");
 const express = require("express");
-const morgan = require("morgan");
 const { Pool } = require("pg");
 const prisma = require("./db/prisma");
 const crypto = require("crypto");
@@ -26,7 +25,6 @@ module.exports = {
   ReasonPhrases,
   Router,
   express,
-  morgan,
   Pool,
   prisma,
   crypto,
