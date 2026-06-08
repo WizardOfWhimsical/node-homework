@@ -1,5 +1,4 @@
 const {
-  morgan,
   express,
   StatusCodes,
   prisma,

@@ -1,8 +1,0 @@
-# Use this workspace to collaborate
-workspace:
-  id: 18463257-185d-41e5-9b92-a9e8de234afe
-
-localResources:
-  docs:
-    - ../assignment1/node-fundamentals.md
-    - ../README.md
