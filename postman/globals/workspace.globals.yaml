@@ -15,6 +15,3 @@ values:
   - key: userManuelEmail
     value: ''
     enabled: true
-  - key: csrfToken
-    value: ''
-    enabled: true
