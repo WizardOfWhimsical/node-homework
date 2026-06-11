@@ -1,5 +1,6 @@
 const { OAuth2Client } = require("google-auth-library"); //
 const { logger } = require("../middleware/index");
+const { hashPassword, comparePassword } = require("./passwordProtection");
 require("dotenv").config();
 
 // 1. Build the client with your exact keys
@@ -31,13 +32,30 @@ async function googleLogon(req, res) {
       audience: process.env.GOOGLE_CLIENT_ID,
     });
     const payload = userInfo.getPayload();
-    logger(payload);
+    const splitEmail = (email) => {
+      return email.split("@")[0];
+    };
+    const user = {
+      name: payload.name,
+      email: payload.email,
+      password: `${splitEmail(payload.email)}${process.env.GOOGLE_CLIENT_PASSWORD_SALT}`,
+    };
+    logger(
+      `${splitEmail(payload.email)}${process.env.GOOGLE_CLIENT_PASSWORD_SALT}`,
+    );
     // 6. use info to query db
+
+    //if account exists login if not register
+    // ??REGISTER
+    user.hashedPassword = await hashPassword(user.password);
+    delete user.password;
+
+    let result = null;
+
     // 7. if Exist ? logon : register;
     // 8. continue through register w/o pw
     // 9a. send response to front end like business as usual
     // 9b. their tasks explain a set password
-    logger(oAuth2Client);
 
     // Send a success message back to the frontend
     res.status(200).json({ message: "Tokens acquired!" });
