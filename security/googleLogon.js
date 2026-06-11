@@ -5,94 +5,150 @@ const { setJwtCookie } = require("./webTokens");
 const { prisma, StatusCodes } = require("../index");
 require("dotenv").config();
 
-// 1. Build the client with your exact keys
 const oAuth2Client = new OAuth2Client({
   clientId: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
   redirectUri: "postmessage",
 });
 
-// 2. The controller to handle the frontend request
 async function googleLogon(req, res, next) {
   console.log("google-hand-shake");
   try {
-    // Get the code sent from your React button
     const code = req.body.code;
-    // oAuth2Client.redirectUri = req.body.redirectUri;
-    // 3. Trade the code for access tokens
+
     const r = await oAuth2Client.getToken({
       code: code,
       redirectUri: "postmessage",
-    }); //
-    logger({ r });
-    // 4. Save the tokens to the client
-    oAuth2Client.setCredentials(r.tokens); //
+    });
+
+    oAuth2Client.setCredentials(r.tokens);
     // 5. get user info
     const idToken = r.tokens.id_token;
+
     const userInfo = await oAuth2Client.verifyIdToken({
       idToken,
       audience: process.env.GOOGLE_CLIENT_ID,
     });
+
     const payload = userInfo.getPayload();
     const splitEmail = (email) => {
-      return email.split("@")[0];
+      return email?.split("@")[0];
     };
+
     const { name, email } = payload;
+
     const user = {
       name,
       email,
       password: `${splitEmail(payload?.email)}${process.env.GOOGLE_CLIENT_PASSWORD_SALT}`,
     };
-    logger(
-      `${splitEmail(payload?.email)}${process.env.GOOGLE_CLIENT_PASSWORD_SALT}`,
-    );
+
     // 6. use info to query db
-    let doesUserAccountExist;
+    // let accountExist;
+    // try {
+    //   accountExist = await prisma.user.findUnique({
+    //     where: { email },
+    //     select: {
+    //       id: true,
+    //       name: true,
+    //       email: true,
+    //       createdAt: true,
+    //       hashedPassword: true,
+    //     },
+    //   });
+    // } catch (err) {
+    //   getPrismaErrorInfo(err);
+    //   return next(err);
+    // }
+
+    // if (!accountExist) {
+    user.hashedPassword = await hashPassword(user.password);
+    //if no user account exists then we register
+    let result = null;
+
     try {
-      doesUserAccountExist = await prisma.user.findUnique({
-        where: { email },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          createdAt: true,
-          hashedPassword: true,
-        },
+      const { name, email, hashedPassword } = user;
+
+      result = await prisma.$transaction(async (txt) => {
+        const user = await txt.user.create({
+          data: { email, name, hashedPassword },
+          select: { id: true, email: true, name: true },
+        });
+
+        const welcomeTaskData = [
+          {
+            title: "Complete your profile",
+            userId: user.id,
+            priority: "medium",
+          },
+          { title: "Add your first task", userId: user.id, priority: "high" },
+          { title: "Explore the app", userId: user.id, priority: "low" },
+        ];
+
+        await txt.task.createMany({ data: welcomeTaskData });
+
+        const welcomeTasks = await txt.task.findMany({
+          where: {
+            userId: user.id,
+            title: { in: welcomeTaskData.map((t) => t.title) },
+          },
+          select: {
+            id: true,
+            title: true,
+            isCompleted: true,
+            userId: true,
+            priority: true,
+          },
+        });
+
+        return { user, welcomeTasks };
       });
     } catch (err) {
-      getPrismaErrorInfo(err);
-      return next(err);
+      if (
+        err.name === "PrismaClientKnownRequestError" &&
+        err.code === "P2002"
+      ) {
+        return res.status(400).json({ message: "Email already registered" });
+      } else {
+        getPrismaErrorInfo(err);
+        return next(err);
+      }
     }
-    if (!doesUserAccountExist) {
-      //if no user account exists then we register
-      user.hashedPassword = await hashPassword(user.password);
-      delete user.password;
-    }
+    const csrfToken = setJwtCookie(req, res, result.user);
 
-    const compairison = await comparePassword(
-      doesUserAccountExist.password,
-      user.hashedPassword,
-    );
-    if (!compairison) {
-      return res.status(StatusCodes.UNAUTHORIZED).json({
-        message: "Authentication Failed",
-      });
-    }
-
-    const csrfToken = setJwtCookie(req, res, user);
-
-    res.status(StatusCodes.OK).json({
-      name: user.name,
-      email: user.email,
+    return res.status(StatusCodes.CREATED).json({
+      user: result.user,
       csrfToken,
-      message: "logged in",
+      welcomeTasks: result.welcomeTasks,
+      transactionStatus: "success",
     });
+    // } //end of register
+
+    //   const compairison = await comparePassword(
+    //     user.password,
+    //     accountExist?.hashedPassword,
+    //   );
+
+    //   delete user.password;
+
+    //   if (!compairison) {
+    //     return res.status(StatusCodes.UNAUTHORIZED).json({
+    //       message: "Authentication Failed <oo>",
+    //     });
+    //   }
+
+    //   const csrfToken = setJwtCookie(req, res, user);
+
+    //   return res.status(StatusCodes.OK).json({
+    //     name: user.name,
+    //     email: user.email,
+    //     csrfToken,
+    //     message: "logged in",
+    //   });
   } catch (error) {
     // 9a. send response to front end like business as usual
     // 9b. their tasks explain a set password
 
-    // Send a success message back to the frontend
-    // res.status(200).json({ message: "Tokens acquired!" });
     console.error(error);
     res.status(500).json({ message: "Failed to get tokens." });
   }
