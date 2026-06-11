@@ -1,9 +1,6 @@
 const { crypto, util } = require("../index");
-// const { userSchema } = require("../validation/userSchema");
-// const { getPrismaErrorInfo } = require("../middleware/index");
 
 const scrypt = util.promisify(crypto.scrypt);
-// const { randomUUID } = crypto;
 
 /**
  * @param {String} password
