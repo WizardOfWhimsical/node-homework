@@ -37,19 +37,20 @@ async function googleLogon(req, res, next) {
     const splitEmail = (email) => {
       return email.split("@")[0];
     };
+    const { name, email } = payload;
     const user = {
-      name: payload.name,
-      email: payload.email,
-      password: `${splitEmail(payload.email)}${process.env.GOOGLE_CLIENT_PASSWORD_SALT}`,
+      name,
+      email,
+      password: `${splitEmail(payload?.email)}${process.env.GOOGLE_CLIENT_PASSWORD_SALT}`,
     };
     logger(
-      `${splitEmail(payload.email)}${process.env.GOOGLE_CLIENT_PASSWORD_SALT}`,
+      `${splitEmail(payload?.email)}${process.env.GOOGLE_CLIENT_PASSWORD_SALT}`,
     );
     // 6. use info to query db
     let doesUserAccountExist;
     try {
       doesUserAccountExist = await prisma.user.findUnique({
-        where: {user.email},
+        where: { email },
         select: {
           id: true,
           name: true,
@@ -68,12 +69,30 @@ async function googleLogon(req, res, next) {
       delete user.password;
     }
 
+    const compairison = await comparePassword(
+      doesUserAccountExist.password,
+      user.hashedPassword,
+    );
+    if (!compairison) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        message: "Authentication Failed",
+      });
+    }
+
+    const csrfToken = setJwtCookie(req, res, user);
+
+    res.status(StatusCodes.OK).json({
+      name: user.name,
+      email: user.email,
+      csrfToken,
+      message: "logged in",
+    });
+  } catch (error) {
     // 9a. send response to front end like business as usual
     // 9b. their tasks explain a set password
 
     // Send a success message back to the frontend
-    res.status(200).json({ message: "Tokens acquired!" });
-  } catch (error) {
+    // res.status(200).json({ message: "Tokens acquired!" });
     console.error(error);
     res.status(500).json({ message: "Failed to get tokens." });
   }
