@@ -5,7 +5,7 @@ const {
   logoff,
   show,
 } = require("../controllers/userController");
-const { googleLogon } = require("../controllers/googleLogon.js");
+const { googleLogon } = require("../security/googleLogon.js");
 
 const router = Router();
 
