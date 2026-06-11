@@ -1,6 +1,8 @@
 const { OAuth2Client } = require("google-auth-library"); //
-const { logger } = require("../middleware/index");
+const { logger, getPrismaErrorInfo } = require("../middleware/index");
 const { hashPassword, comparePassword } = require("./passwordProtection");
+const { setJwtCookie } = require("./webTokens");
+const { prisma, StatusCodes } = require("../index");
 require("dotenv").config();
 
 // 1. Build the client with your exact keys
@@ -11,7 +13,7 @@ const oAuth2Client = new OAuth2Client({
 });
 
 // 2. The controller to handle the frontend request
-async function googleLogon(req, res) {
+async function googleLogon(req, res, next) {
   console.log("google-hand-shake");
   try {
     // Get the code sent from your React button
@@ -44,16 +46,28 @@ async function googleLogon(req, res) {
       `${splitEmail(payload.email)}${process.env.GOOGLE_CLIENT_PASSWORD_SALT}`,
     );
     // 6. use info to query db
+    let doesUserAccountExist;
+    try {
+      doesUserAccountExist = await prisma.user.findUnique({
+        where: {user.email},
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          createdAt: true,
+          hashedPassword: true,
+        },
+      });
+    } catch (err) {
+      getPrismaErrorInfo(err);
+      return next(err);
+    }
+    if (!doesUserAccountExist) {
+      //if no user account exists then we register
+      user.hashedPassword = await hashPassword(user.password);
+      delete user.password;
+    }
 
-    //if account exists login if not register
-    // ??REGISTER
-    user.hashedPassword = await hashPassword(user.password);
-    delete user.password;
-
-    let result = null;
-
-    // 7. if Exist ? logon : register;
-    // 8. continue through register w/o pw
     // 9a. send response to front end like business as usual
     // 9b. their tasks explain a set password
 
