@@ -11,6 +11,72 @@ const oAuth2Client = new OAuth2Client({
   redirectUri: "postmessage",
 });
 
+async function getExistingUser(email) {
+  return await prisma.user.findUnique({
+    where: { email },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      createdAt: true,
+      hashedPassword: true,
+    },
+  });
+}
+
+async function createUser(candidateUser) {
+  candidateUser.hashedPassword = await hashPassword(candidateUser.password);
+  delete candidateUser.password;
+  //if no user account exists then we register
+  let result = null;
+  try {
+    const { name, email, hashedPassword } = candidateUser;
+
+    result = await prisma.$transaction(async (txt) => {
+      const user = await txt.user.create({
+        data: { email, name, hashedPassword },
+        select: { id: true, email: true, name: true },
+      });
+
+      const welcomeTaskData = [
+        {
+          title: "Complete your profile",
+          userId: user.id,
+          priority: "medium",
+        },
+        { title: "Add your first task", userId: user.id, priority: "high" },
+        { title: "Explore the app", userId: user.id, priority: "low" },
+      ];
+
+      await txt.task.createMany({ data: welcomeTaskData });
+
+      const welcomeTasks = await txt.task.findMany({
+        where: {
+          userId: user.id,
+          title: { in: welcomeTaskData.map((t) => t.title) },
+        },
+        select: {
+          id: true,
+          title: true,
+          isCompleted: true,
+          userId: true,
+          priority: true,
+        },
+      });
+
+      return { user, welcomeTasks };
+    });
+    return result.user;
+  } catch (err) {
+    if (err.name === "PrismaClientKnownRequestError" && err.code === "P2002") {
+      // return res.status(400).json({ message: "Email already registered" });
+    } else {
+      getPrismaErrorInfo(err);
+      // return next(err);
+    }
+  }
+}
+
 async function googleLogon(req, res, next) {
   console.log("google-hand-shake");
   try {
@@ -44,88 +110,21 @@ async function googleLogon(req, res, next) {
     };
 
     // 6. use info to query db
-    let existingUser;
+    let user;
     try {
-      existingUser = await prisma.user.findUnique({
-        where: { email },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          createdAt: true,
-          hashedPassword: true,
-        },
-      });
-    } catch (err) {
-      getPrismaErrorInfo(err);
-      return next(err);
-    }
-
-    if (!existingUser) {
-      candidateUser.hashedPassword = await hashPassword(candidateUser.password);
-      //if no user account exists then we register
-      let result = null;
-      try {
-        const { name, email, hashedPassword } = candidateUser;
-
-        result = await prisma.$transaction(async (txt) => {
-          const user = await txt.user.create({
-            data: { email, name, hashedPassword },
-            select: { id: true, email: true, name: true },
-          });
-
-          const welcomeTaskData = [
-            {
-              title: "Complete your profile",
-              userId: user.id,
-              priority: "medium",
-            },
-            { title: "Add your first task", userId: user.id, priority: "high" },
-            { title: "Explore the app", userId: user.id, priority: "low" },
-          ];
-
-          await txt.task.createMany({ data: welcomeTaskData });
-
-          const welcomeTasks = await txt.task.findMany({
-            where: {
-              userId: user.id,
-              title: { in: welcomeTaskData.map((t) => t.title) },
-            },
-            select: {
-              id: true,
-              title: true,
-              isCompleted: true,
-              userId: true,
-              priority: true,
-            },
-          });
-
-          return { user, welcomeTasks };
-        });
-      } catch (err) {
-        if (
-          err.name === "PrismaClientKnownRequestError" &&
-          err.code === "P2002"
-        ) {
-          return res.status(400).json({ message: "Email already registered" });
-        } else {
-          getPrismaErrorInfo(err);
-          return next(err);
-        }
+      user = getExistingUser(email) || createUser(candidateUser);
+    } catch (e) {
+      if (e.name === "PrismaClientKnownRequestError" && e.code === "P2002") {
+        return res.status(400).json({ message: "Email already registered" });
+      } else {
+        getPrismaErrorInfo(e);
+        return next(e);
       }
-      const csrfToken = setJwtCookie(req, res, result.user);
-
-      return res.status(StatusCodes.CREATED).json({
-        user: result.user,
-        csrfToken,
-        welcomeTasks: result.welcomeTasks,
-        transactionStatus: "success",
-      });
-    } //end of register
-
+    }
+    console.log();
     const compairison = await comparePassword(
       candidateUser.password,
-      existingUser?.hashedPassword,
+      user?.hashedPassword,
     );
 
     delete candidateUser.password;
@@ -136,20 +135,18 @@ async function googleLogon(req, res, next) {
       });
     }
 
-    const csrfToken = setJwtCookie(req, res, existingUser);
+    const csrfToken = setJwtCookie(req, res, user);
 
     return res.status(StatusCodes.OK).json({
-      name: existingUser.name,
-      email: existingUser.email,
+      name: user.name,
+      email: user.email,
       csrfToken,
       message: "logged in",
     });
   } catch (error) {
-    // 9a. send response to front end like business as usual
-    // 9b. their tasks explain a set password
-
     console.error(error);
     res.status(500).json({ message: "Failed to get tokens" });
+    next(error);
   }
 }
 
