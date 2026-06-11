@@ -5,9 +5,11 @@ const {
   logoff,
   show,
 } = require("../controllers/userController");
+const { googleLogon } = require("../controllers/googleLogon.js");
 
 const router = Router();
 
+router.route("/googleLogon").post(googleLogon);
 router.route("/register").post(register);
 router.route("/logon").post(logon);
 router.route("/logoff").post(logoff).delete(logoff);
