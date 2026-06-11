@@ -34,4 +34,4 @@ function setJwtCookie(req, res, user) {
   return payload.csrfToken;
 }
 
-module.exports = { setJwtCookie };
+module.exports = { setJwtCookie, cookieFlags };

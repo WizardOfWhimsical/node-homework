@@ -10,7 +10,7 @@ const {
   hashPassword,
   comparePassword,
 } = require("../security/passwordProtection.js");
-const { setJwtCookie } = require("../security/webTokens.js");
+const { setJwtCookie, cookieFlags } = require("../security/webTokens.js");
 // const { randomUUID } = crypto;
 
 // /**
