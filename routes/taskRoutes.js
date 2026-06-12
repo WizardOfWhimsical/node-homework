@@ -3,6 +3,7 @@ const { handleAuthMiddleware } = require("../middleware/index");
 const {
   create,
   bulkCreate,
+  bulkDelete,
   index,
   update,
   deleteTask,
@@ -12,7 +13,7 @@ const router = Router();
 
 router.use(handleAuthMiddleware);
 router.route("/").post(create).get(index);
-router.route("/bulk").post(bulkCreate);
+router.route("/bulk").post(bulkCreate).delete(bulkDelete);
 router.route("/:id").get(show).patch(update).delete(deleteTask);
 
 module.exports = router;

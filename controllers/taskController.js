@@ -109,6 +109,18 @@ async function bulkCreate(req, res, next) {
   });
 }
 
+async function bulkDelete(req, res, next) {
+  const user_id = parseInt(req.user.id);
+  if (!user_id || isNaN(user_id)) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "No user logged in", error: "Bad Request" });
+  }
+
+  const { tasks } = req.body;
+  res.status(StatusCodes.OK).json(tasks);
+}
+
 /**
  * @param {Object} req - The Express request object.
  * @param {Object} res - The Express request object
@@ -228,12 +240,10 @@ async function show(req, res, next) {
   }
 
   if (!taskWithUserInfo) {
-    return res
-      .status(404)
-      .json({
-        message: "The task/user was not found.",
-        error: "No data found",
-      });
+    return res.status(404).json({
+      message: "The task/user was not found.",
+      error: "No data found",
+    });
   }
 
   return res.status(StatusCodes.OK).json(taskWithUserInfo);
@@ -343,6 +353,7 @@ async function deleteTask(req, res, next) {
 module.exports = {
   create,
   bulkCreate,
+  bulkDelete,
   index,
   update,
   deleteTask,

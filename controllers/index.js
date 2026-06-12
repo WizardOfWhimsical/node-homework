@@ -12,6 +12,7 @@ const {
 const {
   create,
   bulkCreate,
+  bulkDelete,
   index,
   update,
   deleteTask,
@@ -28,6 +29,7 @@ module.exports = {
   searchTasks,
   create,
   bulkCreate,
+  bulkDelete,
   index,
   update,
   deleteTask,
