@@ -117,7 +117,7 @@ async function bulkDelete(req, res, next) {
       .json({ message: "No user logged in", error: "Bad Request" });
   }
 
-  const { tasks } = req.body;
+  const tasks = req.body;
   res.status(StatusCodes.OK).json(tasks);
 }
 
