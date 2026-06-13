@@ -196,8 +196,24 @@ async function index(req, res, next) {
 }
 
 async function getTotalIndex(req, res, next) {
+  const user_id = req.user.id;
   const whereClause = { userId: user_id };
-}
+  try {
+    tasks = await prisma.task.findMany({
+      where: whereClause,
+      select: {
+        id: true,
+        title: true,
+        isCompleted: true,
+        priority: true,
+      },
+    });
+  } catch (error) {
+    const e = getPrismaErrorInfo(error);
+    console.log("prisma query for stats\n", { e });
+    next(error);
+  }
+} //end
 
 /**
  * @param {Object} req - The Express request object.
