@@ -102,7 +102,7 @@ async function bulkDelete(req, res, next) {
   try {
     //doing it by targetting the value we are pulling anyways
     //we dont even need the ids
-    const count = await prisma.task.updateMany({
+    await prisma.task.updateMany({
       where: {
         // id: { in: tasks },
         userId: user_id,
@@ -110,7 +110,7 @@ async function bulkDelete(req, res, next) {
       },
       data: { deletedAt: new Date() },
     });
-    res.status(StatusCodes.NO_CONTENT).json({ count: count });
+    res.status(StatusCodes.NO_CONTENT);
   } catch (error) {
     getPrismaErrorInfo(error);
     next(error);
