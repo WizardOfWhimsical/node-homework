@@ -117,7 +117,14 @@ async function bulkDelete(req, res, next) {
       .json({ message: "No user logged in", error: "Bad Request" });
   }
 
-  const tasks = req.body;
+  const { tasks } = req.body;
+
+  if (!tasks || !Array.isArray(tasks) || !(tasks.length > 2)) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ error: "Invalid request data. Expected an array of tasks" });
+  }
+
   res.status(StatusCodes.OK).json(tasks);
 }
 
