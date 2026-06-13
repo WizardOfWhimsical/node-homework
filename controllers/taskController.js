@@ -301,7 +301,7 @@ async function deleteTask(req, res, next) {
   //take task id and user change deletedAt
   let task = null;
   try {
-    task = await prisma.task.patch({
+    task = await prisma.task.update({
       where: {
         id: taskIndex,
         userId: user_id,
