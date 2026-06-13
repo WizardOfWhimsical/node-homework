@@ -195,7 +195,9 @@ async function index(req, res, next) {
   return res.status(StatusCodes.OK).json({ tasks, pagination });
 }
 
-async function getTotalIndex(req, res, next) {}
+async function getTotalIndex(req, res, next) {
+  const whereClause = { userId: user_id };
+}
 
 /**
  * @param {Object} req - The Express request object.
