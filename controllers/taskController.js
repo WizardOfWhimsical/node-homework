@@ -307,7 +307,7 @@ async function deleteTask(req, res, next) {
         userId: user_id,
       },
       data: { deletedAt: new Date() },
-      select: { title: true, isCompleted: true, id: true },
+      select: { title: true, isCompleted: true, id: true, deletedAt: true },
     });
   } catch (err) {
     if (err.code === "P2025") {
