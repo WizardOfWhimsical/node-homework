@@ -92,21 +92,25 @@ async function bulkCreate(req, res, next) {
 
 async function bulkDelete(req, res, next) {
   const user_id = req.user.id;
-  const { tasks } = req.body;
+  // const { tasks } = req.body;
 
-  if (!tasks || !Array.isArray(tasks) || !(tasks.length > 2)) {
-    return res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ error: "Invalid request data. Expected an array of tasks" });
-  }
+  // if (!tasks || !Array.isArray(tasks) || !(tasks.length > 2)) {
+  //   return res
+  //     .status(StatusCodes.BAD_REQUEST)
+  //     .json({ error: "Invalid request data. Expected an array of tasks" });
+  // }
   try {
-    await prisma.task.deleteMany({
+    //doing it by targetting the value we are pulling anyways
+    //we dont even need the ids
+    const count = await prisma.task.updateMany({
       where: {
-        id: { in: tasks },
+        // id: { in: tasks },
         userId: user_id,
+        isCompleted: true,
       },
+      data: { deletedAt: new Date() },
     });
-    res.status(StatusCodes.NO_CONTENT).end();
+    res.status(StatusCodes.NO_CONTENT).json({ count: count });
   } catch (error) {
     getPrismaErrorInfo(error);
     next(error);
