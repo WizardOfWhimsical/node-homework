@@ -1,5 +1,5 @@
 const { Router } = require("../index");
-const { handleAuthMiddleware } = require("../middleware/index");
+const { handleAuthMiddleware, validateUserId } = require("../middleware/index");
 const {
   create,
   bulkCreate,
@@ -11,7 +11,7 @@ const {
 } = require("../controllers/taskController");
 const router = Router();
 
-router.use(handleAuthMiddleware);
+router.use(handleAuthMiddleware, validateUserId);
 router.route("/").post(create).get(index);
 router.route("/bulk").post(bulkCreate).delete(bulkDelete);
 router.route("/:id").get(show).patch(update).delete(deleteTask);
