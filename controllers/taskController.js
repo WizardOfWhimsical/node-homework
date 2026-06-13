@@ -195,6 +195,8 @@ async function index(req, res, next) {
   return res.status(StatusCodes.OK).json({ tasks, pagination });
 }
 
+async function getTotalIndex(req, res, next) {}
+
 /**
  * @param {Object} req - The Express request object.
  * @param {Object} res - The Express request object
