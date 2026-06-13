@@ -124,8 +124,18 @@ async function bulkDelete(req, res, next) {
       .status(StatusCodes.BAD_REQUEST)
       .json({ error: "Invalid request data. Expected an array of tasks" });
   }
-
-  res.status(StatusCodes.OK).json(tasks);
+  try {
+    const resp = await prisma.task.deleteMany({
+      where: {
+        id: { in: tasks },
+        userId: user_id,
+      },
+    });
+    res.status(StatusCodes.NO_CONTENT).json(resp);
+  } catch (error) {
+    getPrismaErrorInfo(error);
+    next(error);
+  }
 }
 
 /**
