@@ -292,19 +292,21 @@ async function update(req, res, next) {
 async function deleteTask(req, res, next) {
   const taskIndex = parseInt(req.params?.id);
   const user_id = req.user.id;
+
   if (taskIndex <= 0) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Must be a number", error: "taskIndex check failed" });
   }
-
+  //take task id and user change deletedAt
   let task = null;
   try {
-    task = await prisma.task.delete({
+    task = await prisma.task.patch({
       where: {
         id: taskIndex,
         userId: user_id,
       },
+      data: { deletedAt: new Date() },
       select: { title: true, isCompleted: true, id: true },
     });
   } catch (err) {
