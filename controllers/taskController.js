@@ -126,7 +126,7 @@ async function index(req, res, next) {
   //DRY
   const user_id = req.user.id;
 
-  const whereClause = { userId: user_id };
+  const whereClause = { userId: user_id, deletedAt: null };
 
   let tasks = null;
   let total = null;
