@@ -1,0 +1,22 @@
+$kind: http-request
+name: Manuel_logon
+url: localhost:3000/api/users/logon
+method: POST
+body:
+  type: json
+  content: |-
+    {
+        "email":"st.rayis1085@yahoo.com",
+        "password":"Buddy@13"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Login success code is 200 OK", function () {
+          pm.response.to.have.status(200);
+      });
+
+      const payload = pm.response.json()
+      pm.collectionVariables.set("csrfToken", payload.csrfToken);
+    language: text/javascript
+order: 2126124934083053

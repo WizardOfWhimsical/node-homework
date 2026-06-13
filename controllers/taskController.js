@@ -8,22 +8,10 @@ const { getPrismaErrorInfo } = require("../middleware/index");
  * @param {Function} next - The Express Middleware
  * @returns {Promise<void>}
  */
-
 async function create(req, res, next) {
   if (!req.body) req.body = {};
-  //DRY
-  const user_id = parseInt(req?.user?.id);
 
-  if (!user_id) {
-    return res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ message: "No user logged in", error: "Bad Request" });
-  } else if (isNaN(user_id)) {
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      message: "Something went wrong with the request",
-      error: "Invalid user id",
-    });
-  }
+  const user_id = req?.user?.id;
 
   const { error, value } = taskSchema.validate(req.body, { abortEarly: false });
 
@@ -55,14 +43,7 @@ async function create(req, res, next) {
  * @returns {Promise<void>}
  */
 async function bulkCreate(req, res, next) {
-  //DRY
-  const user_id = parseInt(req.user.id);
-  if (!user_id || isNaN(user_id)) {
-    return res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ message: "No user logged in", error: "Bad Request" });
-  }
-
+  const user_id = req.user.id;
   const { tasks } = req.body;
 
   if (!tasks || !Array.isArray(tasks) || !(tasks.length > 2)) {
@@ -109,6 +90,29 @@ async function bulkCreate(req, res, next) {
   });
 }
 
+async function bulkDelete(req, res, next) {
+  const user_id = req.user.id;
+  const { tasks } = req.body;
+
+  if (!tasks || !Array.isArray(tasks) || !(tasks.length > 2)) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ error: "Invalid request data. Expected an array of tasks" });
+  }
+  try {
+    await prisma.task.deleteMany({
+      where: {
+        id: { in: tasks },
+        userId: user_id,
+      },
+    });
+    res.status(StatusCodes.NO_CONTENT).end();
+  } catch (error) {
+    getPrismaErrorInfo(error);
+    next(error);
+  }
+}
+
 /**
  * @param {Object} req - The Express request object.
  * @param {Object} res - The Express request object
@@ -120,13 +124,7 @@ async function index(req, res, next) {
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
   //DRY
-  const user_id = parseInt(req.user?.id);
-  // console.log("seeing what hits the user_id", user_id);
-  if (!user_id || isNaN(user_id)) {
-    return res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ message: "No user logged in", error: "Bad Request" });
-  }
+  const user_id = req.user.id;
 
   const whereClause = { userId: user_id };
 
@@ -203,13 +201,8 @@ async function index(req, res, next) {
  */
 async function show(req, res, next) {
   const taskIndex = parseInt(req.params?.id);
-  const user_id = parseInt(req.user?.id);
-  //DRY
-  if (!user_id || isNaN(user_id)) {
-    return res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ message: "No user logged in", error: "Bad Request" });
-  }
+  const user_id = req.user.id;
+
   if (taskIndex < 0) {
     return res
       .status(StatusCodes.BAD_REQUEST)
@@ -228,12 +221,10 @@ async function show(req, res, next) {
   }
 
   if (!taskWithUserInfo) {
-    return res
-      .status(404)
-      .json({
-        message: "The task/user was not found.",
-        error: "No data found",
-      });
+    return res.status(404).json({
+      message: "The task/user was not found.",
+      error: "No data found",
+    });
   }
 
   return res.status(StatusCodes.OK).json(taskWithUserInfo);
@@ -247,13 +238,7 @@ async function show(req, res, next) {
  */
 async function update(req, res, next) {
   const taskIndex = parseInt(req.params?.id);
-  const user_id = parseInt(req.user?.id);
-  //DRY
-  if (!user_id || isNaN(user_id)) {
-    return res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ message: "No user logged in", error: "Bad Request" });
-  }
+  const user_id = req.user.id;
 
   if (taskIndex < 0) {
     return res
@@ -306,17 +291,11 @@ async function update(req, res, next) {
  */
 async function deleteTask(req, res, next) {
   const taskIndex = parseInt(req.params?.id);
-  const user_id = parseInt(req.user?.id);
+  const user_id = req.user.id;
   if (taskIndex <= 0) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Must be a number", error: "taskIndex check failed" });
-  }
-
-  if (!user_id || isNaN(user_id)) {
-    return res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ message: "No user logged in", error: "Bad Request, log in" });
   }
 
   let task = null;
@@ -343,6 +322,7 @@ async function deleteTask(req, res, next) {
 module.exports = {
   create,
   bulkCreate,
+  bulkDelete,
   index,
   update,
   deleteTask,

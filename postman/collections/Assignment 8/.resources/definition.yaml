@@ -1,0 +1,4 @@
+$kind: collection
+name: Assignment 8
+variables:
+  csrfToken: ""
