@@ -100,12 +100,14 @@ async function bulkDelete(req, res, next) {
       .json({ error: "Invalid request data. Expected an array of tasks" });
   }
   try {
-    await prisma.task.deleteMany({
+    const response = await prisma.task.updateMany({
       where: {
         id: { in: tasks },
         userId: user_id,
       },
+      data: { deletedAt: new Date() },
     });
+    console.log("bulk delete response\n", { response });
     res.status(StatusCodes.NO_CONTENT).end();
   } catch (error) {
     getPrismaErrorInfo(error);
@@ -121,12 +123,12 @@ async function bulkDelete(req, res, next) {
  */
 async function index(req, res, next) {
   const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
+  const limit = parseInt(req.query.limit) || 5;
   const skip = (page - 1) * limit;
   //DRY
   const user_id = req.user.id;
 
-  const whereClause = { userId: user_id };
+  const whereClause = { userId: user_id, deletedAt: null };
 
   let tasks = null;
   let total = null;
@@ -192,6 +194,34 @@ async function index(req, res, next) {
 
   return res.status(StatusCodes.OK).json({ tasks, pagination });
 }
+
+async function getTotalIndex(req, res, next) {
+  const user_id = req.user.id;
+  const whereClause = { userId: user_id };
+  let allTasks = null;
+  try {
+    allTasks = await prisma.task.findMany({
+      where: whereClause,
+      select: {
+        id: true,
+        title: true,
+        isCompleted: true,
+        priority: true,
+      },
+    });
+  } catch (error) {
+    const e = getPrismaErrorInfo(error);
+    console.log("prisma query for stats\n", { e });
+    next(error);
+  }
+
+  if (allTasks.length === 0) {
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ error: "User has no tasks", message: "No tasks found" });
+  }
+  return res.status(StatusCodes.OK).json({ tasks: allTasks });
+} //end
 
 /**
  * @param {Object} req - The Express request object.
@@ -292,20 +322,22 @@ async function update(req, res, next) {
 async function deleteTask(req, res, next) {
   const taskIndex = parseInt(req.params?.id);
   const user_id = req.user.id;
+
   if (taskIndex <= 0) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Must be a number", error: "taskIndex check failed" });
   }
-
+  //take task id and user change deletedAt
   let task = null;
   try {
-    task = await prisma.task.delete({
+    task = await prisma.task.update({
       where: {
         id: taskIndex,
         userId: user_id,
       },
-      select: { title: true, isCompleted: true, id: true },
+      data: { deletedAt: new Date() },
+      select: { title: true, isCompleted: true, id: true, deletedAt: true },
     });
   } catch (err) {
     if (err.code === "P2025") {
@@ -324,6 +356,7 @@ module.exports = {
   bulkCreate,
   bulkDelete,
   index,
+  getTotalIndex,
   update,
   deleteTask,
   show,
