@@ -123,7 +123,7 @@ async function bulkDelete(req, res, next) {
  */
 async function index(req, res, next) {
   const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
+  const limit = parseInt(req.query.limit) || 5;
   const skip = (page - 1) * limit;
   //DRY
   const user_id = req.user.id;
@@ -194,6 +194,34 @@ async function index(req, res, next) {
 
   return res.status(StatusCodes.OK).json({ tasks, pagination });
 }
+
+async function getTotalIndex(req, res, next) {
+  const user_id = req.user.id;
+  const whereClause = { userId: user_id };
+  let allTasks = null;
+  try {
+    allTasks = await prisma.task.findMany({
+      where: whereClause,
+      select: {
+        id: true,
+        title: true,
+        isCompleted: true,
+        priority: true,
+      },
+    });
+  } catch (error) {
+    const e = getPrismaErrorInfo(error);
+    console.log("prisma query for stats\n", { e });
+    next(error);
+  }
+
+  if (allTasks.length === 0) {
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ error: "User has no tasks", message: "No tasks found" });
+  }
+  return res.status(StatusCodes.OK).json({ tasks: allTasks });
+} //end
 
 /**
  * @param {Object} req - The Express request object.
@@ -328,6 +356,7 @@ module.exports = {
   bulkCreate,
   bulkDelete,
   index,
+  getTotalIndex,
   update,
   deleteTask,
   show,
