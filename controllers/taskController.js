@@ -198,8 +198,9 @@ async function index(req, res, next) {
 async function getTotalIndex(req, res, next) {
   const user_id = req.user.id;
   const whereClause = { userId: user_id };
+  let allTasks = null;
   try {
-    tasks = await prisma.task.findMany({
+    allTasks = await prisma.task.findMany({
       where: whereClause,
       select: {
         id: true,
@@ -213,6 +214,13 @@ async function getTotalIndex(req, res, next) {
     console.log("prisma query for stats\n", { e });
     next(error);
   }
+
+  if (allTasks.length === 0) {
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ error: "User has no tasks", message: "No tasks found" });
+  }
+  return res.status(StatusCodes.OK).json({ tasks: allTasks });
 } //end
 
 /**
@@ -348,6 +356,7 @@ module.exports = {
   bulkCreate,
   bulkDelete,
   index,
+  getTotalIndex,
   update,
   deleteTask,
   show,
