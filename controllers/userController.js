@@ -236,7 +236,7 @@ async function show(req, res, next) {
   let user = null;
   try {
     user = await prisma.user.findUnique({
-      where: { id: user_id },
+      where: { id: user_id, deletedAt: null },
       select: {
         id: true,
         name: true,
@@ -244,13 +244,13 @@ async function show(req, res, next) {
         createdAt: true,
         Task: {
           where: { isCompleted: false },
-          selecet: {
+          select: {
             id: true,
             title: true,
             priority: true,
             createdAt: true,
           },
-          orderBy: { createAt: "desc" },
+          orderBy: { createdAt: "desc" },
           take: 5,
         },
       },

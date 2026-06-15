@@ -1,6 +1,7 @@
 const { StatusCodes, prisma } = require("../index");
 const { taskSchema, patchTaskSchema } = require("../validation/taskSchema");
 const { getPrismaErrorInfo } = require("../middleware/index");
+// const { task } = require("../db/prisma");
 
 /**
  * @param {Object} req - The Express request object.
@@ -37,6 +38,7 @@ async function create(req, res, next) {
   return res.status(StatusCodes.CREATED).json(newTaskCreated);
 }
 /**
+ * i dont even have something for this.....
  * @param {Object} req - The Express request object.
  * @param {Object} res - The Express request object
  * @param {Function} next - The Express Middleware
@@ -224,6 +226,8 @@ async function getTotalIndex(req, res, next) {
 } //end
 
 /**
+ * i did not exclude soft deletes incase the user wants to search
+ * them
  * @param {Object} req - The Express request object.
  * @param {Object} res - The Express request object
  * @param {Function} next - The Express Middleware
@@ -252,7 +256,7 @@ async function show(req, res, next) {
 
   if (!taskWithUserInfo) {
     return res.status(404).json({
-      message: "The task/user was not found.",
+      message: "The task was not found.",
       error: "No data found",
     });
   }
@@ -323,15 +327,14 @@ async function deleteTask(req, res, next) {
   const taskIndex = parseInt(req.params?.id);
   const user_id = req.user.id;
 
-  if (taskIndex <= 0) {
+  if (taskIndex <= 0 || isNaN(taskIndex)) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Must be a number", error: "taskIndex check failed" });
   }
-  //take task id and user change deletedAt
-  let task = null;
+
   try {
-    task = await prisma.task.update({
+    await prisma.task.update({
       where: {
         id: taskIndex,
         userId: user_id,
@@ -348,7 +351,7 @@ async function deleteTask(req, res, next) {
     }
   }
 
-  return res.status(StatusCodes.OK).json(task);
+  return res.status(StatusCodes.NOT_FOUND).end();
 }
 
 module.exports = {
