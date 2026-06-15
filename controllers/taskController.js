@@ -252,7 +252,7 @@ async function show(req, res, next) {
 
   if (!taskWithUserInfo) {
     return res.status(404).json({
-      message: "The task/user was not found.",
+      message: "The task was not found.",
       error: "No data found",
     });
   }
