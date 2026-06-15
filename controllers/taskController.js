@@ -1,6 +1,7 @@
 const { StatusCodes, prisma } = require("../index");
 const { taskSchema, patchTaskSchema } = require("../validation/taskSchema");
 const { getPrismaErrorInfo } = require("../middleware/index");
+// const { task } = require("../db/prisma");
 
 /**
  * @param {Object} req - The Express request object.
@@ -37,6 +38,7 @@ async function create(req, res, next) {
   return res.status(StatusCodes.CREATED).json(newTaskCreated);
 }
 /**
+ * i dont even have something for this.....
  * @param {Object} req - The Express request object.
  * @param {Object} res - The Express request object
  * @param {Function} next - The Express Middleware
@@ -224,6 +226,8 @@ async function getTotalIndex(req, res, next) {
 } //end
 
 /**
+ * i did not exclude soft deletes incase the user wants to search
+ * them
  * @param {Object} req - The Express request object.
  * @param {Object} res - The Express request object
  * @param {Function} next - The Express Middleware
@@ -323,7 +327,7 @@ async function deleteTask(req, res, next) {
   const taskIndex = parseInt(req.params?.id);
   const user_id = req.user.id;
 
-  if (taskIndex <= 0) {
+  if (taskIndex <= 0 || isNaN(taskIndex)) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Must be a number", error: "taskIndex check failed" });
