@@ -1,7 +1,6 @@
 const { StatusCodes, prisma } = require("../index");
 const { taskSchema, patchTaskSchema } = require("../validation/taskSchema");
 const { getPrismaErrorInfo } = require("../middleware/index");
-// const { task } = require("../db/prisma");
 
 /**
  * @param {Object} req - The Express request object.
