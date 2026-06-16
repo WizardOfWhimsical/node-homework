@@ -142,7 +142,7 @@ async function index(req, res, next) {
   }
 
   function getOrderBy(query) {
-    const validSortFields = ["title", "priority", "id", "isComplete"];
+    const validSortFields = ["title", "createdAt", "isCompleted", "priority"];
     const sortBy = query.sortBy || "createdAt";
     const sortDirection = query.sortDirection === "asc" ? "asc" : "desc";
 
@@ -150,7 +150,7 @@ async function index(req, res, next) {
       return { [sortBy]: sortDirection };
     }
 
-    return { createdAt: "desc" };
+    return { createdAt: sortDirection };
   }
 
   try {
