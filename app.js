@@ -58,7 +58,9 @@ app.get("/", async (req, res) => {
 
 app.use(notFound, errorHandler);
 
-const server = app.listen(port, () => console.log(`Listening @ port ${3000}`));
+const server = app.listen(port, () =>
+  console.log(`Listening @ port ${3000}. ${process.env.NODE_ENV}`),
+);
 
 server.on("error", (err) => {
   if (err.code === "EADDRINUSE")
