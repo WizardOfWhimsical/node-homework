@@ -4,14 +4,14 @@ const { hashPassword, comparePassword } = require("./passwordProtection");
 const { setJwtCookie } = require("./webTokens");
 const { prisma, StatusCodes } = require("../index");
 require("dotenv").config();
-const redirectUri =
-  process.env.NODE_ENV === "production"
-    ? process.env.GOOGLE_REDIRECT_URI
-    : "postmessage";
+// const redirectUri =
+//   process.env.NODE_ENV === "production"
+//     ? process.env.GOOGLE_REDIRECT_URI
+//     : "postmessage";
 const oAuth2Client = new OAuth2Client({
   clientId: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  redirectUri,
+  redirectUri: "postmessage",
 });
 
 async function googleLogon(req, res, next) {
@@ -21,7 +21,7 @@ async function googleLogon(req, res, next) {
 
     const r = await oAuth2Client.getToken({
       code: code,
-      redirectUri,
+      redirectUri: "postmessage",
     });
 
     oAuth2Client.setCredentials(r.tokens);
