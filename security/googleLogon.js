@@ -8,8 +8,7 @@ require("dotenv").config();
 const oAuth2Client = new OAuth2Client({
   clientId: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  // redirectUri: "postmessage",
-  redirectUri: "https://lewis-labs-node-server.onrender.com",
+  redirectUri: process.env.GOOGLE_REDIRECT_URI,
 });
 
 async function googleLogon(req, res, next) {
@@ -19,8 +18,7 @@ async function googleLogon(req, res, next) {
 
     const r = await oAuth2Client.getToken({
       code: code,
-      // redirectUri: "postmessage",
-      redirectUri: "https://lewis-labs-node-server.onrender.com",
+      redirectUri: process.env.GOOGLE_REDIRECT_URI,
     });
 
     oAuth2Client.setCredentials(r.tokens);
