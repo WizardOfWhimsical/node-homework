@@ -10,7 +10,7 @@ const {
 const {
   setUniqueId,
   requestLogger,
-  // responseLogger,
+  responseLogger,
   errorHandler,
   notFound,
 } = require("./middleware/index");
@@ -36,7 +36,7 @@ app.use(
   xss(),
   setUniqueId,
   requestLogger,
-  // responseLogger,
+  responseLogger,
 );
 
 app.use("/api/users", userRouter);
