@@ -350,7 +350,7 @@ async function deleteTask(req, res, next) {
     }
   }
 
-  return res.status(StatusCodes.NOT_FOUND).end();
+  return res.status(StatusCodes.NO_CONTENT).end();
 }
 
 module.exports = {
