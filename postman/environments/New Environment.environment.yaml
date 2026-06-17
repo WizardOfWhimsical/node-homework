@@ -1,6 +1,2 @@
 name: New Environment
-values:
-  - key: HOST
-    value: ''
-  - key: todo_id
-    value: ''
+values: []

@@ -1,5 +1,4 @@
 const {
-  morgan,
   express,
   StatusCodes,
   prisma,
@@ -14,8 +13,8 @@ const {
   responseLogger,
   errorHandler,
   notFound,
-} = require("./middleware");
-const { userRouter, taskRouter, analyticsRouter } = require("./routes");
+} = require("./middleware/index");
+const { userRouter, taskRouter, analyticsRouter } = require("./routes/index");
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -30,7 +29,6 @@ app.use(
 );
 
 app.use(
-  morgan("dev"),
   express.urlencoded({ extended: true }),
   express.json(),
   cookieParser(),
@@ -45,11 +43,13 @@ app.use("/api/users", userRouter);
 app.use("/api/tasks", taskRouter);
 app.use("/api/analytics", analyticsRouter);
 
-app.get("/health", async (req, res) => {
+app.get("/", async (req, res) => {
   try {
     await prisma.$queryRaw`SELECT 1`;
 
-    res.status(StatusCodes.OK).json({ status: "OK", db: "connected" });
+    res
+      .status(StatusCodes.OK)
+      .json({ status: "OK", db: "connected", id: req.requestId });
   } catch (error) {
     console.error("Error in health check:", error);
     res.status(500).json({ status: "Error" });
@@ -58,7 +58,9 @@ app.get("/health", async (req, res) => {
 
 app.use(notFound, errorHandler);
 
-const server = app.listen(port, () => console.log(`Listening @ port ${3000}`));
+const server = app.listen(port, () =>
+  console.log(`Listening @ port ${3000}. ${process.env.NODE_ENV}`),
+);
 
 server.on("error", (err) => {
   if (err.code === "EADDRINUSE")

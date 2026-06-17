@@ -1,4 +1,6 @@
 $kind: collection
 name: Assignment 8
 variables:
-  todo_id: ""
+  csrfToken: ""
+  creatdTodo: ""
+  creatdTodoId: ""

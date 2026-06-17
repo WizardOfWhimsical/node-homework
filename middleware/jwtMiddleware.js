@@ -5,6 +5,21 @@ function send401(res) {
     .status(StatusCodes.UNAUTHORIZED)
     .json({ message: "No user is authenticatd" });
 }
+const validateUserId = (req, res, next) => {
+  const user_id = parseInt(req?.user?.id);
+
+  if (!user_id) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "No user logged in", error: "Bad Request" });
+  } else if (isNaN(user_id)) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message: "Something went wrong with the request",
+      error: "Invalid user id",
+    });
+  }
+  return next();
+};
 
 async function handleAuthMiddleware(req, res, next) {
   const token = req?.cookies?.jwt;
@@ -23,4 +38,4 @@ async function handleAuthMiddleware(req, res, next) {
     next();
   });
 }
-module.exports = handleAuthMiddleware;
+module.exports = { handleAuthMiddleware, validateUserId };

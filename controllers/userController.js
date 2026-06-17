@@ -1,64 +1,51 @@
-const { StatusCodes, prisma, jwt, crypto, util } = require("../index");
+const {
+  StatusCodes,
+  prisma,
+  // jwt,
+  //  crypto
+} = require("../index");
 const { userSchema } = require("../validation/userSchema");
 const { getPrismaErrorInfo } = require("../middleware/index");
+const {
+  hashPassword,
+  comparePassword,
+} = require("../security/passwordProtection.js");
+const { setJwtCookie, cookieFlags } = require("../security/webTokens.js");
+// const { randomUUID } = crypto;
 
-const scrypt = util.promisify(crypto.scrypt);
-const { randomUUID } = crypto;
+// /**
+//  *
+//  * @param {Object} req - The Express request object.
+//  * @returns
+//  * Object {{
+//  *    httpOnly:boolean,
+//  *    secure: boolean,
+//  *    sameSite: string
+//  *     }}
+//  */
+// // eslint-disable-next-line no-unused-vars
+// function cookieFlags(req) {
+//   return {
+//     httpOnly: true,
+//     secure: process.env.NODE_ENV === "production",
+//     sameSite: "Strict",
+//   };
+// }
 
-/**
- * @param {String} password
- * @returns string salted/hashed
- */
-async function hashPassword(password) {
-  const salt = crypto.randomBytes(16).toString("hex");
-  const derivedKey = await scrypt(password, salt, 64);
-  return `${salt}:${derivedKey.toString("hex")}`;
-}
+// /**
+//  *
+//  * @param {Object} req - The Express request object.
+//  * @param {Object} res - The Express request object
+//  * @param {object} user {{unknown}}
+//  * @returns string
+//  */
+// function setJwtCookie(req, res, user) {
+//   const payload = { id: user.id, csrfToken: randomUUID() };
+//   const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
 
-/**
- * @param {String}
- * @param {String}
- * @returns boolean of comparison
- */
-async function comparePassword(inputPassword, storedHash) {
-  const [salt, key] = storedHash.split(":");
-  const keyBuffer = Buffer.from(key, "hex");
-  const derivedKey = await scrypt(inputPassword, salt, 64);
-  return crypto.timingSafeEqual(keyBuffer, derivedKey);
-}
-
-/**
- *
- * @param {Object} req - The Express request object.
- * @returns
- * Object {{
- *    httpOnly:boolean,
- *    secure: boolean,
- *    sameSite: string
- *     }}
- */
-function cookieFlags(req) {
-  return {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "Strict",
-  };
-}
-
-/**
- *
- * @param {Object} req - The Express request object.
- * @param {Object} res - The Express request object
- * @param {object} user {{unknown}}
- * @returns string
- */
-function setJwtCookie(req, res, user) {
-  const payload = { id: user.id, csrfToken: randomUUID() };
-  const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
-
-  res.cookie("jwt", token, { ...cookieFlags(req), maxAge: 3600000 });
-  return payload.csrfToken;
-}
+//   res.cookie("jwt", token, { ...cookieFlags(req), maxAge: 3600000 });
+//   return payload.csrfToken;
+// }
 
 /**
  * @param {Object} req - The Express request object.
@@ -68,6 +55,38 @@ function setJwtCookie(req, res, user) {
  */
 async function register(req, res, next) {
   if (!req.body) req.body = {};
+
+  let isPerson = false;
+  if (req.body.recaptchaToken) {
+    const token = req.body.recaptchaToken;
+    const params = new URLSearchParams();
+    params.append("secret", process.env.RECAPTCHA_SECRET);
+    params.append("response", token);
+    params.append("remoteip", req.ip);
+    const response = await fetch(
+      "https://www.google.com/recaptcha/api/siteverify",
+      {
+        method: "POST",
+        body: params.toString(),
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      },
+    );
+    const data = await response.json();
+    if (data.success) isPerson = true;
+    delete req.body.recaptchaToken;
+  } else if (
+    process.env.RECAPTCHA_BYPASS &&
+    req.get("X-Recaptcha-Test") === process.env.RECAPTCHA_BYPASS
+  ) {
+    isPerson = true;
+  }
+  if (!isPerson) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message: "Bot verification failed. Please complete the reCAPTCHA.",
+    });
+  }
 
   const { error, value } = userSchema.validate(req.body, { abortEarly: false });
 
@@ -217,7 +236,7 @@ async function show(req, res, next) {
   let user = null;
   try {
     user = await prisma.user.findUnique({
-      where: { id: user_id },
+      where: { id: user_id, deletedAt: null },
       select: {
         id: true,
         name: true,
@@ -225,13 +244,13 @@ async function show(req, res, next) {
         createdAt: true,
         Task: {
           where: { isCompleted: false },
-          selecet: {
+          select: {
             id: true,
             title: true,
             priority: true,
             createdAt: true,
           },
-          orderBy: { createAt: "desc" },
+          orderBy: { createdAt: "desc" },
           take: 5,
         },
       },

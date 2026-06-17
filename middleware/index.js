@@ -1,9 +1,9 @@
 const { requestLogger, responseLogger, logger } = require("./logger");
 const errorHandler = require("./error-handler");
-const handleAuthMiddleware = require("./jwtMiddleware");
+const { handleAuthMiddleware, validateUserId } = require("./jwtMiddleware");
 const notFound = require("./not-found");
 const getPrismaErrorInfo = require("./customPrismaErrorHandling/getPrismaErrorInfo");
-const setUniqueId = require("../week-3-middleware/middleware/uniqueId");
+const setUniqueId = require("./uniqueId");
 
 module.exports = {
   logger,
@@ -12,6 +12,7 @@ module.exports = {
   responseLogger,
   errorHandler,
   handleAuthMiddleware,
+  validateUserId,
   notFound,
   getPrismaErrorInfo,
 };

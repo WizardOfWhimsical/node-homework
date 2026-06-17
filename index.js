@@ -1,10 +1,6 @@
-const {
-  StatusCodes,
-  ReasonPhrases,
-} = require("./node_modules/http-status-codes");
+const { StatusCodes, ReasonPhrases } = require("http-status-codes");
 const { Router } = require("express");
 const express = require("express");
-const morgan = require("morgan");
 const { Pool } = require("pg");
 const prisma = require("./db/prisma");
 const crypto = require("crypto");
@@ -14,14 +10,12 @@ const cookieParser = require("cookie-parser");
 const helmet = require("helmet");
 const { xss } = require("express-xss-sanitizer");
 const rateLimiter = require("express-rate-limit");
-const httpMocks = require("node-mocks-http");
 const cookie = require("cookie");
-const { EventEmitter } = require("pg-cursor");
+// const { EventEmitter } = require("pg-cursor");
 
 module.exports = {
-  EventEmitter,
+  // EventEmitter,
   cookie,
-  httpMocks,
   helmet,
   xss,
   rateLimiter,
@@ -29,7 +23,6 @@ module.exports = {
   ReasonPhrases,
   Router,
   express,
-  morgan,
   Pool,
   prisma,
   crypto,

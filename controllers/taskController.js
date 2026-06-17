@@ -8,22 +8,10 @@ const { getPrismaErrorInfo } = require("../middleware/index");
  * @param {Function} next - The Express Middleware
  * @returns {Promise<void>}
  */
-
 async function create(req, res, next) {
   if (!req.body) req.body = {};
-  //DRY
-  const user_id = parseInt(req?.user?.id);
 
-  if (!user_id) {
-    return res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ message: "No user logged in", error: "Bad Request" });
-  } else if (isNaN(user_id)) {
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      message: "Something went wrong with the request",
-      error: "Invalid user id",
-    });
-  }
+  const user_id = req?.user?.id;
 
   const { error, value } = taskSchema.validate(req.body, { abortEarly: false });
 
@@ -49,20 +37,14 @@ async function create(req, res, next) {
   return res.status(StatusCodes.CREATED).json(newTaskCreated);
 }
 /**
+ * i dont even have something for this.....
  * @param {Object} req - The Express request object.
  * @param {Object} res - The Express request object
  * @param {Function} next - The Express Middleware
  * @returns {Promise<void>}
  */
 async function bulkCreate(req, res, next) {
-  //DRY
-  const user_id = parseInt(req.user.id);
-  if (!user_id || isNaN(user_id)) {
-    return res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ message: "No user logged in", error: "Bad Request" });
-  }
-
+  const user_id = req.user.id;
   const { tasks } = req.body;
 
   if (!tasks || !Array.isArray(tasks) || !(tasks.length > 2)) {
@@ -109,6 +91,31 @@ async function bulkCreate(req, res, next) {
   });
 }
 
+async function bulkDelete(req, res, next) {
+  const user_id = req.user.id;
+  const { tasks } = req.body;
+
+  if (!tasks || !Array.isArray(tasks) || !(tasks.length > 2)) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ error: "Invalid request data. Expected an array of tasks" });
+  }
+  try {
+    const response = await prisma.task.updateMany({
+      where: {
+        id: { in: tasks },
+        userId: user_id,
+      },
+      data: { deletedAt: new Date() },
+    });
+    console.log("bulk delete response\n", { response });
+    res.status(StatusCodes.NO_CONTENT).end();
+  } catch (error) {
+    getPrismaErrorInfo(error);
+    next(error);
+  }
+}
+
 /**
  * @param {Object} req - The Express request object.
  * @param {Object} res - The Express request object
@@ -117,18 +124,12 @@ async function bulkCreate(req, res, next) {
  */
 async function index(req, res, next) {
   const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
+  const limit = parseInt(req.query.limit) || 5;
   const skip = (page - 1) * limit;
   //DRY
-  const user_id = parseInt(req.user?.id);
-  // console.log("seeing what hits the user_id", user_id);
-  if (!user_id || isNaN(user_id)) {
-    return res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ message: "No user logged in", error: "Bad Request" });
-  }
+  const user_id = req.user.id;
 
-  const whereClause = { userId: user_id };
+  const whereClause = { userId: user_id, deletedAt: null };
 
   let tasks = null;
   let total = null;
@@ -141,7 +142,7 @@ async function index(req, res, next) {
   }
 
   function getOrderBy(query) {
-    const validSortFields = ["title", "priority", "id", "isComplete"];
+    const validSortFields = ["title", "createdAt", "isCompleted", "priority"];
     const sortBy = query.sortBy || "createdAt";
     const sortDirection = query.sortDirection === "asc" ? "asc" : "desc";
 
@@ -149,7 +150,7 @@ async function index(req, res, next) {
       return { [sortBy]: sortDirection };
     }
 
-    return { createdAt: "desc" };
+    return { createdAt: sortDirection };
   }
 
   try {
@@ -195,7 +196,37 @@ async function index(req, res, next) {
   return res.status(StatusCodes.OK).json({ tasks, pagination });
 }
 
+async function getTotalIndex(req, res, next) {
+  const user_id = req.user.id;
+  const whereClause = { userId: user_id };
+  let allTasks = null;
+  try {
+    allTasks = await prisma.task.findMany({
+      where: whereClause,
+      select: {
+        id: true,
+        title: true,
+        isCompleted: true,
+        priority: true,
+      },
+    });
+  } catch (error) {
+    const e = getPrismaErrorInfo(error);
+    console.log("prisma query for stats\n", { e });
+    next(error);
+  }
+
+  if (allTasks.length === 0) {
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ error: "User has no tasks", message: "No tasks found" });
+  }
+  return res.status(StatusCodes.OK).json({ tasks: allTasks });
+} //end
+
 /**
+ * i did not exclude soft deletes incase the user wants to search
+ * them
  * @param {Object} req - The Express request object.
  * @param {Object} res - The Express request object
  * @param {Function} next - The Express Middleware
@@ -203,13 +234,8 @@ async function index(req, res, next) {
  */
 async function show(req, res, next) {
   const taskIndex = parseInt(req.params?.id);
-  const user_id = parseInt(req.user?.id);
-  //DRY
-  if (!user_id || isNaN(user_id)) {
-    return res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ message: "No user logged in", error: "Bad Request" });
-  }
+  const user_id = req.user.id;
+
   if (taskIndex < 0) {
     return res
       .status(StatusCodes.BAD_REQUEST)
@@ -228,12 +254,10 @@ async function show(req, res, next) {
   }
 
   if (!taskWithUserInfo) {
-    return res
-      .status(404)
-      .json({
-        message: "The task/user was not found.",
-        error: "No data found",
-      });
+    return res.status(404).json({
+      message: "The task was not found.",
+      error: "No data found",
+    });
   }
 
   return res.status(StatusCodes.OK).json(taskWithUserInfo);
@@ -247,13 +271,7 @@ async function show(req, res, next) {
  */
 async function update(req, res, next) {
   const taskIndex = parseInt(req.params?.id);
-  const user_id = parseInt(req.user?.id);
-  //DRY
-  if (!user_id || isNaN(user_id)) {
-    return res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ message: "No user logged in", error: "Bad Request" });
-  }
+  const user_id = req.user.id;
 
   if (taskIndex < 0) {
     return res
@@ -306,27 +324,22 @@ async function update(req, res, next) {
  */
 async function deleteTask(req, res, next) {
   const taskIndex = parseInt(req.params?.id);
-  const user_id = parseInt(req.user?.id);
-  if (taskIndex <= 0) {
+  const user_id = req.user.id;
+
+  if (taskIndex <= 0 || isNaN(taskIndex)) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Must be a number", error: "taskIndex check failed" });
   }
 
-  if (!user_id || isNaN(user_id)) {
-    return res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ message: "No user logged in", error: "Bad Request, log in" });
-  }
-
-  let task = null;
   try {
-    task = await prisma.task.delete({
+    await prisma.task.update({
       where: {
         id: taskIndex,
         userId: user_id,
       },
-      select: { title: true, isCompleted: true, id: true },
+      data: { deletedAt: new Date() },
+      select: { title: true, isCompleted: true, id: true, deletedAt: true },
     });
   } catch (err) {
     if (err.code === "P2025") {
@@ -337,13 +350,15 @@ async function deleteTask(req, res, next) {
     }
   }
 
-  return res.status(StatusCodes.OK).json(task);
+  return res.status(StatusCodes.NO_CONTENT).end();
 }
 
 module.exports = {
   create,
   bulkCreate,
+  bulkDelete,
   index,
+  getTotalIndex,
   update,
   deleteTask,
   show,
