@@ -139,7 +139,23 @@ I hope you enjoy the end product! <3
 
 Here is a link to the front end i created for this project: [To-Do List Front End](git@github.com:WizardOfWhimsical/node-front-end.git)
 
-## Licence
+## 📬 Contact
+
+- 📨 **Yahoo:** [My Yahoo Email](mailto:st.rayis1085@yahoo.com)
+- 📧 **Gmail:** [My Gmail](mailto:st.rayis1085@gmail.com)
+- 🐙 **GitHub:** [The Wizards Domain](https://github.com/WizardOfWhimsical)
+- 🔗 **LinkedIn:** [Stephen Raymond Lewis](https://linkedin.com/in/stephenrlewis)
+
+## Special Thanks
+
+- [EJ Mason](https://github.com/mxmason) - My mentor and guide through this project, providing invaluable insights and support.
+- [CTD Team](https://www.ctd.academy/) - For creating an amazing curriculum and fostering a supportive learning environment.
+- [My Peers](https://www.ctd.academy/) - For their camaraderie, collaboration, and shared learning experiences throughout this journey.
+
+## License
+
+Copyright (c) 2025 Code the Dream
+This project is licensed under the MIT License – see the [LICENSE](./LICENSE) file for details.
 
 MIT License
 
@@ -162,21 +178,3 @@ THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-
-## 📬 Contact
-
-- 📨 **Yahoo:** [My Yahoo Email](mailto:st.rayis1085@yahoo.com)
-- 📧 **Gmail:** [My Gmail](mailto:st.rayis1085@gmail.com)
-- 🐙 **GitHub:** [The Wizards Domain](https://github.com/WizardOfWhimsical)
-- 🔗 **LinkedIn:** [Stephen Raymond Lewis](https://linkedin.com/in/stephenrlewis)
-
-## Special Thanks
-
-- [EJ Mason](https://github.com/mxmason) - My mentor and guide through this project, providing invaluable insights and support.
-- [CTD Team](https://www.ctd.academy/) - For creating an amazing curriculum and fostering a supportive learning environment.
-- [My Peers](https://www.ctd.academy/) - For their camaraderie, collaboration, and shared learning experiences throughout this journey.
-
-## License
-
-Copyright (c) 2025 Code the Dream
-This project is licensed under the MIT License – see the [LICENSE](./LICENSE) file for details.
