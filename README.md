@@ -103,7 +103,8 @@ To run this project, you need to have the following tools installed and set up o
    git clone <repository-url>
    ```
 
-   [link to the repo](git@github.com:WizardOfWhimsical/node-homework.git)
+   [link to this repo](git@github.com:WizardOfWhimsical/node-homework.git)
+   [To-Do List Front End](git@github.com:WizardOfWhimsical/node-front-end.git)
 
 2. **Navigate to the Project Directory:**
    Run this script in your terminal for your project directory:
